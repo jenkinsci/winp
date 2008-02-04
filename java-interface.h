@@ -15,6 +15,14 @@ extern "C" {
 JNIEXPORT jboolean JNICALL Java_org_jvnet_winp_Native_kill
   (JNIEnv *, jclass, jint, jboolean);
 
+/*
+ * Class:     org_jvnet_winp_Native
+ * Method:    getProcessId
+ * Signature: (I)I
+ */
+JNIEXPORT jint JNICALL Java_org_jvnet_winp_Native_getProcessId
+  (JNIEnv *, jclass, jint);
+
 #ifdef __cplusplus
 }
 #endif
