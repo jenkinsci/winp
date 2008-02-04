@@ -8,6 +8,11 @@
   <name>winp</name>
   <description>Kill process tree in Windows</description>
   
+  <scm>
+    <connection>scm:svn:https://svn.dev.java.net/svn/winp/trunk/winp/</connection>
+    <developerConnection>scm:svn:https://svn.dev.java.net/svn/winp/trunk/winp/</developerConnection>
+  </scm>
+
   <build>
     <extensions>
       <extension>
