@@ -6,6 +6,6 @@ import org.jvnet.winp.WinProcess;
  */
 public class Main {
     public static void main(String[] args) {
-        new WinProcess(Integer.valueOf(args[0])).killRecursively();
+        new WinProcess(Integer.parseInt(args[0])).killRecursively();
     }
 }
