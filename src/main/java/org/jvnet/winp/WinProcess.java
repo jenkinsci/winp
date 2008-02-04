@@ -8,16 +8,18 @@ import java.lang.reflect.Field;
  * @author Kohsuke Kawaguchi
  */
 public class WinProcess {
-    private final Process proc;
-    private final int handle;
+    private final int pid;
+
+    public WinProcess(int pid) {
+        this.pid = pid;
+    }
 
     public WinProcess(Process proc) {
-        this.proc = proc;
-
         try {
             Field f = proc.getClass().getDeclaredField("handle");
             f.setAccessible(true);
-            handle = ((Number)f.get(proc)).intValue();
+            int handle = ((Number)f.get(proc)).intValue();
+            pid = Native.getProcessId(handle);
         } catch (NoSuchFieldException e) {
             throw new NotWindowsException(e);
         } catch (IllegalAccessException e) {
@@ -26,7 +28,6 @@ public class WinProcess {
     }
 
     public void killRecursively() {
-        int pid = Native.getProcessId(handle);
         Native.kill(pid,true);
     }
 }
