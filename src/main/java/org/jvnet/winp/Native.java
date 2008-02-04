@@ -14,6 +14,7 @@ import java.util.logging.Logger;
 class Native {
     native static boolean kill(int pid, boolean recursive);
 
+    native static int getProcessId(int handle);
 
     private static final Logger LOGGER = Logger.getLogger(Native.class.getName());
 
