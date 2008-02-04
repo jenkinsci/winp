@@ -27,13 +27,13 @@ class Native {
         try {
             // load the native part of the code.
             // first try java.library.path
-            System.loadLibrary("com4j");
+            System.loadLibrary("winp");
             return;
         } catch( Throwable t ) {
             cause = t;
         }
 
-        // try loading com4j.dll in the same directory as com4j.jar
+        // try loading winp.dll in the same directory as winp.jar
         final URL res = Native.class.getClassLoader().getResource("winp.dll");
         String url = res.toExternalForm();
         if(url.startsWith("jar:")) {
