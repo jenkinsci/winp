@@ -2,7 +2,7 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9.00"
-	Name="kill-tree"
+	Name="winp"
 	ProjectGUID="{6B623E61-2427-4C6A-B028-35E9A397AC3A}"
 	RootNamespace="killtree"
 	Keyword="Win32Proj"
@@ -175,10 +175,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\kill-tree.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\stdafx.cpp"
 				>
 				<FileConfiguration
@@ -198,6 +194,10 @@
 					/>
 				</FileConfiguration>
 			</File>
+			<File
+				RelativePath=".\winp.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -209,11 +209,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\kill-tree.h"
+				RelativePath=".\stdafx.h"
 				>
 			</File>
 			<File
-				RelativePath=".\stdafx.h"
+				RelativePath=".\winp.h"
 				>
 			</File>
 		</Filter>
