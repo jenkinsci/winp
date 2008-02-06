@@ -3,17 +3,11 @@ package org.jvnet.winp;
 /**
  * @author Kohsuke Kawaguchi
  */
-public enum Priority {
-    IDLE(0x40),
-    BELOW_NORMAL(0x4000),
-    NORMAL(0x20),
-    ABOVE_NORMAL(0x8000),
-    HIGH(0x80),
-    REALTIME(0x100);
-
-    /*package*/ final int value;
-
-    Priority(int value) {
-        this.value = value;
-    }
+public abstract class Priority {
+    public static final int IDLE = 0x40;
+    public static final int BELOW_NORMAL = 0x4000;
+    public static final int NORMAL = 0x20;
+    public static final int ABOVE_NORMAL = 0x8000;
+    public static final int HIGH = 0x80;
+    public static final int REALTIME = 0x100;
 }

@@ -31,7 +31,7 @@ public class WinProcess {
         Native.kill(pid,true);
     }
 
-    public void setPriority(Priority p) {
-        Native.setPriority(pid,p.value);
+    public void setPriority(int priority) {
+        Native.setPriority(pid,priority);
     }
 }
