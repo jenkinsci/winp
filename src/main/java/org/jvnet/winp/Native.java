@@ -13,8 +13,7 @@ import java.util.logging.Logger;
  */
 class Native {
     native static boolean kill(int pid, boolean recursive);
-    native static void setPriority(int pid, int value);
-
+    native static int setPriority(int pid, int value);
     native static int getProcessId(int handle);
 
     private static final Logger LOGGER = Logger.getLogger(Native.class.getName());
