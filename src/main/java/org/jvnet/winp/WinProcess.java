@@ -30,4 +30,8 @@ public class WinProcess {
     public void killRecursively() {
         Native.kill(pid,true);
     }
+
+    public void setPriority(Priority p) {
+        Native.setPriority(pid,p.value);
+    }
 }
