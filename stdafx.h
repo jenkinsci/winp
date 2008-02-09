@@ -7,6 +7,8 @@
 
 #include <windows.h>
 #include <tchar.h>
-#include <crtdbg.h>
 #include <tlhelp32.h>
 #include <jni.h>
+
+#define _ASSERTE(x)		;
+//#include <crtdbg.h>
