@@ -16,6 +16,8 @@ class Native {
     native static int setPriority(int pid, int value);
     native static int getProcessId(int handle);
 
+    native static boolean exitWindowsEx(int flags,int reasonCode);
+
     private static final Logger LOGGER = Logger.getLogger(Native.class.getName());
 
     static {
