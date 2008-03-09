@@ -15,7 +15,6 @@ class Native {
     native static boolean kill(int pid, boolean recursive);
     native static int setPriority(int pid, int value);
     native static int getProcessId(int handle);
-
     native static boolean exitWindowsEx(int flags,int reasonCode);
 
     private static final Logger LOGGER = Logger.getLogger(Native.class.getName());
@@ -25,16 +24,6 @@ class Native {
     }
 
     private static void load() {
-        Throwable cause;
-        try {
-            // load the native part of the code.
-            // first try java.library.path
-            System.loadLibrary("winp");
-            return;
-        } catch( Throwable t ) {
-            cause = t;
-        }
-
         // try loading winp.dll in the same directory as winp.jar
         final URL res = Native.class.getClassLoader().getResource("winp.dll");
         String url = res.toExternalForm();
@@ -51,12 +40,13 @@ class Native {
                 filePortion = URLDecoder.decode(filePortion);
                 File jarFile = new File(filePortion);
                 File dllFile = new File(jarFile.getParentFile(),"winp.dll");
-                if(!dllFile.exists()) {
+                if(!dllFile.exists() || jarFile.lastModified()>dllFile.lastModified()) {
                     // try to extract from within the jar
                     try {
                         copyStream(
                             res.openStream(),
                             new FileOutputStream(dllFile));
+                        dllFile.setLastModified(jarFile.lastModified());
                     } catch (IOException e) {
                         LOGGER.log(Level.WARNING, "Failed to write winp.dll", e);
                     }
@@ -66,9 +56,16 @@ class Native {
             }
         }
 
-        UnsatisfiedLinkError error = new UnsatisfiedLinkError("Unable to load winp.dll");
-        error.initCause(cause);
-        throw error;
+        // we don't know where winp.dll is, so let's just hope the user put it somewhere
+        try {
+            // load the native part of the code.
+            // first try java.library.path
+            System.loadLibrary("winp");
+        } catch( Throwable cause ) {
+            UnsatisfiedLinkError error = new UnsatisfiedLinkError("Unable to load winp.dll");
+            error.initCause(cause);
+            throw error;
+        }
     }
 
     private static void copyStream(InputStream in, OutputStream out) throws IOException {
