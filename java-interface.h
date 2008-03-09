@@ -31,6 +31,14 @@ JNIEXPORT jint JNICALL Java_org_jvnet_winp_Native_setPriority
 JNIEXPORT jint JNICALL Java_org_jvnet_winp_Native_getProcessId
   (JNIEnv *, jclass, jint);
 
+/*
+ * Class:     org_jvnet_winp_Native
+ * Method:    exitWindowsEx
+ * Signature: (II)Z
+ */
+JNIEXPORT jboolean JNICALL Java_org_jvnet_winp_Native_exitWindowsEx
+  (JNIEnv *, jclass, jint, jint);
+
 #ifdef __cplusplus
 }
 #endif
