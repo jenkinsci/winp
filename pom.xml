@@ -3,13 +3,13 @@
   <groupId>org.jvnet.winp</groupId>
   <artifactId>winp</artifactId>
   <packaging>jar</packaging>
-  <version>1.4-SNAPSHOT</version>
+  <version>1.4</version>
   <name>winp</name>
   <description>Kill process tree in Windows</description>
   
   <scm>
-    <connection>scm:svn:https://svn.dev.java.net/svn/winp/trunk/winp/</connection>
-    <developerConnection>scm:svn:https://svn.dev.java.net/svn/winp/trunk/winp/</developerConnection>
+    <connection>scm:svn:https://svn.dev.java.net/svn/winp/tags/winp-1.4</connection>
+    <developerConnection>scm:svn:https://svn.dev.java.net/svn/winp/tags/winp-1.4</developerConnection>
   </scm>
 
   <build>
@@ -19,6 +19,12 @@
         <configuration>
           <source>1.5</source>
           <target>1.5</target>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-release-plugin</artifactId>
+        <configuration>
+          <arguments>-Prelease</arguments>
         </configuration>
       </plugin>
     </plugins>
