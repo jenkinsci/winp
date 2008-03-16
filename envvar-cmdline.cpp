@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include "winp.h"
 #include "java-interface.h"
 
 // see http://msdn2.microsoft.com/en-us/library/aa489609.aspx
@@ -40,8 +41,10 @@ JNIEXPORT jstring JNICALL Java_org_jvnet_winp_Native_getCmdLineAndEnvVars(
 	// for kernel string functions
 
 	HANDLE hProcess = ::OpenProcess(PROCESS_QUERY_INFORMATION|PROCESS_VM_READ,FALSE,pid);
-	if(hProcess==NULL)
+	if(hProcess==NULL) {
+		reportError(pEnv,"Failed to open process");
 		return NULL;
+	}
 	
 	HMODULE hModule = GetModuleHandle(_T("ntdll"));
 	ZWQueryInformationProcess queryInformationProcess = (ZWQueryInformationProcess)GetProcAddress(hModule, "ZwQueryInformationProcess");
@@ -51,35 +54,51 @@ JNIEXPORT jstring JNICALL Java_org_jvnet_winp_Native_getCmdLineAndEnvVars(
 	// obtain PROCESS_BASIC_INFORMATION
 	PROCESS_BASIC_INFORMATION ProcInfo;
 	ULONG _;
-	if(!NT_SUCCESS(queryInformationProcess(hProcess, ProcessBasicInformation, &ProcInfo, sizeof(ProcInfo), &_)))
+	if(!NT_SUCCESS(queryInformationProcess(hProcess, ProcessBasicInformation, &ProcInfo, sizeof(ProcInfo), &_))) {
+		reportError(pEnv,"Failed to ZWQueryInformationProcess");
 		return NULL;
+	}
 
 	// from there to PEB
 	PEB ProcPEB;
-	if(!ReadProcessMemory(hProcess, ProcInfo.PebBaseAddress, &ProcPEB, sizeof(ProcPEB), &_))
+	if(!ReadProcessMemory(hProcess, ProcInfo.PebBaseAddress, &ProcPEB, sizeof(ProcPEB), &_)) {
+		reportError(pEnv,"Failed to read PEB");
 		return NULL;
+	}
 
 	// then to INFOBLOCK
 	INFOBLOCK ProcBlock;
-	if(!ReadProcessMemory(hProcess, ProcPEB.dwInfoBlockAddress, &ProcBlock, sizeof(ProcBlock), &_))
+	if(!ReadProcessMemory(hProcess, ProcPEB.dwInfoBlockAddress, &ProcBlock, sizeof(ProcBlock), &_)) {
+		reportError(pEnv,"Failed to read INFOBLOCK");
 		return NULL;
+	}
 
 	// now read command line aguments
 	LPWSTR pszCmdLine = (LPWSTR)::LocalAlloc(LMEM_FIXED,ProcBlock.wMaxLength);
-	if(!ReadProcessMemory(hProcess, ProcBlock.dwCmdLineAddress, pszCmdLine, ProcBlock.wMaxLength, &_))
+	if(!ReadProcessMemory(hProcess, ProcBlock.dwCmdLineAddress, pszCmdLine, ProcBlock.wMaxLength, &_)) {
+		reportError(pEnv,"Failed to read command line arguments");
 		return NULL;
+	}
 
 	// figure out the size of the env var block
 	MEMORY_BASIC_INFORMATION info;
-	::VirtualQueryEx(hProcess, ProcBlock.env, &info, sizeof(info));
-
+	if(::VirtualQueryEx(hProcess, ProcBlock.env, &info, sizeof(info))==0) {
+		reportError(pEnv,"VirtualQueryEx failed");
+		return NULL;
+	}
 
 	int cmdLineLen = lstrlen(pszCmdLine);
 	LPWSTR buf = (LPWSTR)LocalAlloc(LMEM_FIXED,(cmdLineLen+1/*for \0*/)*2+info.RegionSize);
+	if(buf==NULL) {
+		reportError(pEnv,"Buffer allocation failed");
+		return NULL;
+	}
 	lstrcpy(buf,pszCmdLine);
 
-	if(!ReadProcessMemory(hProcess, ProcBlock.env, buf+cmdLineLen+1, info.RegionSize, &_))
+	if(!ReadProcessMemory(hProcess, ProcBlock.env, buf+cmdLineLen+1, info.RegionSize, &_)) {
+		reportError(pEnv,"Failed to read environment variable table");
 		return NULL;
+	}
 
 	CloseHandle(hProcess);
 
