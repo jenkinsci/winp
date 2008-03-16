@@ -3,7 +3,7 @@
   <groupId>org.jvnet.winp</groupId>
   <artifactId>winp</artifactId>
   <packaging>jar</packaging>
-  <version>1.4-SNAPSHOT</version>
+  <version>1.5-SNAPSHOT</version>
   <name>winp</name>
   <description>Kill process tree in Windows</description>
   
