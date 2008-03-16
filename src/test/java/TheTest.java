@@ -12,4 +12,11 @@ public class TheTest extends TestCase {
         }
         System.out.println();
     }
+
+    public void testGetCommandLine() {
+        for (WinProcess p : WinProcess.all()) {
+            if(p.getPid()<10)   continue;
+            System.out.println(p.getCommandLine());
+        }
+    }
 }

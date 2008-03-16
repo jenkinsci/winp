@@ -7,7 +7,13 @@ import java.util.Iterator;
 
 /**
  * Represents a Windows process.
- * 
+ *
+ * <p>
+ * On Windows, there are several system pseudo-processes,
+ * for which many of the getter invocations would fail.
+ * This includes "system idle process" (which always seem to
+ * have PID=0) and "System" (which always seem to have PID=4)
+ *
  * @author Kohsuke Kawaguchi
  */
 public class WinProcess {
@@ -102,6 +108,8 @@ public class WinProcess {
 
     private void parseCmdLineAndEnvVars() {
         String s = Native.getCmdLineAndEnvVars(pid);
+        if(s==null)
+            throw new WinpException("Failed to obtain for PID="+pid);
         int sep = s.indexOf('\0');
         commandline = s.substring(0,sep);
         envVars = new TreeMap<String,String>(CASE_INSENSITIVE_COMPARATOR);
