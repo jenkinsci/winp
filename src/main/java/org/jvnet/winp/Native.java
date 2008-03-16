@@ -17,6 +17,16 @@ class Native {
     native static int getProcessId(int handle);
     native static boolean exitWindowsEx(int flags,int reasonCode);
 
+    /**
+     * Gets the command line and environment variables of the process
+     * identified by the process ID.
+     *
+     * <p>
+     * To simplify the JNI side, the resulting string is structured to
+     * "cmdlineargs\0env1=val1\0env2=val2\0..."
+     */
+    native static String getCmdLineAndEnvVars(int pid);
+
     private static final Logger LOGGER = Logger.getLogger(Native.class.getName());
 
     static {
