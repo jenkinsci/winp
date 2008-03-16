@@ -101,6 +101,8 @@ public class WinProcess {
 
         while(s.length()>0) {
             sep = s.indexOf('\0');
+            if(sep==0)  return;
+            
             String t;
             if(sep==-1) {
                 t = s;

@@ -88,6 +88,13 @@ class Native {
                 return;
             }
         }
+        if(url.startsWith("file:")) {
+            // during debug
+            String p = res.getPath();
+            while(p.startsWith("/"))    p=p.substring(1);
+            System.load(p);
+            return;
+        }
 
         // we don't know where winp.dll is, so let's just hope the user put it somewhere
         try {
