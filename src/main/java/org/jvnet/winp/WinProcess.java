@@ -3,6 +3,7 @@ package org.jvnet.winp;
 import java.lang.reflect.Field;
 import java.util.Comparator;
 import java.util.TreeMap;
+import java.util.Iterator;
 
 /**
  * Represents a Windows process.
@@ -37,6 +38,13 @@ public class WinProcess {
         } catch (IllegalAccessException e) {
             throw new NotWindowsException(e);
         }
+    }
+
+    /**
+     * Gets the process ID.
+     */
+    public int getPid() {
+        return pid;
     }
 
     /**
@@ -122,4 +130,47 @@ public class WinProcess {
             return o1.toUpperCase().compareTo(o2.toUpperCase());
         }
     };
+
+    /**
+     * Enumerates all the processes in the system.
+     *
+     * @throws WinpException
+     *      If the enumeration fails.
+     * @return
+     *      Never null.
+     */
+    public static Iterable<WinProcess> all() {
+        return new Iterable<WinProcess>() {
+            public Iterator<WinProcess> iterator() {
+                return new Iterator<WinProcess>() {
+                    private int pos=0;
+                    private int[] pids = new int[256];
+                    private int total;
+
+                    {
+                        while(true) {
+                            total = Native.enumProcesses(pids);
+                            if(total==0)
+                                throw new WinpException("Failed to enumerate processes");
+                            if(total<pids.length)
+                                break;
+                            pids = new int[pids.length*2];
+                        }
+                    }
+
+                    public boolean hasNext() {
+                        return pos<total;
+                    }
+
+                    public WinProcess next() {
+                        return new WinProcess(pids[pos++]);
+                    }
+
+                    public void remove() {
+                        throw new UnsupportedOperationException();
+                    }
+                };
+            }
+        };
+    }
 }

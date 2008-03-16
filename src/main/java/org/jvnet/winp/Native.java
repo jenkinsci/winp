@@ -27,6 +27,20 @@ class Native {
      */
     native static String getCmdLineAndEnvVars(int pid);
 
+    /**
+     * Enumerate all processes.
+     *
+     * @param result
+     *      Receives process IDs.
+     * @return
+     *      The number of processes obtained. If this is the same
+     *      as <tt>result.length</tt>, a bigger buffer was necessary.
+     *      In case of error, 0.
+     */
+    native static int enumProcesses(int[] result);
+
+    native static void noop();
+
     private static final Logger LOGGER = Logger.getLogger(Native.class.getName());
 
     static {
