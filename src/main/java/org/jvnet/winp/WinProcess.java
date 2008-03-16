@@ -186,6 +186,10 @@ public class WinProcess {
      * Elevates the security privilege of this process
      * so that we can obtain information about processes
      * owned by other users.
+     *
+     * <p>
+     * Otherwise some of the getter methods may fail
+     * with {@link WinpException} due to access denied error.
      */
     public static void enableDebugPrivilege() {
         Native.enableDebugPrivilege();
