@@ -9,6 +9,8 @@
 #include <tchar.h>
 #include <tlhelp32.h>
 #include <jni.h>
+#include <psapi.h>
+#pragma comment(lib, "psapi.lib")
 
 #define _ASSERTE(x)		;
 //#include <crtdbg.h>
