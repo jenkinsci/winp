@@ -66,4 +66,14 @@
       <url>http://download.java.net/maven/2/</url>
     </repository>
   </repositories>
+
+  <profiles>
+    <profile>
+      <id>release</id>
+      <properties>
+        <!-- so that I can release from Linux -->
+        <maven.test.skip>true</maven.test.skip>
+      </properties>
+    </profile>
+  </profiles>
 </project>
