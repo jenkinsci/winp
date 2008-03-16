@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include "java-interface.h"
 
 // see http://msdn2.microsoft.com/en-us/library/aa489609.aspx
 #define NT_SUCCESS(Status) ((NTSTATUS)(Status) >= 0)
@@ -82,10 +83,10 @@ JNIEXPORT jstring JNICALL Java_org_jvnet_winp_Native_getCmdLineAndEnvVars(
 
 	CloseHandle(hProcess);
 
-	jstring packedStr = pEnv->NewString((jchar*)buf,cmdLineLen+1+info.RegionSize);
+	jstring packedStr = pEnv->NewString((jchar*)buf,cmdLineLen+1+(info.RegionSize)/2);
 
 	LocalFree(pszCmdLine);
 	LocalFree(buf);
 
-	return 0;
+	return packedStr;
 }
