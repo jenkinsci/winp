@@ -1,0 +1,4 @@
+What is this?
+
+  This project develops a library that lets you control Windows processes better,
+  beyond what's available in JDK. See javadoc for more details.
