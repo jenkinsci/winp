@@ -1,6 +1,8 @@
 package org.jvnet.winp;
 
 import java.lang.reflect.Field;
+import java.util.Comparator;
+import java.util.TreeMap;
 
 /**
  * Represents a Windows process.
@@ -9,6 +11,10 @@ import java.lang.reflect.Field;
  */
 public class WinProcess {
     private final int pid;
+
+    // these values are lazily obtained, in a pair
+    private String commandline;
+    private TreeMap<String,String> envVars;
 
     /**
      * Wraps a process ID.
@@ -50,4 +56,68 @@ public class WinProcess {
     public void setPriority(int priority) {
         Native.setPriority(pid,priority);
     }
+
+    /**
+     * Gets the command line given to this process.
+     *
+     * On Windows, a command line is a single string, unlike Unix.
+     * The tokenization semantics is up to applications.
+     *
+     * @throws WinpException
+     *      If we fail to obtain the command line. For example,
+     *      maybe we didn't have enough security privileges.
+     */
+    public synchronized String getCommandLine() {
+        if(commandline==null)
+            parseCmdLineAndEnvVars();
+        return commandline;
+    }
+
+    /**
+     * Gets the environment variables of this process.
+     *
+     * <p>
+     * The returned map has a case-insensitive comparison semantics.
+     *
+     * @return
+     *      Never null. 
+     *
+     * @throws WinpException
+     *      If we fail to obtain the command line. For example,
+     *      maybe we didn't have enough security privileges.
+     */
+    public synchronized TreeMap<String,String> getEnvironmentVariables() {
+        if(envVars==null)
+            parseCmdLineAndEnvVars();
+        return envVars;
+    }
+
+    private void parseCmdLineAndEnvVars() {
+        String s = Native.getCmdLineAndEnvVars(pid);
+        int sep = s.indexOf('\0');
+        commandline = s.substring(0,sep);
+        envVars = new TreeMap<String,String>(CASE_INSENSITIVE_COMPARATOR);
+        s = s.substring(sep+1);
+
+        while(s.length()>0) {
+            sep = s.indexOf('\0');
+            String t;
+            if(sep==-1) {
+                t = s;
+                s = "";
+            } else {
+                t = s.substring(0,sep);
+                s = s.substring(sep+1);
+            }
+
+            sep = t.indexOf('=');
+            envVars.put(t.substring(0,sep),t.substring(sep+1));
+        }
+    }
+
+    private static final Comparator<String> CASE_INSENSITIVE_COMPARATOR = new Comparator<String>() {
+        public int compare(String o1, String o2) {
+            return o1.toUpperCase().compareTo(o2.toUpperCase());
+        }
+    };
 }
