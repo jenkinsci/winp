@@ -57,6 +57,14 @@ JNIEXPORT jint JNICALL Java_org_jvnet_winp_Native_enumProcesses
 
 /*
  * Class:     org_jvnet_winp_Native
+ * Method:    enableDebugPrivilege
+ * Signature: ()V
+ */
+JNIEXPORT void JNICALL Java_org_jvnet_winp_Native_enableDebugPrivilege
+  (JNIEnv *, jclass);
+
+/*
+ * Class:     org_jvnet_winp_Native
  * Method:    noop
  * Signature: ()V
  */
