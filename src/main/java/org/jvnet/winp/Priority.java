@@ -1,6 +1,8 @@
 package org.jvnet.winp;
 
 /**
+ * Represents the constants for process execution priority.
+ * 
  * @author Kohsuke Kawaguchi
  */
 public abstract class Priority {

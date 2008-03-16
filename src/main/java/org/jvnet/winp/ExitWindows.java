@@ -5,6 +5,8 @@ package org.jvnet.winp;
  * @author Kohsuke Kawaguchi
  */
 public class ExitWindows {
+    private ExitWindows() {}
+    
     /**
      * Logs off the current user.
      */
@@ -26,6 +28,9 @@ public class ExitWindows {
         Native.exitWindowsEx(2/*EWX_LOGOFF*/|f.value,0);
     }
 
+    /**
+     * Flags to control the behavior of ExitWindows. 
+     */
     public enum Flag {
         NONE(0), FORCE(0x4), FORCEIFHUNG(0x10);
 
