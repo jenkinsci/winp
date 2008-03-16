@@ -14,6 +14,7 @@ public class TheTest extends TestCase {
     }
 
     public void testGetCommandLine() {
+        WinProcess.enableDebugPrivilege();
         for (WinProcess p : WinProcess.all()) {
             if(p.getPid()<10)   continue;
             System.out.println(p.getCommandLine());

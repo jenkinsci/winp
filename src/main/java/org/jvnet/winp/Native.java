@@ -39,6 +39,8 @@ class Native {
      */
     native static int enumProcesses(int[] result);
 
+    native static void enableDebugPrivilege();
+
     native static void noop();
 
     private static final Logger LOGGER = Logger.getLogger(Native.class.getName());

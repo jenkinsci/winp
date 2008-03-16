@@ -181,4 +181,13 @@ public class WinProcess {
             }
         };
     }
+
+    /**
+     * Elevates the security privilege of this process
+     * so that we can obtain information about processes
+     * owned by other users.
+     */
+    public static void enableDebugPrivilege() {
+        Native.enableDebugPrivilege();
+    }
 }
