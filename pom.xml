@@ -31,6 +31,14 @@
     </extensions>
   </build>
   
+  <reporting>
+    <plugins>
+      <plugin>
+        <artifactId>maven-javadoc-plugin</artifactId>
+      </plugin>
+    </plugins>
+  </reporting>
+    
   <dependencies>
     <dependency>
       <groupId>junit</groupId>
@@ -40,10 +48,10 @@
   </dependencies>
   
   <distributionManagement>
-    <!--site>
+    <site>
       <id>winp-www</id>
       <url>java-net:/winp/trunk/www/</url>
-    </site-->
+    </site>
     <repository>
       <uniqueVersion>false</uniqueVersion>
       <id>java.net-maven2-repository</id>
