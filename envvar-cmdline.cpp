@@ -32,56 +32,60 @@ struct PROCESS_BASIC_INFORMATION {
 	PULONG InheritedFromUniqueProcessId;
 };
 
-
-int __cdecl _tmain(int argc, _TCHAR* argv[])
-{
-	HMODULE hModule = GetModuleHandle(_T("ntdll"));
+JNIEXPORT jstring JNICALL Java_org_jvnet_winp_Native_getCmdLineAndEnvVars(
+	JNIEnv* pEnv, jclass clazz, jint pid) {
 	
-	ZWQueryInformationProcess queryInformationProcess = (ZWQueryInformationProcess)GetProcAddress(hModule, "ZwQueryInformationProcess");
-	if(queryInformationProcess==NULL) 
-		exit(1);
+	// see http://msdn2.microsoft.com/en-us/library/ms674678%28VS.85%29.aspx
+	// for kernel string functions
 
-	HANDLE hProcess = GetCurrentProcess();
-	// HANDLE hProcess = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, 2012);
+	HANDLE hProcess = ::OpenProcess(PROCESS_QUERY_INFORMATION|PROCESS_VM_READ,FALSE,pid);
+	if(hProcess==NULL)
+		return NULL;
+	
+	HMODULE hModule = GetModuleHandle(_T("ntdll"));
+	ZWQueryInformationProcess queryInformationProcess = (ZWQueryInformationProcess)GetProcAddress(hModule, "ZwQueryInformationProcess");
+	if(queryInformationProcess==NULL)
+		return NULL;
 
 	// obtain PROCESS_BASIC_INFORMATION
 	PROCESS_BASIC_INFORMATION ProcInfo;
 	ULONG _;
 	if(!NT_SUCCESS(queryInformationProcess(hProcess, ProcessBasicInformation, &ProcInfo, sizeof(ProcInfo), &_)))
-		exit(1);
+		return NULL;
 
 	// from there to PEB
 	PEB ProcPEB;
 	if(!ReadProcessMemory(hProcess, ProcInfo.PebBaseAddress, &ProcPEB, sizeof(ProcPEB), &_))
-		exit(1);
+		return NULL;
 
 	// then to INFOBLOCK
 	INFOBLOCK ProcBlock;
 	if(!ReadProcessMemory(hProcess, ProcPEB.dwInfoBlockAddress, &ProcBlock, sizeof(ProcBlock), &_))
-		exit(1);
+		return NULL;
 
 	// now read command line aguments
-	LPWSTR pszCmdLine = (LPWSTR) new BYTE[ProcBlock.wMaxLength];
+	LPWSTR pszCmdLine = (LPWSTR)::LocalAlloc(LMEM_FIXED,ProcBlock.wMaxLength);
 	if(!ReadProcessMemory(hProcess, ProcBlock.dwCmdLineAddress, pszCmdLine, ProcBlock.wMaxLength, &_))
-		exit(1);
+		return NULL;
 
 	// figure out the size of the env var block
 	MEMORY_BASIC_INFORMATION info;
 	::VirtualQueryEx(hProcess, ProcBlock.env, &info, sizeof(info));
-	LPWSTR pszEnvVars = (LPWSTR) new BYTE[info.RegionSize];
 
-	if(!ReadProcessMemory(hProcess, ProcBlock.env, pszEnvVars, ProcBlock.wMaxLength, &_))
-		exit(1);
+
+	int cmdLineLen = lstrlen(pszCmdLine);
+	LPWSTR buf = (LPWSTR)LocalAlloc(LMEM_FIXED,(cmdLineLen+1/*for \0*/)*2+info.RegionSize);
+	lstrcpy(buf,pszCmdLine);
+
+	if(!ReadProcessMemory(hProcess, ProcBlock.env, buf+cmdLineLen+1, info.RegionSize, &_))
+		return NULL;
 
 	CloseHandle(hProcess);
 
-	// dump for test
-	_putws(pszCmdLine);
-	_putws(pszEnvVars);
+	jstring packedStr = pEnv->NewString((jchar*)buf,cmdLineLen+1+info.RegionSize);
 
- 
-	delete pszCmdLine;
-	delete pszEnvVars;
+	LocalFree(pszCmdLine);
+	LocalFree(buf);
 
 	return 0;
 }
