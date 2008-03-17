@@ -2,15 +2,6 @@
 #include "winp.h"
 #include "java-interface.h"
 
-// see http://msdn2.microsoft.com/en-us/library/aa489609.aspx
-#define NT_SUCCESS(Status) ((NTSTATUS)(Status) >= 0)
-
-enum PROCESSINFOCLASS {
-	// see http://msdn2.microsoft.com/en-us/library/ms687420(VS.85).aspx
-	ProcessBasicInformation = 0
-};
-
-typedef NTSTATUS (NTAPI *ZWQueryInformationProcess)(HANDLE hProcess, PROCESSINFOCLASS infoType, /*out*/ PVOID pBuf, /*sizeof pBuf*/ ULONG lenBuf, PULONG returnLength); 
 
 struct INFOBLOCK {
 	DWORD dwFiller[16];
@@ -45,16 +36,11 @@ JNIEXPORT jstring JNICALL Java_org_jvnet_winp_Native_getCmdLineAndEnvVars(
 		reportError(pEnv,"Failed to open process");
 		return NULL;
 	}
-	
-	HMODULE hModule = GetModuleHandle(_T("ntdll"));
-	ZWQueryInformationProcess queryInformationProcess = (ZWQueryInformationProcess)GetProcAddress(hModule, "ZwQueryInformationProcess");
-	if(queryInformationProcess==NULL)
-		return NULL;
 
 	// obtain PROCESS_BASIC_INFORMATION
 	PROCESS_BASIC_INFORMATION ProcInfo;
 	ULONG _;
-	if(!NT_SUCCESS(queryInformationProcess(hProcess, ProcessBasicInformation, &ProcInfo, sizeof(ProcInfo), &_))) {
+	if(!NT_SUCCESS(ZwQueryInformationProcess(hProcess, ProcessBasicInformation, &ProcInfo, sizeof(ProcInfo), &_))) {
 		reportError(pEnv,"Failed to ZWQueryInformationProcess");
 		return NULL;
 	}

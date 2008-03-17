@@ -2,7 +2,7 @@
 //
 
 #include "stdafx.h"
-
+#include "winp.h"
 
 //---------------------------------------------------------------------------
 // KillProcess
@@ -113,14 +113,9 @@ KillProcess(
 	return TRUE;
 }
 
-typedef LONG	NTSTATUS;
 typedef LONG	KPRIORITY;
 
-#define NT_SUCCESS(Status) ((NTSTATUS)(Status) >= 0)
 
-#define STATUS_INFO_LENGTH_MISMATCH      ((NTSTATUS)0xC0000004L)
-
-#define SystemProcessesAndThreadsInformation	5
 
 typedef struct _CLIENT_ID {
     DWORD	    UniqueProcess;
@@ -340,19 +335,6 @@ KillProcessEx(
 	if (osvi.dwPlatformId == VER_PLATFORM_WIN32_NT &&
 		osvi.dwMajorVersion < 5)
 	{
-		HINSTANCE hNtDll;
-		NTSTATUS (WINAPI * _ZwQuerySystemInformation)(UINT, PVOID, ULONG, PULONG);
-
-		// get handle to NTDLL.DLL
-		hNtDll = GetModuleHandle(_T("ntdll.dll"));
-		_ASSERTE(hNtDll != NULL);
-
-		// find the address of ZwQuerySystemInformation
-		*(FARPROC *)&_ZwQuerySystemInformation =
-			GetProcAddress(hNtDll, "ZwQuerySystemInformation");
-		if (_ZwQuerySystemInformation == NULL)
-			return SetLastError(ERROR_PROC_NOT_FOUND), NULL;
-
 		// obtain a handle to the default process heap
 		HANDLE hHeap = GetProcessHeap();
     
@@ -370,7 +352,7 @@ KillProcessEx(
 			if (pBuffer == NULL)
 				return SetLastError(ERROR_NOT_ENOUGH_MEMORY), FALSE;
 
-			Status = _ZwQuerySystemInformation(
+			Status = ZwQuerySystemInformation(
 							SystemProcessesAndThreadsInformation,
 							pBuffer, cbBuffer, NULL);
 
