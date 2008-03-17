@@ -15,93 +15,17 @@
 //  Returns:
 //	  TRUE, if successful, FALSE - otherwise.
 //
-BOOL
-WINAPI
-KillProcess(
-	IN DWORD dwProcessId
-	)
-{
-	HANDLE hProcess;
+BOOL WINAPI KillProcess(DWORD dwProcessId) {
 	DWORD dwError;
 
 	// first try to obtain handle to the process without the use of any
 	// additional privileges
-	hProcess = OpenProcess(PROCESS_TERMINATE, FALSE, dwProcessId);
+	HANDLE hProcess = OpenProcess(PROCESS_TERMINATE, FALSE, dwProcessId);
 	if (hProcess == NULL)
-	{
-		if (GetLastError() != ERROR_ACCESS_DENIED)
-			return FALSE;
-
-		OSVERSIONINFO osvi;
-
-		// determine operating system version
-		osvi.dwOSVersionInfoSize = sizeof(osvi);
-		GetVersionEx(&osvi);
-
-		// we cannot do anything else if this is not Windows NT
-		if (osvi.dwPlatformId != VER_PLATFORM_WIN32_NT)
-			return SetLastError(ERROR_ACCESS_DENIED), FALSE;
-
-		// enable SE_DEBUG_NAME privilege and try again
-
-		TOKEN_PRIVILEGES Priv, PrivOld;
-		DWORD cbPriv = sizeof(PrivOld);
-		HANDLE hToken;
-
-		// obtain the token of the current thread 
-		if (!OpenThreadToken(GetCurrentThread(), 
-							 TOKEN_QUERY|TOKEN_ADJUST_PRIVILEGES,
-							 FALSE, &hToken))
-		{
-			if (GetLastError() != ERROR_NO_TOKEN)
-				return FALSE;
-
-			// revert to the process token
-			if (!OpenProcessToken(GetCurrentProcess(),
-								  TOKEN_QUERY|TOKEN_ADJUST_PRIVILEGES,
-								  &hToken))
-				return FALSE;
-		}
-
-		_ASSERTE(ANYSIZE_ARRAY > 0);
-
-		Priv.PrivilegeCount = 1;
-		Priv.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
-		LookupPrivilegeValue(NULL, SE_DEBUG_NAME, &Priv.Privileges[0].Luid);
-
-		// try to enable the privilege
-		if (!AdjustTokenPrivileges(hToken, FALSE, &Priv, sizeof(Priv),
-								   &PrivOld, &cbPriv))
-		{
-			dwError = GetLastError();
-			CloseHandle(hToken);
-			return SetLastError(dwError), FALSE;
-		}
-
-		if (GetLastError() == ERROR_NOT_ALL_ASSIGNED)
-		{
-			// the SE_DEBUG_NAME privilege is not present in the caller's
-			// token
-			CloseHandle(hToken);
-			return SetLastError(ERROR_ACCESS_DENIED), FALSE;
-		}
-
-		// try to open process handle again
-		hProcess = OpenProcess(PROCESS_TERMINATE, FALSE, dwProcessId);
-		dwError = GetLastError();
-		
-		// restore the original state of the privilege
-		AdjustTokenPrivileges(hToken, FALSE, &PrivOld, sizeof(PrivOld),
-							  NULL, NULL);
-		CloseHandle(hToken);
-
-		if (hProcess == NULL)
-			return SetLastError(FALSE), NULL;
-	}
+		return FALSE;
 
 	// terminate the process
-	if (!TerminateProcess(hProcess, (UINT)-1))
-	{
+	if (!TerminateProcess(hProcess, (UINT)-1)) {
 		dwError = GetLastError();
 		CloseHandle(hProcess);
 		return SetLastError(dwError), FALSE;
@@ -113,9 +37,8 @@ KillProcess(
 	return TRUE;
 }
 
+
 typedef LONG	KPRIORITY;
-
-
 
 typedef struct _CLIENT_ID {
     DWORD	    UniqueProcess;
@@ -193,14 +116,7 @@ typedef struct _SYSTEM_PROCESSES {
 //  Returns:
 //	  Win32 error code.
 //
-static
-BOOL
-WINAPI
-KillProcessTreeNtHelper(
-	IN PSYSTEM_PROCESSES pInfo,
-	IN DWORD dwProcessId
-	)
-{
+static BOOL WINAPI KillProcessTreeNtHelper(PSYSTEM_PROCESSES pInfo, DWORD dwProcessId) {
 	_ASSERTE(pInfo != NULL);
 
     PSYSTEM_PROCESSES p = pInfo;
@@ -237,21 +153,13 @@ KillProcessTreeNtHelper(
 //  Returns:
 //	  Win32 error code.
 //
-static
-BOOL
-WINAPI
-KillProcessTreeWinHelper(
-	IN DWORD dwProcessId
-	)
-{
-	HANDLE hSnapshot;
-	PROCESSENTRY32 Entry;
-
+static BOOL WINAPI KillProcessTreeWinHelper(DWORD dwProcessId) {
 	// create a snapshot
-	hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+	HANDLE hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
 	if (hSnapshot == INVALID_HANDLE_VALUE)
 		return GetLastError();
 
+	PROCESSENTRY32 Entry;
 	Entry.dwSize = sizeof(Entry);
 	if (!Process32First(hSnapshot, &Entry))
 	{
@@ -293,13 +201,7 @@ KillProcessTreeWinHelper(
 //  Returns:
 //	  TRUE, if successful, FALSE - otherwise.
 //
-BOOL
-WINAPI
-KillProcessEx(
-	IN DWORD dwProcessId,
-	IN BOOL bTree
-	)
-{
+BOOL WINAPI KillProcessEx(DWORD dwProcessId, BOOL bTree) {
 	if (!bTree)
 		return KillProcess(dwProcessId);
 
