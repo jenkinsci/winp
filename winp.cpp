@@ -244,38 +244,16 @@ KillProcessTreeWinHelper(
 	IN DWORD dwProcessId
 	)
 {
-	HINSTANCE hKernel;
-	HANDLE (WINAPI * _CreateToolhelp32Snapshot)(DWORD, DWORD);
-	BOOL (WINAPI * _Process32First)(HANDLE, PROCESSENTRY32 *);
-	BOOL (WINAPI * _Process32Next)(HANDLE, PROCESSENTRY32 *);
-
-	// get handle to KERNEL32.DLL
-	hKernel = GetModuleHandle(_T("kernel32.dll"));
-	_ASSERTE(hKernel != NULL);
-
-	// locate necessary functions in KERNEL32.DLL
-	*(FARPROC *)&_CreateToolhelp32Snapshot =
-		GetProcAddress(hKernel, "CreateToolhelp32Snapshot");
-	*(FARPROC *)&_Process32First =
-		GetProcAddress(hKernel, "Process32First");
-	*(FARPROC *)&_Process32Next =
-		GetProcAddress(hKernel, "Process32Next");
-
-	if (_CreateToolhelp32Snapshot == NULL ||
-		_Process32First == NULL ||
-		_Process32Next == NULL)
-		return ERROR_PROC_NOT_FOUND;
-
 	HANDLE hSnapshot;
 	PROCESSENTRY32 Entry;
 
 	// create a snapshot
-	hSnapshot = _CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+	hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
 	if (hSnapshot == INVALID_HANDLE_VALUE)
 		return GetLastError();
 
 	Entry.dwSize = sizeof(Entry);
-	if (!_Process32First(hSnapshot, &Entry))
+	if (!Process32First(hSnapshot, &Entry))
 	{
 		DWORD dwError = GetLastError();
 		CloseHandle(hSnapshot);
@@ -290,7 +268,7 @@ KillProcessTreeWinHelper(
 
 		Entry.dwSize = sizeof(Entry);
 	}
-	while (_Process32Next(hSnapshot, &Entry));
+	while (Process32Next(hSnapshot, &Entry));
 
 	CloseHandle(hSnapshot);
 
