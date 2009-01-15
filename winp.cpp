@@ -116,7 +116,7 @@ typedef struct _SYSTEM_PROCESSES {
 //  Returns:
 //	  Win32 error code.
 //
-static BOOL WINAPI KillProcessTreeNtHelper(PSYSTEM_PROCESSES pInfo, DWORD dwProcessId) {
+BOOL WINAPI KillProcessTreeNtHelper(PSYSTEM_PROCESSES pInfo, DWORD dwProcessId) {
 	_ASSERTE(pInfo != NULL);
 
     PSYSTEM_PROCESSES p = pInfo;
@@ -153,32 +153,35 @@ static BOOL WINAPI KillProcessTreeNtHelper(PSYSTEM_PROCESSES pInfo, DWORD dwProc
 //  Returns:
 //	  Win32 error code.
 //
-static BOOL WINAPI KillProcessTreeWinHelper(DWORD dwProcessId) {
+BOOL WINAPI KillProcessTreeWinHelper(DWORD dwProcessId) {
 	// create a snapshot
 	HANDLE hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
 	if (hSnapshot == INVALID_HANDLE_VALUE)
 		return GetLastError();
 
-	PROCESSENTRY32 Entry;
-	Entry.dwSize = sizeof(Entry);
-	if (!Process32First(hSnapshot, &Entry))
+	PROCESSENTRY32* pEntry = (PROCESSENTRY32*)::LocalAlloc(LMEM_FIXED|LMEM_ZEROINIT,sizeof(PROCESSENTRY32));
+
+	pEntry->dwSize = sizeof(PROCESSENTRY32);
+	if (!Process32First(hSnapshot, pEntry))
 	{
 		DWORD dwError = GetLastError();
 		CloseHandle(hSnapshot);
+		::LocalFree(pEntry);
 		return dwError;
 	}
 
 	// kill all children first
 	do
 	{
-		if (Entry.th32ParentProcessID == dwProcessId)
-			KillProcessTreeWinHelper(Entry.th32ProcessID);
-
-		Entry.dwSize = sizeof(Entry);
+		// there was a report of infinite recursion, so watching out for the obvious self-loop possibility
+		DWORD pid = pEntry->th32ProcessID;
+		if (pEntry->th32ParentProcessID == dwProcessId && dwProcessId!=pid)
+			KillProcessTreeWinHelper(pid);
 	}
-	while (Process32Next(hSnapshot, &Entry));
+	while (Process32Next(hSnapshot, pEntry));
 
 	CloseHandle(hSnapshot);
+	::LocalFree(pEntry);
 
 	// kill the process itself
     if (!KillProcess(dwProcessId))
