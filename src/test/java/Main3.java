@@ -5,7 +5,7 @@ import org.jvnet.winp.WinProcess;
  */
 public class Main3 {
     public static void main(String[] args) {
-        WinProcess p = new WinProcess(2512);
+        WinProcess p = new WinProcess(1572);
         System.out.println(p.getCommandLine());
         System.out.println(p.getEnvironmentVariables());
     }
