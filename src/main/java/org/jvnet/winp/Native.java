@@ -78,29 +78,7 @@ class Native {
                     }
                 }
 
-                try {
-                    System.load(dllFile.getPath());
-                } catch (LinkageError e) {
-                    // see http://forum.java.sun.com/thread.jspa?threadID=618431&messageID=3462466
-                    // if another ClassLoader loaded winp, loading may fail
-                    // even if the classloader is no longer in use, due to GC delay.
-                    // this is a poor attempt to see if we can force GC early on.
-                    for( int i=0; i<5; i++ ) {
-                        try {
-                            System.gc();
-                            System.gc();
-                            Thread.sleep(1000);
-                            System.load(dllFile.getPath());
-                            return; // succeedef
-                        } catch (InterruptedException x) {
-                            throw e; // throw the original exception
-                        } catch (LinkageError x) {
-                            // retry
-                        }
-                    }
-                    // still failing after retry.
-                    throw e;
-                }
+                loadDll(dllFile);
                 return;
             }
         }
@@ -118,9 +96,52 @@ class Native {
             // first try java.library.path
             System.loadLibrary("winp");
         } catch( Throwable cause ) {
+            // try to put winp.dll into a temporary directory
+            File dll;
+            try {
+                dll = File.createTempFile("winp", "dll");
+                copyStream(res.openStream(),new FileOutputStream(dll));
+                loadDll(dll);
+            } catch (IOException e) {
+                LOGGER.log(Level.WARNING, "Failed to write winp.dll", e);
+                // report the UnsatisfiedLinkError below, to encourage the user to put winp.dll to
+                // java.library.path
+            } catch (LinkageError _) {
+                // ditto
+            }
+
             UnsatisfiedLinkError error = new UnsatisfiedLinkError("Unable to load winp.dll");
             error.initCause(cause);
             throw error;
+        }
+    }
+
+    /**
+     * Loads a DLL with a precaution for multi-classloader situation.
+     */
+    private static void loadDll(File dllFile) {
+        try {
+            System.load(dllFile.getPath());
+        } catch (LinkageError e) {
+            // see http://forum.java.sun.com/thread.jspa?threadID=618431&messageID=3462466
+            // if another ClassLoader loaded winp, loading may fail
+            // even if the classloader is no longer in use, due to GC delay.
+            // this is a poor attempt to see if we can force GC early on.
+            for( int i=0; i<5; i++ ) {
+                try {
+                    System.gc();
+                    System.gc();
+                    Thread.sleep(1000);
+                    System.load(dllFile.getPath());
+                    return;
+                } catch (InterruptedException x) {
+                    throw e; // throw the original exception
+                } catch (LinkageError x) {
+                    // retry
+                }
+            }
+            // still failing after retry.
+            throw e;
         }
     }
 
