@@ -27,12 +27,12 @@
           <arguments>-Prelease</arguments>
         </configuration>
       </plugin>
-<plugin>
-<artifactId>maven-surefire-plugin</artifactId>
-<configuration>
-<forkMode>never</forkMode>
-</configuration>
-</plugin>
+      <plugin>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <forkMode>never</forkMode>
+        </configuration>
+      </plugin>
     </plugins>
     <extensions>
       <extension>
