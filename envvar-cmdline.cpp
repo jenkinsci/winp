@@ -5,18 +5,24 @@
 
 // http://msdn.microsoft.com/en-us/library/aa813741(VS.85).aspx
 struct RTL_USER_PROCESS_PARAMETERS {
-	DWORD dwFiller[16];
+	BYTE dwFiller[16];
+	PVOID	dwFiller2[10];
 	WORD wLength;
 	WORD wMaxLength;
 	union {
 		LPCWSTR dwCmdLineAddress;
 		DWORD _dwCmdLineAddress;
 	};
+#ifdef _WIN64
+	// just found them by trial and error
+	PVOID _filler[2];
+#endif
 	LPCWSTR env;
+	PVOID fillers3[8];
 };
 
 struct PEB  {
-#ifdef WIN64
+#ifdef _WIN64
 	BYTE dwFiller[24];
 	PVOID dwFiltter2;
 #else
@@ -94,21 +100,22 @@ JNIEXPORT jstring JNICALL Java_org_jvnet_winp_Native_getCmdLineAndEnvVars(
 	}
 
 	int cmdLineLen = lstrlen(pszCmdLine);
-	LPWSTR buf = (LPWSTR)LocalAlloc(LMEM_FIXED,(cmdLineLen+1/*for \0*/)*2+info.RegionSize);
+	int envSize = min(0x2000,info.RegionSize); // just to be on the safe side, don't read too big a memory
+	LPWSTR buf = (LPWSTR)LocalAlloc(LMEM_FIXED,(cmdLineLen+1/*for \0*/)*2+envSize);
 	if(buf==NULL) {
 		reportError(pEnv,"Buffer allocation failed");
 		return NULL;
 	}
 	lstrcpy(buf,pszCmdLine);
 
-	if(!ReadProcessMemory(hProcess, ProcBlock.env, buf+cmdLineLen+1, info.RegionSize, &_)) {
+	if(!ReadProcessMemory(hProcess, ProcBlock.env, buf+cmdLineLen+1, envSize, &_)) {
 		reportError(pEnv,"Failed to read environment variable table");
 		return NULL;
 	}
 
 	CloseHandle(hProcess);
 
-	jstring packedStr = pEnv->NewString((jchar*)buf,cmdLineLen+1+jsize(info.RegionSize)/2);
+	jstring packedStr = pEnv->NewString((jchar*)buf,cmdLineLen+1+jsize(envSize)/2);
 
 	LocalFree(pszCmdLine);
 	LocalFree(buf);
