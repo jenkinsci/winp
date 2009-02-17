@@ -3,7 +3,8 @@
 #include "java-interface.h"
 
 
-struct INFOBLOCK {
+// http://msdn.microsoft.com/en-us/library/aa813741(VS.85).aspx
+struct RTL_USER_PROCESS_PARAMETERS {
 	DWORD dwFiller[16];
 	WORD wLength;
 	WORD wMaxLength;
@@ -15,8 +16,13 @@ struct INFOBLOCK {
 };
 
 struct PEB  {
+#ifdef WIN64
+	BYTE dwFiller[24];
+	PVOID dwFiltter2;
+#else
 	DWORD dwFiller[4];
-	INFOBLOCK* dwInfoBlockAddress;
+#endif
+	RTL_USER_PROCESS_PARAMETERS* dwInfoBlockAddress;
 };
 
 struct PROCESS_BASIC_INFORMATION {
@@ -56,9 +62,9 @@ JNIEXPORT jstring JNICALL Java_org_jvnet_winp_Native_getCmdLineAndEnvVars(
 	}
 
 	// then to INFOBLOCK
-	INFOBLOCK ProcBlock;
+	RTL_USER_PROCESS_PARAMETERS ProcBlock;
 	if(!ReadProcessMemory(hProcess, ProcPEB.dwInfoBlockAddress, &ProcBlock, sizeof(ProcBlock), &_)) {
-		reportError(pEnv,"Failed to read INFOBLOCK");
+		reportError(pEnv,"Failed to read RT_USER_PROCESS_PARAMETERS");
 		return NULL;
 	}
 
