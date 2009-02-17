@@ -56,42 +56,44 @@ class Native {
 
         // try loading winp.dll in the same directory as winp.jar
         final URL res = Native.class.getClassLoader().getResource(dllName+".dll");
-        String url = res.toExternalForm();
-        if(url.startsWith("jar:")) {
-            int idx = url.lastIndexOf('!');
-            String filePortion = url.substring(4,idx);
-            while(filePortion.startsWith("/"))
-                filePortion = filePortion.substring(1);
+        if(res!=null) {
+            String url = res.toExternalForm();
+            if(url.startsWith("jar:")) {
+                int idx = url.lastIndexOf('!');
+                String filePortion = url.substring(4,idx);
+                while(filePortion.startsWith("/"))
+                    filePortion = filePortion.substring(1);
 
-            if(filePortion.startsWith("file:/")) {
-                filePortion = filePortion.substring(6);
-                if(filePortion.startsWith("//"))
-                    filePortion = filePortion.substring(2);
-                filePortion = URLDecoder.decode(filePortion);
-                File jarFile = new File(filePortion);
-                File dllFile = new File(jarFile.getParentFile(),dllName+".dll");
-                if(!dllFile.exists() || jarFile.lastModified()>dllFile.lastModified()) {
-                    // try to extract from within the jar
-                    try {
-                        copyStream(
-                            res.openStream(),
-                            new FileOutputStream(dllFile));
-                        dllFile.setLastModified(jarFile.lastModified());
-                    } catch (IOException e) {
-                        LOGGER.log(Level.WARNING, "Failed to write "+dllName+".dll", e);
+                if(filePortion.startsWith("file:/")) {
+                    filePortion = filePortion.substring(6);
+                    if(filePortion.startsWith("//"))
+                        filePortion = filePortion.substring(2);
+                    filePortion = URLDecoder.decode(filePortion);
+                    File jarFile = new File(filePortion);
+                    File dllFile = new File(jarFile.getParentFile(),dllName+".dll");
+                    if(!dllFile.exists() || jarFile.lastModified()>dllFile.lastModified()) {
+                        // try to extract from within the jar
+                        try {
+                            copyStream(
+                                res.openStream(),
+                                new FileOutputStream(dllFile));
+                            dllFile.setLastModified(jarFile.lastModified());
+                        } catch (IOException e) {
+                            LOGGER.log(Level.WARNING, "Failed to write "+dllName+".dll", e);
+                        }
                     }
-                }
 
-                loadDll(dllFile);
+                    loadDll(dllFile);
+                    return;
+                }
+            }
+            if(url.startsWith("file:")) {
+                // during debug
+                String p = res.getPath();
+                while(p.startsWith("/"))    p=p.substring(1);
+                System.load(p);
                 return;
             }
-        }
-        if(url.startsWith("file:")) {
-            // during debug
-            String p = res.getPath();
-            while(p.startsWith("/"))    p=p.substring(1);
-            System.load(p);
-            return;
         }
 
         // we don't know where winp.dll is, so let's just hope the user put it somewhere
