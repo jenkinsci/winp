@@ -31,4 +31,14 @@ public class TheTest extends TestCase {
             e.printStackTrace();
         }
     }
+
+    public void testKill() throws Exception {
+        Process p = Runtime.getRuntime().exec("notepad");
+        WinProcess wp = new WinProcess(p);
+        System.out.println(wp.getCommandLine());
+        assertTrue(wp.getCommandLine().contains("notepad"));
+        System.out.println(wp.getEnvironmentVariables());
+        Thread.sleep(3000);
+        new WinProcess(p).killRecursively();
+    }
 }
