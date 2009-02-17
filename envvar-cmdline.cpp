@@ -18,7 +18,6 @@ struct RTL_USER_PROCESS_PARAMETERS {
 	PVOID _filler[2];
 #endif
 	LPCWSTR env;
-	PVOID fillers3[8];
 };
 
 struct PEB  {
