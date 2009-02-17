@@ -95,3 +95,14 @@ JNIEXPORT jstring JNICALL Java_org_jvnet_winp_Native_getCmdLineAndEnvVars(
 
 	return packedStr;
 }
+
+JNIEXPORT jint JNICALL Java_org_jvnet_winp_Native_getProcessId(JNIEnv* pEnv, jclass clazz, jint handle) {
+	PROCESS_BASIC_INFORMATION ProcInfo;
+	ULONG _;
+	if(!NT_SUCCESS(ZwQueryInformationProcess((HANDLE)handle, ProcessBasicInformation, &ProcInfo, sizeof(ProcInfo), &_))) {
+		reportError(pEnv,"Failed to ZWQueryInformationProcess");
+		return -1;
+	}
+
+	return (jint)ProcInfo.UniqueProcessId;
+}

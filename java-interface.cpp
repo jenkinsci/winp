@@ -6,10 +6,6 @@ JNIEXPORT jboolean JNICALL Java_org_jvnet_winp_Native_kill(JNIEnv* env, jclass c
 	return KillProcessEx(pid,recursive);
 }
 
-JNIEXPORT jint JNICALL Java_org_jvnet_winp_Native_getProcessId(JNIEnv* env, jclass clazz, jint handle) {
-	return ::GetProcessId((HANDLE)handle);
-}
-
 JNIEXPORT jint JNICALL Java_org_jvnet_winp_Native_setPriority(JNIEnv* env, jclass clazz, jint pid, jint priority) {
 	HANDLE hProcess = OpenProcess(PROCESS_SET_INFORMATION,FALSE,pid);
 	if(hProcess==NULL || hProcess==INVALID_HANDLE_VALUE)
