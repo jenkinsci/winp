@@ -7,7 +7,10 @@ struct INFOBLOCK {
 	DWORD dwFiller[16];
 	WORD wLength;
 	WORD wMaxLength;
-	LPCWSTR dwCmdLineAddress;
+	union {
+		LPCWSTR dwCmdLineAddress;
+		DWORD _dwCmdLineAddress;
+	};
 	LPCWSTR env;
 };
 
@@ -60,10 +63,21 @@ JNIEXPORT jstring JNICALL Java_org_jvnet_winp_Native_getCmdLineAndEnvVars(
 	}
 
 	// now read command line aguments
-	LPWSTR pszCmdLine = (LPWSTR)::LocalAlloc(LMEM_FIXED,ProcBlock.wMaxLength);
-	if(!ReadProcessMemory(hProcess, ProcBlock.dwCmdLineAddress, pszCmdLine, ProcBlock.wMaxLength, &_)) {
-		reportError(pEnv,"Failed to read command line arguments");
+	LPWSTR pszCmdLine = (LPWSTR)::LocalAlloc(LMEM_FIXED|LMEM_ZEROINIT,ProcBlock.wLength+2);
+	if(pszCmdLine==NULL) {
+		reportError(pEnv,"Failed to allocate memory for reading command line");
 		return NULL;
+	}
+
+	if(!ReadProcessMemory(hProcess, ProcBlock.dwCmdLineAddress, pszCmdLine, ProcBlock.wLength, &_)) {
+		// on some processes, I noticed that the value of dwCmdLineAddress doesn't have 0x20000 bias
+		// that seem to be there for any other processes. This results in err=299.
+		// so retry with this address.
+		ProcBlock._dwCmdLineAddress |= 0x20000;
+		if(!ReadProcessMemory(hProcess, ProcBlock.dwCmdLineAddress, pszCmdLine, ProcBlock.wLength, &_)) {
+			reportError(pEnv,"Failed to read command line arguments");
+			return NULL;
+		}
 	}
 
 	// figure out the size of the env var block
@@ -97,12 +111,21 @@ JNIEXPORT jstring JNICALL Java_org_jvnet_winp_Native_getCmdLineAndEnvVars(
 }
 
 JNIEXPORT jint JNICALL Java_org_jvnet_winp_Native_getProcessId(JNIEnv* pEnv, jclass clazz, jint handle) {
+	HANDLE hProcess = (HANDLE)handle;
 	PROCESS_BASIC_INFORMATION ProcInfo;
 	ULONG _;
-	if(!NT_SUCCESS(ZwQueryInformationProcess((HANDLE)handle, ProcessBasicInformation, &ProcInfo, sizeof(ProcInfo), &_))) {
+	if(!NT_SUCCESS(ZwQueryInformationProcess(hProcess, ProcessBasicInformation, &ProcInfo, sizeof(ProcInfo), &_))) {
 		reportError(pEnv,"Failed to ZWQueryInformationProcess");
 		return -1;
 	}
-
+	
 	return (jint)ProcInfo.UniqueProcessId;
+/*	ULONG id=0;
+
+	if(!ReadProcessMemory(hProcess, ProcInfo.UniqueProcessId, &id, sizeof(ULONG), &_)) {
+		reportError(pEnv,"Failed to read process ID");
+		return NULL;
+	}
+
+	return id;*/
 }
