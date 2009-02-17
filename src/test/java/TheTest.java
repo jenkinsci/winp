@@ -35,15 +35,16 @@ public class TheTest extends TestCase {
         Process p = Runtime.getRuntime().exec("notepad");
         try {
             WinProcess wp = new WinProcess(p);
+            System.out.println("pid="+wp.getPid());
+            
             System.out.println(wp.getCommandLine());
             assertTrue(wp.getCommandLine().contains("notepad"));
             System.out.println(wp.getEnvironmentVariables());
 
-            System.out.println("pid="+wp.getPid());
             Thread.sleep(100);
             new WinProcess(p).killRecursively();
         } finally {
-            p.destroy();
+//            p.destroy();
         }
     }
 
