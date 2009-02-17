@@ -25,7 +25,7 @@ enum PROCESSINFOCLASS {
 	ProcessBasicInformation = 0,
 };
 
-extern "C" NTSTATUS NTAPI ZwQueryInformationProcess(HANDLE hProcess, PROCESSINFOCLASS infoType, /*out*/ PVOID pBuf, /*sizeof pBuf*/ ULONG lenBuf, PULONG returnLength); 
+extern "C" NTSTATUS NTAPI ZwQueryInformationProcess(HANDLE hProcess, PROCESSINFOCLASS infoType, /*out*/ PVOID pBuf, /*sizeof pBuf*/ ULONG lenBuf, SIZE_T* /*PULONG*/ returnLength); 
 
 
 #define	SystemProcessesAndThreadsInformation 5

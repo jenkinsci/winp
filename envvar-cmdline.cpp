@@ -39,7 +39,7 @@ JNIEXPORT jstring JNICALL Java_org_jvnet_winp_Native_getCmdLineAndEnvVars(
 
 	// obtain PROCESS_BASIC_INFORMATION
 	PROCESS_BASIC_INFORMATION ProcInfo;
-	ULONG _;
+	SIZE_T _;
 	if(!NT_SUCCESS(ZwQueryInformationProcess(hProcess, ProcessBasicInformation, &ProcInfo, sizeof(ProcInfo), &_))) {
 		reportError(pEnv,"Failed to ZWQueryInformationProcess");
 		return NULL;
@@ -88,7 +88,7 @@ JNIEXPORT jstring JNICALL Java_org_jvnet_winp_Native_getCmdLineAndEnvVars(
 
 	CloseHandle(hProcess);
 
-	jstring packedStr = pEnv->NewString((jchar*)buf,cmdLineLen+1+(info.RegionSize)/2);
+	jstring packedStr = pEnv->NewString((jchar*)buf,cmdLineLen+1+jsize(info.RegionSize)/2);
 
 	LocalFree(pszCmdLine);
 	LocalFree(buf);
