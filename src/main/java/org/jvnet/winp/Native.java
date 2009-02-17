@@ -50,8 +50,12 @@ class Native {
     }
 
     private static void load() {
+        // are we on win32 or win64? err on 32bit side
+        boolean win64 = "64".equals(System.getProperty("sun.arch.data.model"));
+        String dllName = win64? "winp.x64" : "winp";
+
         // try loading winp.dll in the same directory as winp.jar
-        final URL res = Native.class.getClassLoader().getResource("winp.dll");
+        final URL res = Native.class.getClassLoader().getResource(dllName+".dll");
         String url = res.toExternalForm();
         if(url.startsWith("jar:")) {
             int idx = url.lastIndexOf('!');
@@ -65,7 +69,7 @@ class Native {
                     filePortion = filePortion.substring(2);
                 filePortion = URLDecoder.decode(filePortion);
                 File jarFile = new File(filePortion);
-                File dllFile = new File(jarFile.getParentFile(),"winp.dll");
+                File dllFile = new File(jarFile.getParentFile(),dllName+".dll");
                 if(!dllFile.exists() || jarFile.lastModified()>dllFile.lastModified()) {
                     // try to extract from within the jar
                     try {
@@ -74,7 +78,7 @@ class Native {
                             new FileOutputStream(dllFile));
                         dllFile.setLastModified(jarFile.lastModified());
                     } catch (IOException e) {
-                        LOGGER.log(Level.WARNING, "Failed to write winp.dll", e);
+                        LOGGER.log(Level.WARNING, "Failed to write "+dllName+".dll", e);
                     }
                 }
 
@@ -94,23 +98,23 @@ class Native {
         try {
             // load the native part of the code.
             // first try java.library.path
-            System.loadLibrary("winp");
+            System.loadLibrary(dllName);
         } catch( Throwable cause ) {
             // try to put winp.dll into a temporary directory
             File dll;
             try {
-                dll = File.createTempFile("winp", "dll");
+                dll = File.createTempFile(dllName, "dll");
                 copyStream(res.openStream(),new FileOutputStream(dll));
                 loadDll(dll);
             } catch (IOException e) {
-                LOGGER.log(Level.WARNING, "Failed to write winp.dll", e);
+                LOGGER.log(Level.WARNING, "Failed to write "+dllName+".dll", e);
                 // report the UnsatisfiedLinkError below, to encourage the user to put winp.dll to
                 // java.library.path
             } catch (LinkageError _) {
                 // ditto
             }
 
-            UnsatisfiedLinkError error = new UnsatisfiedLinkError("Unable to load winp.dll");
+            UnsatisfiedLinkError error = new UnsatisfiedLinkError("Unable to load "+dllName+".dll");
             error.initCause(cause);
             throw error;
         }
