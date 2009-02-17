@@ -5,8 +5,12 @@
 
 // http://msdn.microsoft.com/en-us/library/aa813741(VS.85).aspx
 struct RTL_USER_PROCESS_PARAMETERS {
+#ifdef _WIN64
 	BYTE dwFiller[16];
 	PVOID	dwFiller2[10];
+#else
+	DWORD	dwFiller[16];
+#endif
 	WORD wLength;
 	WORD wMaxLength;
 	union {
@@ -99,7 +103,7 @@ JNIEXPORT jstring JNICALL Java_org_jvnet_winp_Native_getCmdLineAndEnvVars(
 	}
 
 	int cmdLineLen = lstrlen(pszCmdLine);
-	int envSize = min(0x2000,info.RegionSize); // just to be on the safe side, don't read too big a memory
+	int envSize = info.RegionSize; // min(0x2000,info.RegionSize); // just to be on the safe side, don't read too big a memory
 	LPWSTR buf = (LPWSTR)LocalAlloc(LMEM_FIXED,(cmdLineLen+1/*for \0*/)*2+envSize);
 	if(buf==NULL) {
 		reportError(pEnv,"Buffer allocation failed");
