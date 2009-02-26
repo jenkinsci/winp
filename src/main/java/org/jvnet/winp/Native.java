@@ -2,6 +2,7 @@ package org.jvnet.winp;
 
 import java.net.URL;
 import java.net.URLDecoder;
+import java.net.URISyntaxException;
 import java.io.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -89,9 +90,13 @@ class Native {
             }
             if(url.startsWith("file:")) {
                 // during debug
-                String p = res.getPath();
-                while(p.startsWith("/"))    p=p.substring(1);
-                System.load(p);
+                File f;
+                try {
+                    f = new File(res.toURI());
+                } catch(URISyntaxException e) {
+                    f = new File(res.getPath());
+                }
+                System.load(f.getPath());
                 return;
             }
         }
