@@ -61,6 +61,10 @@ public class WinProcess {
         Native.kill(pid,true);
     }
 
+    public void kill() {
+        Native.kill(pid,false);
+    }
+
     /**
      * Sets the execution priority of this thread.
      *
