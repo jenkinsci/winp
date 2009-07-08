@@ -59,9 +59,9 @@ class Native {
         final URL res = Native.class.getClassLoader().getResource(dllName+".dll");
         if(res!=null) {
             String url = res.toExternalForm();
-            if(url.startsWith("jar:")) {
+            if(url.startsWith("jar:") || url.startsWith("wsjar:")) {
                 int idx = url.lastIndexOf('!');
-                String filePortion = url.substring(4,idx);
+                String filePortion = url.substring(url.indexOf(':')+1,idx);
                 while(filePortion.startsWith("/"))
                     filePortion = filePortion.substring(1);
 
@@ -96,7 +96,7 @@ class Native {
                 } catch(URISyntaxException e) {
                     f = new File(res.getPath());
                 }
-                System.load(f.getPath());
+                loadDll(f);
                 return;
             }
         }
@@ -108,17 +108,20 @@ class Native {
             System.loadLibrary(dllName);
         } catch( Throwable cause ) {
             // try to put winp.dll into a temporary directory
-            File dll;
-            try {
-                dll = File.createTempFile(dllName, "dll");
-                copyStream(res.openStream(),new FileOutputStream(dll));
-                loadDll(dll);
-            } catch (IOException e) {
-                LOGGER.log(Level.WARNING, "Failed to write "+dllName+".dll", e);
-                // report the UnsatisfiedLinkError below, to encourage the user to put winp.dll to
-                // java.library.path
-            } catch (LinkageError _) {
-                // ditto
+            if(res!=null) {
+                File dll=null;
+                try {
+                    dll = File.createTempFile(dllName, "dll");
+                    copyStream(res.openStream(),new FileOutputStream(dll));
+                    loadDll(dll);
+                } catch (IOException e) {
+                    LOGGER.log(Level.WARNING, "Failed to write "+dllName+".dll", e);
+                    // report the UnsatisfiedLinkError below, to encourage the user to put winp.dll to
+                    // java.library.path
+                } catch (LinkageError e) {
+                    LOGGER.log(Level.WARNING, "Failed to load winp.dll from "+dll, e);
+                    // ditto
+                }
             }
 
             UnsatisfiedLinkError error = new UnsatisfiedLinkError("Unable to load "+dllName+".dll");
