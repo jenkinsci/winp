@@ -133,7 +133,8 @@ public class WinProcess {
             }
 
             sep = t.indexOf('=');
-            envVars.put(t.substring(0,sep),t.substring(sep+1));
+            if  (sep!=-1) // be defensive. not exactly sure when this happens, but see HUDSON-4034
+                envVars.put(t.substring(0,sep),t.substring(sep+1));
         }
     }
 
