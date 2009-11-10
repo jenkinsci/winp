@@ -45,6 +45,8 @@ class Native {
     native static void noop();
 
     private static final Logger LOGGER = Logger.getLogger(Native.class.getName());
+    // system property holding the preferred folder for copying the dll file to.
+    private static final String DLL_TARGET = "winp.folder.preferred";
 
     static {
         load();
@@ -70,7 +72,8 @@ class Native {
                     if(filePortion.startsWith("//"))
                         filePortion = filePortion.substring(2);
                     filePortion = URLDecoder.decode(filePortion);
-                    File jarFile = new File(filePortion);
+                    String preferred = System.getProperty(DLL_TARGET);
+                    File jarFile = new File(preferred != null ? preferred : filePortion);
                     File dllFile = new File(jarFile.getParentFile(),dllName+".dll");
                     if(!dllFile.exists() || jarFile.lastModified()>dllFile.lastModified()) {
                         // try to extract from within the jar
