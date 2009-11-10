@@ -19,6 +19,8 @@ public:
             ::CloseHandle(v);
     }
 
+	operator bool () { return v!=NULL && v!=INVALID_HANDLE_VALUE; }
+
     operator HANDLE& () {
         return v;
     }

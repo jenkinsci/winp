@@ -1,18 +1,18 @@
 #include "stdafx.h"
 #include "java-interface.h"
 #include "winp.h"
+#include "auto_handle.h"
 
 JNIEXPORT jboolean JNICALL Java_org_jvnet_winp_Native_kill(JNIEnv* env, jclass clazz, jint pid, jboolean recursive) {
 	return KillProcessEx(pid,recursive);
 }
 
 JNIEXPORT jint JNICALL Java_org_jvnet_winp_Native_setPriority(JNIEnv* env, jclass clazz, jint pid, jint priority) {
-	HANDLE hProcess = OpenProcess(PROCESS_SET_INFORMATION,FALSE,pid);
-	if(hProcess==NULL || hProcess==INVALID_HANDLE_VALUE)
+	auto_handle hProcess = OpenProcess(PROCESS_SET_INFORMATION,FALSE,pid);
+	if(!hProcess)
 		return GetLastError(); 
 	if(!SetPriorityClass(hProcess,priority))
 		return GetLastError();
-	CloseHandle(hProcess);
 	return 0;
 }
 

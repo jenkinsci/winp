@@ -8,9 +8,6 @@ void error( JNIEnv* env, const char* file, int line, const char* msg );
 
 
 
-
-
-
 //
 //
 // NTDLL functions
