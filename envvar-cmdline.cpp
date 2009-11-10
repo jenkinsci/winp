@@ -102,7 +102,7 @@ JNIEXPORT jstring JNICALL Java_org_jvnet_winp_Native_getCmdLineAndEnvVars(
 	}
 
 	int cmdLineLen = lstrlen(pszCmdLine);
-	int envSize = info.RegionSize;
+	size_t envSize = info.RegionSize;
 	auto_localmem<LPWSTR> buf = LocalAlloc(LMEM_FIXED,(cmdLineLen+1/*for \0*/)*2+envSize);
 	if(buf==NULL) {
 		reportError(pEnv,"Buffer allocation failed");
