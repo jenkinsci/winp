@@ -1,10 +1,11 @@
 #include "stdafx.h"
 #include "winp.h"
 #include "java-interface.h"
+#include "auto_handle.h"
 
 // TODO: error check improvements
 JNIEXPORT void JNICALL Java_org_jvnet_winp_Native_enableDebugPrivilege(JNIEnv* env, jclass _) {
-	HANDLE hToken = NULL;
+	auto_handle hToken;
 	if(!OpenProcessToken( GetCurrentProcess(),
 		TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, &hToken )) {
 		reportError(env,"Failed to open the current process");
@@ -26,7 +27,5 @@ JNIEXPORT void JNICALL Java_org_jvnet_winp_Native_enableDebugPrivilege(JNIEnv* e
 		reportError(env,"Failed to adjust token privileges");
 		return;
 	}
-
-	CloseHandle( hToken );
 }
 

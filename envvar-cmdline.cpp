@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "winp.h"
 #include "java-interface.h"
+#include "auto_handle.h"
 
 struct UNICODE_STRING {
 	USHORT	Length;
@@ -47,7 +48,7 @@ JNIEXPORT jstring JNICALL Java_org_jvnet_winp_Native_getCmdLineAndEnvVars(
 	// see http://msdn2.microsoft.com/en-us/library/ms674678%28VS.85%29.aspx
 	// for kernel string functions
 
-	HANDLE hProcess = ::OpenProcess(PROCESS_QUERY_INFORMATION|PROCESS_VM_READ,FALSE,pid);
+	auto_handle hProcess = ::OpenProcess(PROCESS_QUERY_INFORMATION|PROCESS_VM_READ,FALSE,pid);
 	if(hProcess==NULL) {
 		reportError(pEnv,"Failed to open process");
 		return NULL;
@@ -76,7 +77,7 @@ JNIEXPORT jstring JNICALL Java_org_jvnet_winp_Native_getCmdLineAndEnvVars(
 	}
 
 	// now read command line aguments
-	LPWSTR pszCmdLine = (LPWSTR)::LocalAlloc(LMEM_FIXED|LMEM_ZEROINIT,ProcBlock.wLength+2);
+	auto_localmem<LPWSTR> pszCmdLine = ::LocalAlloc(LMEM_FIXED|LMEM_ZEROINIT,ProcBlock.wLength+2);
 	if(pszCmdLine==NULL) {
 		reportError(pEnv,"Failed to allocate memory for reading command line");
 		return NULL;
@@ -102,7 +103,7 @@ JNIEXPORT jstring JNICALL Java_org_jvnet_winp_Native_getCmdLineAndEnvVars(
 
 	int cmdLineLen = lstrlen(pszCmdLine);
 	int envSize = info.RegionSize;
-	LPWSTR buf = (LPWSTR)LocalAlloc(LMEM_FIXED,(cmdLineLen+1/*for \0*/)*2+envSize);
+	auto_localmem<LPWSTR> buf = LocalAlloc(LMEM_FIXED,(cmdLineLen+1/*for \0*/)*2+envSize);
 	if(buf==NULL) {
 		reportError(pEnv,"Buffer allocation failed");
 		return NULL;
@@ -114,12 +115,7 @@ JNIEXPORT jstring JNICALL Java_org_jvnet_winp_Native_getCmdLineAndEnvVars(
 		return NULL;
 	}
 
-	CloseHandle(hProcess);
-
-	jstring packedStr = pEnv->NewString((jchar*)buf,cmdLineLen+1+jsize(envSize)/2);
-
-	LocalFree(pszCmdLine);
-	LocalFree(buf);
+	jstring packedStr = pEnv->NewString((jchar*)(LPWSTR)buf,cmdLineLen+1+jsize(envSize)/2);
 
 	return packedStr;
 }
