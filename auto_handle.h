@@ -49,4 +49,8 @@ public:
     operator T() {
         return (T)v;
     }
+
+	T operator -> () {
+		return (T)v;
+	}
 };

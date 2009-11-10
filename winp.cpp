@@ -3,6 +3,7 @@
 
 #include "stdafx.h"
 #include "winp.h"
+#include "auto_handle.h"
 
 //---------------------------------------------------------------------------
 // KillProcess
@@ -16,22 +17,16 @@
 //	  TRUE, if successful, FALSE - otherwise.
 //
 BOOL WINAPI KillProcess(DWORD dwProcessId) {
-	DWORD dwError;
-
 	// first try to obtain handle to the process without the use of any
 	// additional privileges
-	HANDLE hProcess = OpenProcess(PROCESS_TERMINATE, FALSE, dwProcessId);
-	if (hProcess == NULL)
+	auto_handle hProcess = OpenProcess(PROCESS_TERMINATE, FALSE, dwProcessId);
+	if (!hProcess)
 		return FALSE;
 
 	// terminate the process
 	if (!TerminateProcess(hProcess, (UINT)-1)) {
-		dwError = GetLastError();
-		CloseHandle(hProcess);
-		return SetLastError(dwError), FALSE;
+		return FALSE;
 	}
-
-	CloseHandle(hProcess);
 
 	// completed successfully
 	return TRUE;
@@ -155,19 +150,16 @@ BOOL WINAPI KillProcessTreeNtHelper(PSYSTEM_PROCESSES pInfo, DWORD dwProcessId) 
 //
 BOOL WINAPI KillProcessTreeWinHelper(DWORD dwProcessId) {
 	// create a snapshot
-	HANDLE hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
-	if (hSnapshot == INVALID_HANDLE_VALUE)
+	auto_handle hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+	if (!hSnapshot)
 		return GetLastError();
 
-	PROCESSENTRY32* pEntry = (PROCESSENTRY32*)::LocalAlloc(LMEM_FIXED|LMEM_ZEROINIT,sizeof(PROCESSENTRY32));
+	auto_localmem<PROCESSENTRY32*> pEntry = ::LocalAlloc(LMEM_FIXED|LMEM_ZEROINIT,sizeof(PROCESSENTRY32));
 
 	pEntry->dwSize = sizeof(PROCESSENTRY32);
 	if (!Process32First(hSnapshot, pEntry))
 	{
-		DWORD dwError = GetLastError();
-		CloseHandle(hSnapshot);
-		::LocalFree(pEntry);
-		return dwError;
+		return GetLastError();
 	}
 
 	// kill all children first
@@ -179,9 +171,6 @@ BOOL WINAPI KillProcessTreeWinHelper(DWORD dwProcessId) {
 			KillProcessTreeWinHelper(pid);
 	}
 	while (Process32Next(hSnapshot, pEntry));
-
-	CloseHandle(hSnapshot);
-	::LocalFree(pEntry);
 
 	// kill the process itself
     if (!KillProcess(dwProcessId))
