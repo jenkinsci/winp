@@ -60,6 +60,49 @@ class Native {
         // try loading winp.dll in the same directory as winp.jar
         final URL res = Native.class.getClassLoader().getResource(dllName+".dll");
         if(res!=null) {
+            String url = res.toExternalForm();
+            if(url.startsWith("jar:") || url.startsWith("wsjar:")) {
+                int idx = url.lastIndexOf('!');
+                String filePortion = url.substring(url.indexOf(':')+1,idx);
+                while(filePortion.startsWith("/"))
+                    filePortion = filePortion.substring(1);
+
+                if(filePortion.startsWith("file:/")) {
+                    filePortion = filePortion.substring(6);
+                    if(filePortion.startsWith("//"))
+                        filePortion = filePortion.substring(2);
+                    filePortion = URLDecoder.decode(filePortion);
+                    String preferred = System.getProperty(DLL_TARGET);
+                    File jarFile = new File(preferred != null ? preferred : filePortion);
+                    File dllFile = new File(jarFile.getParentFile(),dllName+".dll");
+                    if(!dllFile.exists() || jarFile.lastModified()>dllFile.lastModified()) {
+                        // try to extract from within the jar
+                        try {
+                            copyStream(
+                                res.openStream(),
+                                new FileOutputStream(dllFile));
+                            dllFile.setLastModified(jarFile.lastModified());
+                        } catch (IOException e) {
+                            LOGGER.log(Level.WARNING, "Failed to write "+dllName+".dll", e);
+                        }
+                    }
+
+                    loadDll(dllFile);
+                    return;
+                }
+            }
+            if(url.startsWith("file:")) {
+                // during debug
+                File f;
+                try {
+                    f = new File(res.toURI());
+                } catch(URISyntaxException e) {
+                    f = new File(res.getPath());
+                }
+                loadDll(f);
+                return;
+            }
+
             File dll=null;
             try {
                 dll = File.createTempFile(dllName, ".dll");
