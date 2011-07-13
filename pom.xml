@@ -1,26 +1,26 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <parent>
+    <groupId>org.kohsuke</groupId>
+    <artifactId>pom</artifactId>
+    <version>1</version>
+  </parent>
+
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.jvnet.winp</groupId>
   <artifactId>winp</artifactId>
-  <packaging>jar</packaging>
   <version>1.15-SNAPSHOT</version>
   <name>winp</name>
   <description>Kill process tree in Windows</description>
   
-  <scm>
-    <connection>scm:svn:https://svn.dev.java.net/svn/winp/trunk/winp/</connection>
-    <developerConnection>scm:svn:https://svn.dev.java.net/svn/winp/trunk/winp/</developerConnection>
-  </scm>
+    <scm>
+      <connection>scm:git:git@github.com/kohsuke/${project.artifactId}.git</connection>
+      <developerConnection>scm:git:ssh://git@github.com/kohsuke/${project.artifactId}.git</developerConnection>
+      <url>http://${project.artifactId}.kohsuke.org/</url>
+    </scm>
+
 
   <build>
     <plugins>
-      <plugin>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <configuration>
-          <source>1.5</source>
-          <target>1.5</target>
-        </configuration>
-      </plugin>
       <plugin>
         <artifactId>maven-release-plugin</artifactId>
         <configuration>
@@ -34,13 +34,6 @@
         </configuration>
       </plugin>
     </plugins>
-    <extensions>
-      <extension>
-        <groupId>org.jvnet.wagon-svn</groupId>
-        <artifactId>wagon-svn</artifactId>
-        <version>1.8</version>
-      </extension>
-    </extensions>
   </build>
   
   <reporting>
@@ -61,13 +54,12 @@
   
   <distributionManagement>
     <site>
-      <id>winp-www</id>
-      <url>java-net:/winp/trunk/www/</url>
+      <id>github-pages</id>
+      <url>gitsite:git@github.com/kohsuke/${project.artifactId}.git</url>
     </site>
     <repository>
-      <uniqueVersion>false</uniqueVersion>
-      <id>java.net-maven2-repository</id>
-      <url>java-net:/maven2-repository/trunk/repository/</url>
+      <id>maven.jenkins-ci.org</id>
+      <url>http://maven.jenkins-ci.org:8081/content/repositories/releases</url>
     </repository>
   </distributionManagement>
 
