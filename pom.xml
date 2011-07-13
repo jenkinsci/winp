@@ -22,14 +22,9 @@
   <build>
     <plugins>
       <plugin>
-        <artifactId>maven-release-plugin</artifactId>
-        <configuration>
-          <arguments>-Prelease</arguments>
-        </configuration>
-      </plugin>
-      <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
+          <skip>true</skip>
           <forkMode>never</forkMode>
         </configuration>
       </plugin>
