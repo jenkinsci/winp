@@ -69,8 +69,8 @@ class Native {
 
                 if(filePortion.startsWith("file:/")) {
                     filePortion = filePortion.substring(6);
-                    if(filePortion.startsWith("//"))
-                        filePortion = filePortion.substring(2);
+                    if(filePortion.startsWith("/"))
+                        filePortion = "/"+filePortion;
                     filePortion = URLDecoder.decode(filePortion);
                     String preferred = System.getProperty(DLL_TARGET);
                     File jarFile = new File(preferred != null ? preferred : filePortion);
