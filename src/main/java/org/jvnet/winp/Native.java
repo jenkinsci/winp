@@ -67,13 +67,22 @@ class Native {
                 while(filePortion.startsWith("/"))
                     filePortion = filePortion.substring(1);
 
-                if(filePortion.startsWith("file:/")) {
-                    filePortion = filePortion.substring(6);
-                    if(filePortion.startsWith("//"))
+                if(filePortion.startsWith("file:")) {
+                    filePortion = filePortion.substring(5);
+                    if(filePortion.startsWith("///")) {
+                        // JDK on Unix uses file:/home/kohsuke/abc, whereas
+                        // I believe RFC says file:///home/kohsuke/abc/... is correct.
                         filePortion = filePortion.substring(2);
+                    } else
+                    if(filePortion.startsWith("//")) {
+                        // this indicates file://host/path-in-host format
+                        // Windows maps UNC path to this. On Unix, there's no well defined
+                        // semantics for  this.
+                    }
+
                     filePortion = URLDecoder.decode(filePortion);
                     String preferred = System.getProperty(DLL_TARGET);
-                    File jarFile = new File(preferred != null ? preferred : filePortion);
+                    File jarFile = new File(preferred != null ? preferred : filePortion.replace('/',File.separatorChar));
                     File dllFile = new File(jarFile.getParentFile(),dllName+".dll");
                     if(!dllFile.exists() || jarFile.lastModified()>dllFile.lastModified()) {
                         // try to extract from within the jar
