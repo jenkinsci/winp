@@ -1,60 +1,59 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-  <parent>
-    <groupId>org.kohsuke</groupId>
-    <artifactId>pom</artifactId>
-    <version>1</version>
-  </parent>
+    <parent>
+        <groupId>org.kohsuke</groupId>
+        <artifactId>pom</artifactId>
+        <version>1</version>
+    </parent>
 
-  <modelVersion>4.0.0</modelVersion>
-  <groupId>org.jvnet.winp</groupId>
-  <artifactId>winp</artifactId>
-  <version>1.17-SNAPSHOT</version>
-  <name>winp</name>
-  <description>Kill process tree in Windows</description>
-  
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>org.jvnet.winp</groupId>
+    <artifactId>winp</artifactId>
+    <version>1.17-SNAPSHOT</version>
+    <name>winp</name>
+    <description>Kill process tree in Windows</description>
+
     <scm>
-      <connection>scm:git:git@github.com/kohsuke/${project.artifactId}.git</connection>
-      <developerConnection>scm:git:ssh://git@github.com/kohsuke/${project.artifactId}.git</developerConnection>
-      <url>http://${project.artifactId}.kohsuke.org/</url>
+        <connection>scm:git:git@github.com/kohsuke/${project.artifactId}.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com/kohsuke/${project.artifactId}.git</developerConnection>
+        <url>http://${project.artifactId}.kohsuke.org/</url>
     </scm>
 
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                    <forkMode>never</forkMode>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
-  <build>
-    <plugins>
-      <plugin>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <configuration>
-          <skip>true</skip>
-          <forkMode>never</forkMode>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
-  
-  <reporting>
-    <plugins>
-      <plugin>
-        <artifactId>maven-javadoc-plugin</artifactId>
-      </plugin>
-    </plugins>
-  </reporting>
-    
-  <dependencies>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>3.8.1</version>
-    </dependency>
-  </dependencies>
-  
-  <distributionManagement>
-    <site>
-      <id>github-pages</id>
-      <url>gitsite:git@github.com/kohsuke/${project.artifactId}.git</url>
-    </site>
-    <repository>
-      <id>maven.jenkins-ci.org</id>
-      <url>http://maven.jenkins-ci.org:8081/content/repositories/releases</url>
-    </repository>
-  </distributionManagement>
+    <reporting>
+        <plugins>
+            <plugin>
+                <artifactId>maven-javadoc-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </reporting>
+
+    <dependencies>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.10</version>
+        </dependency>
+    </dependencies>
+
+    <distributionManagement>
+        <site>
+            <id>github-pages</id>
+            <url>gitsite:git@github.com/kohsuke/${project.artifactId}.git</url>
+        </site>
+        <repository>
+            <id>maven.jenkins-ci.org</id>
+            <url>http://maven.jenkins-ci.org:8081/content/repositories/releases</url>
+        </repository>
+    </distributionManagement>
 </project>

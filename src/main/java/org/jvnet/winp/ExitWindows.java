@@ -5,39 +5,55 @@ package org.jvnet.winp;
  * @author Kohsuke Kawaguchi
  */
 public class ExitWindows {
+
+    //EWX codes are from WinUser.h
+    private static final int EWX_FORCE = 4;
+    private static final int EWX_LOGOFF = 0;
+    private static final int EWX_POWEROFF = 8;
+    private static final int EWX_REBOOT = 2;
+    //EWX_FORCEIFHUNG is only available for _WIN32_WINNT >= 0x0500 (Windows 2000 or higher)
+    private static final int EWX_FORCEIFHUNG = 10;
+
     private ExitWindows() {}
     
     /**
      * Logs off the current user.
      */
     public static void logOff(Flag f) {
-        Native.exitWindowsEx(0/*EWX_LOGOFF*/|f.value,0);
+        exit(EWX_LOGOFF, f);
     }
 
     /**
      * Shuts down the machine.
      */
     public static void powerOff(Flag f) {
-        Native.exitWindowsEx(8/*EWX_LOGOFF*/|f.value,0);
+        exit(EWX_POWEROFF, f);
     }
 
     /**
      * Reboots the machine.
      */
     public static void reboot(Flag f) {
-        Native.exitWindowsEx(2/*EWX_LOGOFF*/|f.value,0);
+        exit(EWX_REBOOT, f);
+    }
+
+    private static void exit(int ewxCode, Flag f) {
+        Native.exitWindowsEx(ewxCode | f.value, 0);
     }
 
     /**
      * Flags to control the behavior of ExitWindows. 
      */
     public enum Flag {
-        NONE(0), FORCE(0x4), FORCEIFHUNG(0x10);
 
-        Flag(int value) {
+        NONE(0),
+        FORCE(EWX_FORCE),
+        FORCEIFHUNG(EWX_FORCEIFHUNG);
+
+        private final int value;
+
+        private Flag(int value) {
             this.value = value;
         }
-
-        final int value;
     }
 }
