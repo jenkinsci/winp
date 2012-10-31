@@ -11,13 +11,12 @@
   <version>1.17-SNAPSHOT</version>
   <name>winp</name>
   <description>Kill process tree in Windows</description>
-  
-    <scm>
-      <connection>scm:git:git@github.com/kohsuke/${project.artifactId}.git</connection>
-      <developerConnection>scm:git:ssh://git@github.com/kohsuke/${project.artifactId}.git</developerConnection>
-      <url>http://${project.artifactId}.kohsuke.org/</url>
-    </scm>
 
+  <scm>
+    <connection>scm:git:git@github.com/kohsuke/${project.artifactId}.git</connection>
+    <developerConnection>scm:git:ssh://git@github.com/kohsuke/${project.artifactId}.git</developerConnection>
+    <url>http://${project.artifactId}.kohsuke.org/</url>
+  </scm>
 
   <build>
     <plugins>
@@ -30,7 +29,7 @@
       </plugin>
     </plugins>
   </build>
-  
+
   <reporting>
     <plugins>
       <plugin>
@@ -38,15 +37,15 @@
       </plugin>
     </plugins>
   </reporting>
-    
+
   <dependencies>
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>3.8.1</version>
+      <version>4.10</version>
     </dependency>
   </dependencies>
-  
+
   <distributionManagement>
     <site>
       <id>github-pages</id>
