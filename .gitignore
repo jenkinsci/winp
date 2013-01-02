@@ -2,3 +2,13 @@
 *.ipr
 *.iws
 target
+Debug
+Release
+ipch
+x64
+*.filters
+*.ncb
+*.opensdf
+*.sdf
+*.suo
+*.user
