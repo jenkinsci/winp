@@ -2,7 +2,7 @@
   <parent>
     <groupId>org.kohsuke</groupId>
     <artifactId>pom</artifactId>
-    <version>1</version>
+    <version>3</version>
   </parent>
 
   <modelVersion>4.0.0</modelVersion>
@@ -51,9 +51,5 @@
       <id>github-pages</id>
       <url>gitsite:git@github.com/kohsuke/${project.artifactId}.git</url>
     </site>
-    <repository>
-      <id>maven.jenkins-ci.org</id>
-      <url>http://maven.jenkins-ci.org:8081/content/repositories/releases</url>
-    </repository>
   </distributionManagement>
 </project>
