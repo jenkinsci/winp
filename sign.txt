@@ -1,0 +1,3 @@
+To sign,
+
+WinSDK/bin/SignTool sign /f MyCert.pfx /p PASSWORD /t http://timestamp.verisign.com/scripts/timstamp.dll MyControl.exe
