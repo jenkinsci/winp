@@ -52,4 +52,12 @@
       <url>gitsite:git@github.com/kohsuke/${project.artifactId}.git</url>
     </site>
   </distributionManagement>
+
+  <licenses>
+    <license>
+      <name>The MIT license</name>
+      <url>http://www.opensource.org/licenses/mit-license.php</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
 </project>
