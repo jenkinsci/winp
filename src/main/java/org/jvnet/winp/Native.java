@@ -1,9 +1,12 @@
 package org.jvnet.winp;
 
+import java.math.BigInteger;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URISyntaxException;
 import java.io.*;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -52,6 +55,26 @@ class Native {
         load();
     }
 
+    private static String md5(URL res) {
+        try {
+            MessageDigest md5 = MessageDigest.getInstance("MD5");
+            InputStream in = res.openStream();
+            try {
+                byte[] buf = new byte[8192];
+                int len;
+                while((len=in.read(buf))>=0)
+                    md5.update(buf, 0, len);
+                return toHex32(md5.digest());
+            } finally {
+                in.close();
+            }
+        } catch (NoSuchAlgorithmException e) {
+            throw new AssertionError(e);
+        } catch (IOException e) {
+            throw new Error(e);
+        }
+    }
+
     private static void load() {
         // are we on win32 or win64? err on 32bit side
         boolean win64 = "64".equals(System.getProperty("sun.arch.data.model"));
@@ -83,16 +106,15 @@ class Native {
                     filePortion = URLDecoder.decode(filePortion);
                     String preferred = System.getProperty(DLL_TARGET);
                     File jarFile = new File(preferred != null ? preferred : filePortion.replace('/',File.separatorChar));
-                    File dllFile = new File(jarFile.getParentFile(),dllName+".dll");
-                    if(!dllFile.exists() || jarFile.lastModified()>dllFile.lastModified()) {
+                    File dllFile = new File(jarFile.getParentFile(),dllName+'.'+md5(res)+".dll");
+                    if(!dllFile.exists()) {
                         // try to extract from within the jar
                         try {
                             copyStream(
                                 res.openStream(),
                                 new FileOutputStream(dllFile));
-                            dllFile.setLastModified(jarFile.lastModified());
                         } catch (IOException e) {
-                            LOGGER.log(Level.WARNING, "Failed to write "+dllName+".dll", e);
+                            LOGGER.log(Level.WARNING, "Failed to write "+dllFile, e);
                         }
                     }
 
@@ -198,5 +220,12 @@ class Native {
             in.close();
             out.close();
         }
+    }
+
+    /**
+     * Convert 128bit data into hex string.
+     */
+    private static String toHex32(byte[] b) {
+        return String.format("%032X",new BigInteger(1,b));
     }
 }
