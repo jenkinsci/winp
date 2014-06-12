@@ -1,0 +1,7 @@
+Reminder to myself.
+
+To digitally sign the DLLs,
+
+signtool sign /f PATH-TO-PFX /p PASSWORD /t http://timestamp.comodoca.com/authenticode Release\winp.dll
+
+and ditto for x64\Release\winp.dll
