@@ -154,7 +154,7 @@ BOOL WINAPI KillProcessTreeWinHelper(DWORD dwProcessId) {
 	if (!hSnapshot)
 		return GetLastError();
 
-	auto_localmem<PROCESSENTRY32*> pEntry = ::LocalAlloc(LMEM_FIXED|LMEM_ZEROINIT,sizeof(PROCESSENTRY32));
+	auto_localmem<PROCESSENTRY32*> pEntry(sizeof(PROCESSENTRY32));
 
 	pEntry->dwSize = sizeof(PROCESSENTRY32);
 	if (!Process32First(hSnapshot, pEntry))

@@ -88,7 +88,7 @@ JNIEXPORT jstring JNICALL Java_org_jvnet_winp_Native_getCmdLineAndEnvVars(
 	}
 
 	SIZE_T sRead;
-	auto_localmem<LPWSTR> pszCmdLine(NULL);
+	auto_localmem<LPWSTR> pszCmdLine;
 	LPCWSTR pEnvStr;	// value of RTL_USER_PROCESS_PARAMETERS.env
 
 #ifdef _WIN64
@@ -116,7 +116,7 @@ JNIEXPORT jstring JNICALL Java_org_jvnet_winp_Native_getCmdLineAndEnvVars(
 		}
 
 		// now read command line aguments
-		pszCmdLine = LocalAlloc(LMEM_FIXED | LMEM_ZEROINIT, ProcBlock.CommandLine.Length + 2);
+		pszCmdLine.allocate(ProcBlock.CommandLine.Length + 2);
 		if(!pszCmdLine) {
 			reportError(pEnv, "Failed to allocate memory for reading command line (wow64)");
 			return NULL;
@@ -153,7 +153,7 @@ JNIEXPORT jstring JNICALL Java_org_jvnet_winp_Native_getCmdLineAndEnvVars(
 	}
 
 	// now read command line aguments
-	pszCmdLine = LocalAlloc(LMEM_FIXED | LMEM_ZEROINIT, ProcBlock.CommandLine.Length + 2);
+	pszCmdLine.allocate(ProcBlock.CommandLine.Length + 2);
 	if(!pszCmdLine) {
 		reportError(pEnv, "Failed to allocate memory for reading command line");
 		return NULL;
@@ -185,7 +185,7 @@ JNIEXPORT jstring JNICALL Java_org_jvnet_winp_Native_getCmdLineAndEnvVars(
 
 	int cmdLineLen = lstrlen(pszCmdLine);
 	size_t envSize = info.RegionSize;
-	auto_localmem<LPWSTR> buf = LocalAlloc(LMEM_FIXED, (cmdLineLen + 1/*for \0*/) * 2 + envSize);
+	auto_localmem<LPWSTR> buf((cmdLineLen + 1/*for \0*/) * 2 + envSize);
 	if(!buf) {
 		reportError(pEnv, "Buffer allocation failed");
 		return NULL;

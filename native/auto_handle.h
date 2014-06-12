@@ -37,13 +37,22 @@ private:
     void*   v;
 
 public:
-    auto_localmem(void* mem) {
-        v = mem;
+    auto_localmem() {
+		v = NULL;
+    }
+    auto_localmem(size_t sz) {
+		v = NULL;
+		allocate(sz);
     }
 
     ~auto_localmem() {
+		free();
+	}
+
+	void free() {
         if (v!=NULL)
             ::LocalFree(v);
+		v = NULL;
     }
 
     operator T() {
@@ -52,5 +61,10 @@ public:
 
 	T operator -> () {
 		return (T)v;
+	}
+
+	void allocate(size_t sz) {
+		free();
+		v = ::LocalAlloc(LMEM_FIXED|LMEM_ZEROINIT, sz);
 	}
 };
