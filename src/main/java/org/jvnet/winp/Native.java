@@ -71,7 +71,7 @@ class Native {
         } catch (NoSuchAlgorithmException e) {
             throw new AssertionError(e);
         } catch (IOException e) {
-            throw new Error(e);
+            throw new Error("failed to checksum " + res + ": " + e, e);
         }
     }
 
