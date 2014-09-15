@@ -4,6 +4,10 @@ import java.lang.reflect.Field;
 import java.util.Comparator;
 import java.util.TreeMap;
 import java.util.Iterator;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import static java.util.logging.Level.FINE;
 
 /**
  * Represents a Windows process.
@@ -58,10 +62,14 @@ public class WinProcess {
      * this process launched. 
      */
     public void killRecursively() {
+        if (LOGGER.isLoggable(FINE))
+            LOGGER.fine(String.format("Attempting to recursively kill pid=%d (%s)",pid,getCommandLine()));
         Native.kill(pid,true);
     }
 
     public void kill() {
+        if (LOGGER.isLoggable(FINE))
+            LOGGER.fine(String.format("Attempting to kill pid=%d (%s)",pid,getCommandLine()));
         Native.kill(pid,false);
     }
 
@@ -199,4 +207,6 @@ public class WinProcess {
     public static void enableDebugPrivilege() {
         Native.enableDebugPrivilege();
     }
+
+    private static final Logger LOGGER = Logger.getLogger(WinProcess.class.getName());
 }
