@@ -8,7 +8,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.jvnet.winp</groupId>
   <artifactId>winp</artifactId>
-  <version>1.22</version>
+  <version>1.23-SNAPSHOT</version>
   <name>winp</name>
   <description>Kill process tree in Windows</description>
 
