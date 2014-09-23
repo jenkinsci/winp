@@ -19,6 +19,23 @@ public class TheTest extends Assert {
     }
 
     @Test
+    public void testCriticalProcess() {
+        boolean found=false;
+        for (WinProcess p : WinProcess.all()) {
+            try {
+                if (p.getCommandLine().contains("csrss")) {
+                    found = true;
+                    assertTrue(p.isCriticalProcess());
+                    p.kill();   // this should fail (but if the test fails, then we'll see BSoD
+                }
+            } catch (WinpException e) {
+            }
+        }
+
+        assertTrue(found);
+    }
+
+    @Test
     public void testGetCommandLine() {
         int failed = 0;
         int total = 0;

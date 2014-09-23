@@ -21,6 +21,7 @@ enum PROCESSINFOCLASS {
 	// see http://msdn2.microsoft.com/en-us/library/ms687420(VS.85).aspx
 	ProcessBasicInformation = 0,
 	ProcessWow64Information = 26,
+	ProcessBreakOnTermination = 29,
 };
 
 extern "C" NTSTATUS NTAPI ZwQueryInformationProcess(HANDLE hProcess, PROCESSINFOCLASS infoType, /*out*/ PVOID pBuf, /*sizeof pBuf*/ ULONG lenBuf, SIZE_T* /*PULONG*/ returnLength); 

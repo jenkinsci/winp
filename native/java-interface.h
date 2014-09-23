@@ -17,6 +17,14 @@ JNIEXPORT jboolean JNICALL Java_org_jvnet_winp_Native_kill
 
 /*
  * Class:     org_jvnet_winp_Native
+ * Method:    isCriticalProcess
+ * Signature: (I)Z
+ */
+JNIEXPORT jboolean JNICALL Java_org_jvnet_winp_Native_isCriticalProcess
+  (JNIEnv *, jclass, jint);
+
+/*
+ * Class:     org_jvnet_winp_Native
  * Method:    setPriority
  * Signature: (II)I
  */

@@ -73,6 +73,10 @@ public class WinProcess {
         Native.kill(pid,false);
     }
 
+    public boolean isCriticalProcess() {
+        return Native.isCriticalProcess(pid);
+    }
+
     /**
      * Sets the execution priority of this thread.
      *

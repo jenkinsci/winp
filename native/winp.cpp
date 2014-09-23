@@ -4,6 +4,7 @@
 #include "stdafx.h"
 #include "winp.h"
 #include "auto_handle.h"
+#include "java-interface.h"
 
 //---------------------------------------------------------------------------
 // KillProcess
@@ -19,9 +20,16 @@
 BOOL WINAPI KillProcess(DWORD dwProcessId) {
 	// first try to obtain handle to the process without the use of any
 	// additional privileges
-	auto_handle hProcess = OpenProcess(PROCESS_TERMINATE, FALSE, dwProcessId);
+	auto_handle hProcess = OpenProcess(PROCESS_TERMINATE|PROCESS_QUERY_INFORMATION, FALSE, dwProcessId);
 	if (!hProcess)
 		return FALSE;
+
+	// make sure this is not a critical process
+	ULONG isCritical = 0;
+	ZwQueryInformationProcess(hProcess, ProcessBreakOnTermination, &isCritical, sizeof(isCritical), NULL);
+	if (isCritical!=0) {// if the call above fails, the value should be left to 0
+		return FALSE;
+	}
 
 	// terminate the process
 	if (!TerminateProcess(hProcess, (UINT)-1)) {
@@ -255,4 +263,18 @@ BOOL WINAPI KillProcessEx(DWORD dwProcessId, BOOL bTree) {
 
 	SetLastError(dwError);
 	return dwError == ERROR_SUCCESS;
+}
+
+JNIEXPORT jboolean JNICALL Java_org_jvnet_winp_Native_isCriticalProcess(JNIEnv* pEnv, jclass clazz, jint dwProcessId) {
+	// first try to obtain handle to the process without the use of any
+	// additional privileges
+	auto_handle hProcess = OpenProcess(PROCESS_TERMINATE|PROCESS_QUERY_INFORMATION, FALSE, dwProcessId);
+	if (!hProcess)
+		return FALSE;
+
+	// make sure this is not a critical process
+	ULONG isCritical = 0;
+	ZwQueryInformationProcess(hProcess, ProcessBreakOnTermination, &isCritical, sizeof(isCritical), NULL);
+
+	return isCritical!=0;
 }
