@@ -51,6 +51,7 @@ class Native {
     private static final Logger LOGGER = Logger.getLogger(Native.class.getName());
     // system property holding the preferred folder for copying the dll file to.
     private static final String DLL_TARGET = "winp.folder.preferred";
+    private static final String UNPACK_DLL_TO_PARENT_DIR = "winp.unpack.dll.to.parent.dir";
 
     static {
         load();
@@ -85,7 +86,12 @@ class Native {
         final URL res = Native.class.getClassLoader().getResource(dllName+".dll");
         if(res!=null) {
             String url = res.toExternalForm();
-            if(url.startsWith("jar:") || url.startsWith("wsjar:")) {
+
+          //patched by JetBrains: do not try to unpack the dll file to the directory containing the jar file by default.
+          // It can fail because the process has no rights to write to that directory and also pollutes the project directories if the jar is used in development mode.
+          boolean unpackToParentDir = Boolean.parseBoolean(System.getProperty(UNPACK_DLL_TO_PARENT_DIR, "true"));
+
+          if(unpackToParentDir && (url.startsWith("jar:") || url.startsWith("wsjar:"))) {
                 int idx = url.lastIndexOf('!');
                 String filePortion = url.substring(url.indexOf(':')+1,idx);
                 while(filePortion.startsWith("/"))
