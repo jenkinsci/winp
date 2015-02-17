@@ -61,7 +61,7 @@
   <distributionManagement>
     <site>
       <id>github-pages</id>
-      <url>gitsite:git@github.com:kohsuke/${project.artifactId}.git</url>
+      <url>gitsite:git@github.com/kohsuke/${project.artifactId}.git</url>
     </site>
   </distributionManagement>
 
