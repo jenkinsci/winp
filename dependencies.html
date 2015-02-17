@@ -72,6 +72,8 @@
               
                 
               
+            
+            
       
             
       
@@ -91,27 +93,17 @@
       
             
       
-            
-      
-            
-      
-            
-            
               
             <li class="expanded">
               <a href="project-info.html">Project Information</a>
                 <ul>
                   
     <li class="none">
-              <a href="index.html">About</a>
+              <strong>Dependencies</strong>
         </li>
                   
     <li class="none">
-              <a href="plugin-management.html">Plugin Management</a>
-        </li>
-                  
-    <li class="none">
-              <a href="distribution-management.html">Distribution Management</a>
+              <a href="dependency-convergence.html">Dependency Convergence</a>
         </li>
                   
     <li class="none">
@@ -119,23 +111,11 @@
         </li>
                   
     <li class="none">
-              <a href="source-repository.html">Source Repository</a>
+              <a href="distribution-management.html">Distribution Management</a>
         </li>
                   
     <li class="none">
-              <a href="mail-lists.html">Mailing Lists</a>
-        </li>
-                  
-    <li class="none">
-              <a href="issue-tracking.html">Issue Tracking</a>
-        </li>
-                  
-    <li class="none">
-              <a href="integration.html">Continuous Integration</a>
-        </li>
-                  
-    <li class="none">
-              <a href="plugins.html">Project Plugins</a>
+              <a href="index.html">About</a>
         </li>
                   
     <li class="none">
@@ -143,15 +123,23 @@
         </li>
                   
     <li class="none">
+              <a href="plugin-management.html">Plugin Management</a>
+        </li>
+                  
+    <li class="none">
+              <a href="plugins.html">Project Plugins</a>
+        </li>
+                  
+    <li class="none">
               <a href="team-list.html">Project Team</a>
         </li>
                   
     <li class="none">
-              <a href="project-summary.html">Project Summary</a>
+              <a href="source-repository.html">Source Repository</a>
         </li>
                   
     <li class="none">
-              <strong>Dependencies</strong>
+              <a href="project-summary.html">Project Summary</a>
         </li>
               </ul>
         </li>
@@ -230,7 +218,7 @@
 <div class="section">
 <h3>Dependency Tree<a name="Dependency_Tree"></a></h3>
 <ul>
-<li>org.jvnet.winp:winp:jar:1.22 <img id="_img1" src="./images/icon_info_sml.gif" alt="Information" onclick="toggleDependencyDetail( '_dep0', '_img1' );" style="cursor: pointer;vertical-align:text-bottom;"></img><div id="_dep0" style="display:none">
+<li>org.jvnet.winp:winp:jar:1.23 <img id="_img1" src="./images/icon_info_sml.gif" alt="Information" onclick="toggleDependencyDetail( '_dep0', '_img1' );" style="cursor: pointer;vertical-align:text-bottom;"></img><div id="_dep0" style="display:none">
 <table border="0" class="bodyTable">
 <tr class="a">
 <th>winp</th></tr>
@@ -273,35 +261,35 @@
 <th>Entries</th>
 <th>Classes</th>
 <th>Packages</th>
-<th>JDK Rev</th>
-<th>Debug</th></tr>
+<th>Java Version</th>
+<th title="Indicates whether these dependencies have been compiled with debug information.">Debug Information</th></tr>
 <tr class="b">
 <td>junit-4.10.jar</td>
-<td>247.23 kB</td>
+<td>253.16 kB</td>
 <td>290</td>
 <td>252</td>
 <td>31</td>
 <td>1.5</td>
-<td>debug</td></tr>
+<td>Yes</td></tr>
 <tr class="a">
 <td>hamcrest-core-1.1.jar</td>
-<td>74.85 kB</td>
+<td>76.64 kB</td>
 <td>54</td>
 <td>21</td>
 <td>3</td>
 <td>1.5</td>
-<td>debug</td></tr>
+<td>Yes</td></tr>
 <tr class="b">
 <th>Total</th>
 <th>Size</th>
 <th>Entries</th>
 <th>Classes</th>
 <th>Packages</th>
-<th>JDK Rev</th>
-<th>Debug</th></tr>
+<th>Java Version</th>
+<th>Debug Information</th></tr>
 <tr class="a">
 <td>2</td>
-<td>322.07 kB</td>
+<td>329.80 kB</td>
 <td>344</td>
 <td>273</td>
 <td>34</td>
@@ -309,7 +297,7 @@
 <td>2</td></tr>
 <tr class="b">
 <td>test: 2</td>
-<td>test: 322.07 kB</td>
+<td>test: 329.80 kB</td>
 <td>test: 344</td>
 <td>test: 273</td>
 <td>test: 34</td>
@@ -322,31 +310,44 @@
 <th>Repo ID</th>
 <th>URL</th>
 <th>Release</th>
-<th>Snapshot</th>
-<th>Blacklisted</th></tr>
+<th>Snapshot</th></tr>
 <tr class="b">
+<td>repo.jenkins-ci.org</td>
+<td><a class="externalLink" href="http://repo.jenkins-ci.org/public/">http://repo.jenkins-ci.org/public/</a></td>
+<td>Yes</td>
+<td>Yes</td></tr>
+<tr class="a">
 <td>central</td>
 <td><a class="externalLink" href="http://repo.maven.apache.org/maven2">http://repo.maven.apache.org/maven2</a></td>
 <td>Yes</td>
-<td>-</td>
-<td>Yes</td></tr></table>
+<td>No</td></tr></table>
 <p>Repository locations for each of the Dependencies.</p>
 <table border="0" class="bodyTable">
 <tr class="a">
-<th>Artifact</th></tr>
+<th>Artifact</th>
+<th>repo.jenkins-ci.org</th>
+<th>central</th></tr>
 <tr class="b">
-<td>junit:junit:jar:4.10</td></tr>
+<td>junit:junit:jar:4.10</td>
+<td><a class="externalLink" href="http://repo.jenkins-ci.org/public//junit/junit/4.10/junit-4.10.jar"><img alt="Found at http://repo.jenkins-ci.org/public/" src="images/icon_success_sml.gif" /></a></td>
+<td><a class="externalLink" href="http://repo.maven.apache.org/maven2/junit/junit/4.10/junit-4.10.jar"><img alt="Found at http://repo.maven.apache.org/maven2" src="images/icon_success_sml.gif" /></a></td></tr>
 <tr class="a">
-<td>org.hamcrest:hamcrest-core:jar:1.1</td></tr>
+<td>org.hamcrest:hamcrest-core:jar:1.1</td>
+<td><a class="externalLink" href="http://repo.jenkins-ci.org/public//org/hamcrest/hamcrest-core/1.1/hamcrest-core-1.1.jar"><img alt="Found at http://repo.jenkins-ci.org/public/" src="images/icon_success_sml.gif" /></a></td>
+<td><a class="externalLink" href="http://repo.maven.apache.org/maven2/org/hamcrest/hamcrest-core/1.1/hamcrest-core-1.1.jar"><img alt="Found at http://repo.maven.apache.org/maven2" src="images/icon_success_sml.gif" /></a></td></tr>
 <tr class="b">
-<th>Total</th></tr>
+<th>Total</th>
+<th>repo.jenkins-ci.org</th>
+<th>central</th></tr>
 <tr class="a">
-<td>2 (test: 2)</td></tr></table></div>
+<td>2 (test: 2)</td>
+<td>2</td>
+<td>2</td></tr></table></div>
       </div>
     </div>
     <div id="footer">
       <div class="xright">&#169;  
-          2014
+          2015
     
           <a href="http://kohsuke.org/">Kohsuke Kawaguchi</a> and other contributors
           
@@ -354,8 +355,8 @@
 
   
   
-  &nbsp;| Last Published: 2014-09-22
-  &nbsp;| Version: 1.22
+  &nbsp;| Last Published: 2015-02-17
+  &nbsp;| Version: 1.23
 </div>
       <div class="clear">
         <hr/>
