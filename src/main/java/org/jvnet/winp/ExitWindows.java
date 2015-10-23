@@ -6,7 +6,8 @@ package org.jvnet.winp;
  */
 public class ExitWindows {
 
-    //EWX codes are from WinUser.h
+    // ExitWindowsEx function exit codes.
+    // Source&documentation: https://msdn.microsoft.com/en-us/en-en/library/windows/desktop/aa376868(v=vs.85).aspx
     private static final int EWX_FORCE = 4;
     private static final int EWX_LOGOFF = 0;
     private static final int EWX_POWEROFF = 8;
