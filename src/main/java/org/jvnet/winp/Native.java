@@ -112,8 +112,8 @@ class Native {
 
                     filePortion = URLDecoder.decode(filePortion);
                     String preferred = System.getProperty(DLL_TARGET);
-                    File jarFile = new File(preferred != null ? preferred : filePortion.replace('/',File.separatorChar));
-                    File dllFile = new File(jarFile.getParentFile(),dllName+'.'+md5(res)+".dll");
+                    File jarFile = new File(filePortion.replace('/',File.separatorChar));
+                    File dllFile = new File(preferred != null ? new File(preferred) : jarFile.getParentFile(),dllName+'.'+md5(res)+".dll");
                     if(!dllFile.exists()) {
                         // try to extract from within the jar
                         try {
