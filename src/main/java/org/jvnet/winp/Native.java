@@ -16,6 +16,9 @@ import java.util.logging.Logger;
  * @author Kohsuke Kawaguchi
  */
 class Native {
+
+    public static final String DLL_NAME = "64".equals(System.getProperty("sun.arch.data.model")) ? "winp.x64" : "winp";
+
     native static boolean kill(int pid, boolean recursive);
     native static boolean isCriticalProcess(int pid);
     native static int setPriority(int pid, int value);
@@ -78,114 +81,103 @@ class Native {
     }
 
     private static void load() {
-        // are we on win32 or win64? err on 32bit side
-        boolean win64 = "64".equals(System.getProperty("sun.arch.data.model"));
-        String dllName = win64? "winp.x64" : "winp";
 
-        // try loading winp.dll in the same directory as winp.jar
-        final URL res = Native.class.getClassLoader().getResource(dllName+".dll");
-        if(res!=null) {
-            String url = res.toExternalForm();
+        final URL res = Native.class.getClassLoader().getResource(DLL_NAME + ".dll");
 
-          //patched by JetBrains: do not try to unpack the dll file to the directory containing the jar file by default.
-          // It can fail because the process has no rights to write to that directory and also pollutes the project directories if the jar is used in development mode.
-          boolean unpackToParentDir = Boolean.parseBoolean(System.getProperty(UNPACK_DLL_TO_PARENT_DIR, "true"));
-
-          if(unpackToParentDir && (url.startsWith("jar:") || url.startsWith("wsjar:"))) {
-                int idx = url.lastIndexOf('!');
-                String filePortion = url.substring(url.indexOf(':')+1,idx);
-                while(filePortion.startsWith("/"))
-                    filePortion = filePortion.substring(1);
-
-                if(filePortion.startsWith("file:")) {
-                    filePortion = filePortion.substring(5);
-                    if(filePortion.startsWith("///")) {
-                        // JDK on Unix uses file:/home/kohsuke/abc, whereas
-                        // I believe RFC says file:///home/kohsuke/abc/... is correct.
-                        filePortion = filePortion.substring(2);
-                    } else
-                    if(filePortion.startsWith("//")) {
-                        // this indicates file://host/path-in-host format
-                        // Windows maps UNC path to this. On Unix, there's no well defined
-                        // semantics for  this.
-                    }
-
-                    filePortion = URLDecoder.decode(filePortion);
-                    String preferred = System.getProperty(DLL_TARGET);
-                    File jarFile = new File(filePortion.replace('/',File.separatorChar));
-                    File dllFile = new File(preferred != null ? new File(preferred) : jarFile.getParentFile(),dllName+'.'+md5(res)+".dll");
-                    if(!dllFile.exists()) {
-                        // try to extract from within the jar
-                        try {
-                            copyStream(
-                                res.openStream(),
-                                new FileOutputStream(dllFile));
-                        } catch (IOException e) {
-                            LOGGER.log(Level.WARNING, "Failed to write "+dllFile, e);
-                        }
-                    }
-
-                    loadDll(dllFile);
-                    return;
-                }
-            }
-            if(url.startsWith("file:")) {
-                // during debug
-                File f;
-                try {
-                    f = new File(res.toURI());
-                } catch(URISyntaxException e) {
-                    f = new File(res.getPath());
-                }
-                loadDll(f);
-                return;
-            }
-
-            File dll=null;
-            try {
-                dll = File.createTempFile(dllName, ".dll");
-                dll.deleteOnExit();
-                copyStream(res.openStream(),new FileOutputStream(dll));
-                loadDll(dll);
-                return;
-            } catch (IOException e) {
-                LOGGER.log(Level.WARNING, "Failed to write "+dllName+".dll", e);
-                // report the UnsatisfiedLinkError below, to encourage the user to put winp.dll to
-                // java.library.path
-            } catch (LinkageError e) {
-                LOGGER.log(Level.WARNING, "Failed to load winp.dll from "+dll, e);
-                // ditto
-            }
-        }
-
-        // we don't know where winp.dll is, so let's just hope the user put it somewhere
         try {
-            // load the native part of the code.
-            // first try java.library.path
-            System.loadLibrary(dllName);
-        } catch( Throwable cause ) {
-            // try to put winp.dll into a temporary directory
-            if(res!=null) {
-                File dll=null;
-                try {
-                    dll = File.createTempFile(dllName, "dll");
-                    copyStream(res.openStream(),new FileOutputStream(dll));
-                    loadDll(dll);
-                    return;
-                } catch (IOException e) {
-                    LOGGER.log(Level.WARNING, "Failed to write "+dllName+".dll", e);
-                    // report the UnsatisfiedLinkError below, to encourage the user to put winp.dll to
-                    // java.library.path
-                } catch (LinkageError e) {
-                    LOGGER.log(Level.WARNING, "Failed to load winp.dll from "+dll, e);
-                    // ditto
-                }
+            if (res != null) {
+                loadByUrl(res);
+            } else {
+                // we don't know where winp.dll is, so let's just hope the user put it somewhere
+                System.loadLibrary(DLL_NAME);
             }
+        } catch (Throwable cause) {
 
-            UnsatisfiedLinkError error = new UnsatisfiedLinkError("Unable to load "+dllName+".dll");
+            UnsatisfiedLinkError error = new UnsatisfiedLinkError("Unable to load " + DLL_NAME + ".dll");
             error.initCause(cause);
             throw error;
         }
+    }
+
+    private static void loadByUrl(URL res) throws IOException {
+
+        String url = res.toExternalForm();
+
+        if (url.startsWith("file:")) {
+            // during debug
+            File f;
+            try {
+                f = new File(res.toURI());
+            } catch (URISyntaxException e) {
+                f = new File(res.getPath());
+            }
+            loadDll(f);
+            return;
+        }
+
+        try {
+            File dllFile = extractToStaticLocation(res);
+            loadDll(dllFile);
+            return;
+        } catch (Throwable e) {
+            LOGGER.log(Level.WARNING, "Failed to load DLL from static location", e);
+        }
+
+        File dllFile = extractToTmpLocation(res);
+        loadDll(dllFile);
+    }
+
+    private static File extractToStaticLocation(URL url) throws IOException {
+
+        File jarFile = getJarFile(url);
+        if (jarFile == null) {
+            throw new RuntimeException("Failed to locate JAR file by URL " + url);
+        }
+
+        String preferred = System.getProperty(DLL_TARGET);
+        File destFile = new File(preferred != null ? new File(preferred) : jarFile.getParentFile(), DLL_NAME + '.' + md5(url) + ".dll");
+        if (!destFile.exists()) {
+            copyStream(url.openStream(), new FileOutputStream(destFile));
+        }
+        return destFile;
+    }
+
+    private static File extractToTmpLocation(URL res) throws IOException {
+
+        File tmpFile = File.createTempFile(DLL_NAME, ".dll");
+        tmpFile.deleteOnExit();
+        copyStream(res.openStream(), new FileOutputStream(tmpFile));
+        return tmpFile;
+    }
+
+    private static File getJarFile(URL res) {
+
+        String url = res.toExternalForm();
+        if (!(url.startsWith("jar:") || url.startsWith("wsjar:"))) {
+            return null;
+        }
+
+        int idx = url.lastIndexOf('!');
+        String filePortion = url.substring(url.indexOf(':') + 1, idx);
+        while (filePortion.startsWith("/"))
+            filePortion = filePortion.substring(1);
+
+        if (!filePortion.startsWith("file:")) {
+            return null;
+        }
+        filePortion = filePortion.substring(5);
+        if (filePortion.startsWith("///")) {
+            // JDK on Unix uses file:/home/kohsuke/abc, whereas
+            // I believe RFC says file:///home/kohsuke/abc/... is correct.
+            filePortion = filePortion.substring(2);
+        } else if (filePortion.startsWith("//")) {
+            // this indicates file://host/path-in-host format
+            // Windows maps UNC path to this. On Unix, there's no well defined
+            // semantics for  this.
+        }
+
+        filePortion = URLDecoder.decode(filePortion);
+        return new File(filePortion.replace('/', File.separatorChar));
     }
 
     /**
