@@ -14,7 +14,7 @@ Fix for `getCmdLineAndEnvVars()` which fails on x64 versions of Windows.
 * [Issue #24](https://github.com/kohsuke/winp/issues/24) - 
 Wrong folder when using the `winp.folder.preferred` system property (parent instead of the actual folder).
 ([PR #25](https://github.com/kohsuke/winp/pull/25))
-* [Issue #26](https://github.com/kohsuke/winp/issues/26), [JENKINS-38692](https://issues.jenkins-ci.org/browse/JENKINS-38692) - 
+* [Issue #26](https://github.com/kohsuke/winp/issues/26), [JENKINS-20913](https://issues.jenkins-ci.org/browse/JENKINS-20913) - 
 Native class now tries loading DLLs via the temp location.
 ([PR #27](https://github.com/kohsuke/winp/pull/27))
 
