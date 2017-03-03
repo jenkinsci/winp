@@ -417,7 +417,7 @@ BOOL WINAPI KillProcessEx(DWORD dwProcessId, BOOL bTree) {
 JNIEXPORT jboolean JNICALL Java_org_jvnet_winp_Native_isCriticalProcess(JNIEnv* pEnv, jclass clazz, jint dwProcessId) {
 	// first try to obtain handle to the process without the use of any
 	// additional privileges
-	auto_handle hProcess = OpenProcess(PROCESS_TERMINATE|PROCESS_QUERY_INFORMATION, FALSE, dwProcessId);
+	auto_handle hProcess = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, dwProcessId);
 	if (!hProcess)
 		return FALSE;
 
