@@ -21,6 +21,7 @@ msbuild winp.vcxproj /t:Clean /p:Configuration=Debug /verbosity:minimal /nologo 
 if %errorlevel% neq 0 exit /b %errorlevel%
 msbuild winp.vcxproj /t:Clean /p:Configuration=Debug /verbosity:minimal /nologo /p:Platform="x64"
 if %errorlevel% neq 0 exit /b %errorlevel%
+cd %BUIDROOT%
 mvn clean
 if %errorlevel% neq 0 exit /b %errorlevel%
 goto :build
@@ -46,12 +47,14 @@ COPY native\x64\Release\winp.dll src\main\resources\winp.x64.dll
 if %errorlevel% neq 0 exit /b %errorlevel%
 
 echo "### Build WinP"
+cd %BUIDROOT%
 mvn package
 if %errorlevel% neq 0 exit /b %errorlevel%
 
 goto :exit
 
 :test
+cd %BUIDROOT%
 mvn verify
 if %errorlevel% neq 0 exit /b %errorlevel%
 goto :exit
