@@ -43,16 +43,9 @@ if %errorlevel% neq 0 exit /b %errorlevel%
 COPY native\x64\Release\winp.dll src\main\resources\winp.x64.dll
 if %errorlevel% neq 0 exit /b %errorlevel%
 
-echo "### Build WinP"
+echo "### Build and Test winp.jar"
 cd %BUIDROOT%
-mvn --batch-mode clean package
-if %errorlevel% neq 0 exit /b %errorlevel%
-
-goto :exit
-
-:test
-cd %BUIDROOT%
-mvn verify
+mvn --batch-mode clean package verify
 if %errorlevel% neq 0 exit /b %errorlevel%
 goto :exit
 

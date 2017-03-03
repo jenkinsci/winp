@@ -21,9 +21,6 @@ install:
 build_script:
   - .\build.cmd cleanbuild
 
-test_script:
-  - .\build.cmd test
-
 # Publish the JAR file as an artifact
 after_build:
   - ps: Get-ChildItem target\winp-*.jar | % { Push-AppveyorArtifact $_.FullName -FileName $_.Name }  
