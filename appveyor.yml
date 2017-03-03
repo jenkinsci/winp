@@ -49,3 +49,6 @@ artifacts:
   - path: 'native/Debug/winp.pdb'
     name: winp.x86-debug.pdb
 #JARs are pushed above
+#FindBugs
+  - path: 'target/findbugs.xml'
+    name: findbugs.xml 

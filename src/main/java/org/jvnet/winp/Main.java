@@ -28,7 +28,7 @@ public class Main {
     }
 
     private static void print(WinProcess p) {
-        System.out.printf("%4d : %s\n", p.getPid(),p.getCommandLine());
-        System.out.printf("  %s\n",p.getEnvironmentVariables());
+        System.out.printf("%4d : %s%n", p.getPid(),p.getCommandLine());
+        System.out.printf("  %s%n",p.getEnvironmentVariables());
     }
 }

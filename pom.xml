@@ -12,6 +12,11 @@
   <name>winp</name>
   <description>Kill process tree in Windows</description>
 
+  <properties>
+    <findbugs-maven-plugin.version>3.0.4</findbugs-maven-plugin.version>
+    <findbugs.failOnError>true</findbugs.failOnError>
+  </properties>
+
   <scm>
     <connection>scm:git:git@github.com/kohsuke/${project.artifactId}.git</connection>
     <developerConnection>scm:git:ssh://git@github.com/kohsuke/${project.artifactId}.git</developerConnection>
@@ -38,6 +43,26 @@
           <forkMode>never</forkMode>
         </configuration>
       </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>findbugs-maven-plugin</artifactId>
+        <version>${findbugs-maven-plugin.version}</version>
+        <configuration>
+          <effort>Max</effort>
+          <!--TODO: a couple of safe issues, so default to medium for a while <threshold>Low</threshold>-->
+          <xmlOutput>true</xmlOutput>
+          <findbugsXmlOutput>false</findbugsXmlOutput>
+        </configuration>
+        <executions>
+          <execution>
+            <id>findbugs</id>
+            <goals>
+              <goal>check</goal>
+            </goals>
+            <phase>verify</phase>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
   </build>
 
@@ -55,6 +80,12 @@
       <artifactId>junit</artifactId>
       <version>4.10</version>
       <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.google.code.findbugs</groupId>
+      <artifactId>annotations</artifactId>
+      <version>3.0.0</version>
+      <scope>provided</scope>
     </dependency>
   </dependencies>
 
