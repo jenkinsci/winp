@@ -11,7 +11,7 @@ configuration: Release
 environment:
   matrix:
       - JAVA_HOME: C:\Program Files\Java\jdk1.8.0
-	
+
 # Environment installation
 install:
   - cmd: choco install maven -y -f
@@ -20,19 +20,18 @@ install:
 # Build and test  
 build_script:
   - .\build.cmd
-  
+
 test_script:
   - .\build.cmd test
-  
+
 # Publish the JAR file as an artifact
 after_buid:
   - ps: Get-ChildItem target\winp-*.jar | % { Push-AppveyorArtifact $_.FullName -FileName $_.Name }  
-  
+
 on_finish:
 # TODO: enable once there are tests, implement aggregator somehow 
 # - ps: (new-object net.webclient).UploadFile("https://ci.appveyor.com/api/testresults/junit/$($env:APPVEYOR_JOB_ID)", (Resolve-Path .\tests.xml))
 
-  
 artifacts:
 #x64
   - path: 'native/x64/Release/winp.dll'
