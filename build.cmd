@@ -22,7 +22,7 @@ if %errorlevel% neq 0 exit /b %errorlevel%
 msbuild winp.vcxproj /t:Clean /p:Configuration=Debug /verbosity:minimal /nologo /p:Platform="x64"
 if %errorlevel% neq 0 exit /b %errorlevel%
 cd %BUIDROOT%
-mvn clean
+mvn --batch-mode clean
 if %errorlevel% neq 0 exit /b %errorlevel%
 goto :build
 
@@ -48,7 +48,7 @@ if %errorlevel% neq 0 exit /b %errorlevel%
 
 echo "### Build WinP"
 cd %BUIDROOT%
-mvn package
+mvn --batch-mode package
 if %errorlevel% neq 0 exit /b %errorlevel%
 
 goto :exit

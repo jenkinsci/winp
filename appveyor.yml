@@ -19,7 +19,7 @@ install:
 
 # Build and test  
 build_script:
-  - .\build.cmd
+  - .\build.cmd cleanbuild
 
 test_script:
   - .\build.cmd test
