@@ -1,5 +1,6 @@
 package org.jvnet.winp;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.math.BigInteger;
 import java.net.URL;
 import java.net.URLDecoder;
@@ -183,6 +184,7 @@ class Native {
     /**
      * Loads a DLL with a precaution for multi-classloader situation.
      */
+    @SuppressFBWarnings(value = "DM_GC", justification = "Fallback in the case of linkage errors, see details in the code")
     private static void loadDll(File dllFile) {
         try {
             System.load(dllFile.getPath());
