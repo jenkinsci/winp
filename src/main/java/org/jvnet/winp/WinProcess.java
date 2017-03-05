@@ -50,6 +50,11 @@ public class WinProcess {
         }
     }
 
+    @Override
+    public String toString() {
+        return "WinProcess pid#" + pid + " - " + commandline;
+    }
+    
     /**
      * Gets the process ID.
      */
