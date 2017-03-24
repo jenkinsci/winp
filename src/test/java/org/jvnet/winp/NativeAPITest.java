@@ -61,6 +61,8 @@ public class NativeAPITest extends Assert {
     public void testGetCommandLine() {
         int failed = 0;
         int total = 0;
+        
+        // Generally this test is unreliable, 299 does not always happen even on Vista+ platforms
         for (WinProcess p : WinProcess.all()) {
             if (p.getPid() < 10) {
                 continue;
@@ -80,12 +82,14 @@ public class NativeAPITest extends Assert {
                     // On Vista and higher, the most common error here is 299, ERROR_PARTIAL_COPY. A bit of
                     // research online seems to suggest that's related to how those versions of Windows use
                     // randomized memory locations for process's
-                    System.out.println("Unexpected failure getting command line for process " + p.getPid() +
+                    Assert.fail("Unexpected failure getting command line for process " + p.getPid() +
                             ": (" + e.getWin32ErrorCode() + ") " + e.getMessage());
                 }
             }
         }
-        System.out.println("Failed to get command lines for " + failed + " of " + total + " processes");
+        if (failed != 0) {
+            System.out.println("Failed to get command lines for " + failed + " of " + total + " processes");
+        }
     }
 
     @Test(expected = WinpException.class)

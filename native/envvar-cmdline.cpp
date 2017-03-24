@@ -75,8 +75,20 @@ static inline LPVOID Ptr32ToPtr64(PTR32(LPVOID) v) {
 }
 #endif
 
+jstring getCmdLineAndEnvVars(JNIEnv* pEnv, jclass clazz, jint pid, jint retrieveEnvVars);
+
+JNIEXPORT jstring JNICALL Java_org_jvnet_winp_Native_getCmdLine(
+	JNIEnv* pEnv, jclass clazz, jint pid) {
+	return getCmdLineAndEnvVars(pEnv, clazz, pid, 0);
+}
+
 JNIEXPORT jstring JNICALL Java_org_jvnet_winp_Native_getCmdLineAndEnvVars(
 	JNIEnv* pEnv, jclass clazz, jint pid) {
+	return getCmdLineAndEnvVars(pEnv, clazz, pid, 1);
+}
+
+jstring getCmdLineAndEnvVars(
+	JNIEnv* pEnv, jclass clazz, jint pid, jint retrieveEnvVars){
 	
 	// see http://msdn2.microsoft.com/en-us/library/ms674678%28VS.85%29.aspx
 	// for kernel string functions
@@ -176,14 +188,20 @@ JNIEXPORT jstring JNICALL Java_org_jvnet_winp_Native_getCmdLineAndEnvVars(
 	}	// end of !wow64 code
 #endif
 
+	int cmdLineLen = lstrlen(pszCmdLine);
+	if (retrieveEnvVars == 0) {
+		// No need to retrieve Environment Variables
+		jstring packedStr = pEnv->NewString((jchar*)(LPWSTR)pszCmdLine, cmdLineLen);
+		return packedStr;
+	}
+
 	// figure out the size of the env var block
 	MEMORY_BASIC_INFORMATION info;
 	if(VirtualQueryEx(hProcess, pEnvStr, &info, sizeof(info))==0) {
 		reportError(pEnv, "VirtualQueryEx failed");
 		return NULL;
 	}
-
-	int cmdLineLen = lstrlen(pszCmdLine);
+	
 	size_t envSize = info.RegionSize - ((char*)pEnvStr - (char*)info.BaseAddress);
 	
 	auto_localmem<LPWSTR> buf((cmdLineLen + 1/*for \0*/) * 2 + envSize);

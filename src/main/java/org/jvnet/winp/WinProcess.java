@@ -103,8 +103,9 @@ public class WinProcess {
      *      maybe we didn't have enough security privileges.
      */
     public synchronized String getCommandLine() {
-        if(commandline==null)
-            parseCmdLineAndEnvVars();
+        if(commandline == null) {
+            parseCmdLine();
+        }
         return commandline;
     }
 
@@ -127,6 +128,14 @@ public class WinProcess {
         return envVars;
     }
 
+    private void parseCmdLine() throws WinpException {
+        String s = Native.getCmdLine(pid);
+        if(s == null) {
+            throw new WinpException("Failed to obtain command line for PID = " + pid); 
+        }
+        commandline = s;
+    }
+    
     private void parseCmdLineAndEnvVars() {
         String s = Native.getCmdLineAndEnvVars(pid);
         if(s==null)

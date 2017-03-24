@@ -48,6 +48,14 @@ JNIEXPORT jboolean JNICALL Java_org_jvnet_winp_Native_exitWindowsEx
   (JNIEnv *, jclass, jint, jint);
 
 /*
+* Class:     org_jvnet_winp_Native
+* Method:    getCmdLine
+* Signature: (I)Ljava/lang/String;
+*/
+JNIEXPORT jstring JNICALL Java_org_jvnet_winp_Native_getCmdLine
+(JNIEnv *, jclass, jint);
+
+/*
  * Class:     org_jvnet_winp_Native
  * Method:    getCmdLineAndEnvVars
  * Signature: (I)Ljava/lang/String;

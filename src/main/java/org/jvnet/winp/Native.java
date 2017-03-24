@@ -29,12 +29,21 @@ class Native {
     /**
      * Gets the command line and environment variables of the process
      * identified by the process ID.
+     * If the environment variables are not required, consider using {@link #getCmdLine(int)}.
      *
      * <p>
      * To simplify the JNI side, the resulting string is structured to
      * "cmdlineargs\0env1=val1\0env2=val2\0..."
      */
     native static String getCmdLineAndEnvVars(int pid);
+    
+    /**
+     * Gets the command line of the process identified by the process ID.
+     * @param pid Process ID
+     * @return Command line or {@code null} if it cannot be retrieved
+     * @throws WinpException Operation failure
+     */
+    native static String getCmdLine(int pid) throws WinpException;
 
     /**
      * Enumerate all processes.
