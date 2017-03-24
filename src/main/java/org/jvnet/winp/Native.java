@@ -61,7 +61,7 @@ class Native {
         load();
     }
 
-    private static String md5(URL res) {
+    private static String md5(URL res) throws IOException {
         try {
             MessageDigest md5 = MessageDigest.getInstance("MD5");
             InputStream in = res.openStream();
@@ -75,13 +75,13 @@ class Native {
                 in.close();
             }
         } catch (NoSuchAlgorithmException e) {
-            throw new AssertionError(e);
+            throw new IOException("Cannot find MD5 algorithm", e);
         } catch (IOException e) {
-            throw new Error("failed to checksum " + res + ": " + e, e);
+            throw new IOException("failed to checksum " + res + ": " + e, e);
         }
     }
 
-    private static void load() {
+    private static void load() throws UnsatisfiedLinkError {
 
         final URL res = Native.class.getClassLoader().getResource(DLL_NAME + ".dll");
 
@@ -132,7 +132,7 @@ class Native {
 
         File jarFile = getJarFile(url);
         if (jarFile == null) {
-            throw new RuntimeException("Failed to locate JAR file by URL " + url);
+            throw new IOException("Failed to locate JAR file by URL " + url);
         }
 
         String preferred = System.getProperty(DLL_TARGET);
