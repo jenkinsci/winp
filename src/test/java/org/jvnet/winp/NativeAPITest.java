@@ -6,8 +6,6 @@ import static org.junit.Assume.assumeThat;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.jvnet.winp.WinProcess;
-import org.jvnet.winp.WinpException;
 
 /**
  * Basic tests of the native library.
@@ -15,6 +13,14 @@ import org.jvnet.winp.WinpException;
  */
 public class NativeAPITest extends Assert {
 
+    @BeforeClass
+    public static void enableDebug() {
+        // No use of Assume here, because we want all tests to be reported as skipped
+        if (TestHelper.isWindows()) {
+            WinProcess.enableDebugPrivilege();
+        }
+    }
+    
     @Before
     public void runOnWindowsOnly() {
         TestHelper.assumeIsWindows();
@@ -111,10 +117,5 @@ public class NativeAPITest extends Assert {
 
         Thread.sleep(100);
         wp.killRecursively();
-    }
-
-    @BeforeClass
-    public static void enableDebug() {
-        WinProcess.enableDebugPrivilege();
     }
 }
