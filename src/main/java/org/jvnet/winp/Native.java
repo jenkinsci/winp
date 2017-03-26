@@ -159,7 +159,7 @@ class Native {
     }
 
     @CheckForNull
-    private static File getJarFile(@Nonnull URL res) {
+    /**package*/ static File getJarFile(@Nonnull URL res) {
 
         String url = res.toExternalForm();
         if (!(url.startsWith("jar:") || url.startsWith("wsjar:"))) {
@@ -183,6 +183,7 @@ class Native {
             // this indicates file://host/path-in-host format
             // Windows maps UNC path to this. On Unix, there's no well defined
             // semantics for  this.
+            LOGGER.log(Level.FINE, "file://PATH semantics is used. On Unix the behavior is undefined, hence the results may differ from the expectation.");
         }
 
         filePortion = URLDecoder.decode(filePortion);

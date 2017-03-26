@@ -48,6 +48,7 @@
         <version>${findbugs-maven-plugin.version}</version>
         <configuration>
           <effort>Max</effort>
+          <threshold>Low</threshold>
           <!--TODO: a couple of safe issues, so default to medium for a while <threshold>Low</threshold>-->
           <xmlOutput>true</xmlOutput>
           <findbugsXmlOutput>false</findbugsXmlOutput>

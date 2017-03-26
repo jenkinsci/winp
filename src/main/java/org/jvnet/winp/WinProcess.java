@@ -1,5 +1,6 @@
 package org.jvnet.winp;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.lang.reflect.Field;
 import java.util.Comparator;
 import java.util.TreeMap;
@@ -42,6 +43,8 @@ public class WinProcess {
      *
      * @param proc Process to be wrapped
      */
+    @SuppressFBWarnings(value = "DP_DO_INSIDE_DO_PRIVILEGED", 
+            justification = "Enabled for now, the calling code is expected to have appropriate security permissions")
     public WinProcess(@Nonnull Process proc) {
         try {
             Field f = proc.getClass().getDeclaredField("handle");

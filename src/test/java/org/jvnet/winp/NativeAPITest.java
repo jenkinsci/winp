@@ -1,5 +1,7 @@
 package org.jvnet.winp;
 
+import java.io.File;
+import java.net.URL;
 import static org.hamcrest.CoreMatchers.equalTo;
 import org.junit.Assert;
 import static org.junit.Assume.assumeThat;
@@ -117,5 +119,11 @@ public class NativeAPITest extends Assert {
 
         Thread.sleep(100);
         wp.killRecursively();
+    }
+    
+    @Test
+    public void shouldNotFailWithUNCPath() throws Exception {
+        File jarFile = Native.getJarFile(new URL("file://myUnc/path.jar"));
+        assertNotNull("JAR path to UNC should have been resolved somehow", jarFile);
     }
 }
