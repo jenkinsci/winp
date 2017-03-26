@@ -1,10 +1,14 @@
 package org.jvnet.winp;
 
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+
 /**
  * Test driver class
  *
  * @author Kohsuke Kawaguchi
  */
+@Restricted(NoExternalUse.class)
 public class Main {
     public static void main(String[] args) {
         WinProcess.enableDebugPrivilege();

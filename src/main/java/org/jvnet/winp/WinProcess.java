@@ -4,10 +4,13 @@ import java.lang.reflect.Field;
 import java.util.Comparator;
 import java.util.TreeMap;
 import java.util.Iterator;
+import java.util.Locale;
+import java.util.NoSuchElementException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static java.util.logging.Level.FINE;
+import javax.annotation.Nonnull;
 
 /**
  * Represents a Windows process.
@@ -36,8 +39,10 @@ public class WinProcess {
 
     /**
      * Wraps {@link Process} into {@link WinProcess}.
+     *
+     * @param proc Process to be wrapped
      */
-    public WinProcess(Process proc) {
+    public WinProcess(@Nonnull Process proc) {
         try {
             Field f = proc.getClass().getDeclaredField("handle");
             f.setAccessible(true);
@@ -121,13 +126,15 @@ public class WinProcess {
      *      If we fail to obtain the command line. For example,
      *      maybe we didn't have enough security privileges.
      */
-    public synchronized TreeMap<String,String> getEnvironmentVariables() {
-        if(envVars==null)
+    @Nonnull
+    public synchronized TreeMap<String, String> getEnvironmentVariables() {
+        if (envVars == null) {
             parseCmdLineAndEnvVars();
+        }
         return envVars;
     }
 
-    private void parseCmdLineAndEnvVars() {
+    private void parseCmdLineAndEnvVars() throws WinpException {
         String s = Native.getCmdLineAndEnvVars(pid);
         if(s==null)
             throw new WinpException("Failed to obtain for PID="+pid);
@@ -157,7 +164,9 @@ public class WinProcess {
 
     private static final Comparator<String> CASE_INSENSITIVE_COMPARATOR = new Comparator<String>() {
         public int compare(String o1, String o2) {
-            return o1.toUpperCase().compareTo(o2.toUpperCase());
+            // Rely on the default system locale
+            Locale loc = Locale.getDefault();
+            return o1.toUpperCase(loc).compareTo(o2.toUpperCase(loc));
         }
     };
 
@@ -192,7 +201,10 @@ public class WinProcess {
                         return pos<total;
                     }
 
-                    public WinProcess next() {
+                    public WinProcess next() throws NoSuchElementException {
+                        if (!hasNext()) {
+                            throw new NoSuchElementException();
+                        }
                         return new WinProcess(pids[pos++]);
                     }
 
