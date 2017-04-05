@@ -10,6 +10,8 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 
 /**
  * Functions defined in the DLL.
@@ -55,13 +57,16 @@ class Native {
     private static final Logger LOGGER = Logger.getLogger(Native.class.getName());
     // system property holding the preferred folder for copying the dll file to.
     private static final String DLL_TARGET = "winp.folder.preferred";
+    //TODO: usage of this field has been removed in https://github.com/kohsuke/winp/pull/27
+    // Likely it needs to be fixed
     private static final String UNPACK_DLL_TO_PARENT_DIR = "winp.unpack.dll.to.parent.dir";
 
     static {
         load();
     }
 
-    private static String md5(URL res) {
+    @Nonnull
+    private static String md5(@Nonnull URL res) throws IOException {
         try {
             MessageDigest md5 = MessageDigest.getInstance("MD5");
             InputStream in = res.openStream();
@@ -75,13 +80,13 @@ class Native {
                 in.close();
             }
         } catch (NoSuchAlgorithmException e) {
-            throw new AssertionError(e);
+            throw new IOException("Cannot find MD5 algorithm", e);
         } catch (IOException e) {
-            throw new Error("failed to checksum " + res + ": " + e, e);
+            throw new IOException("failed to checksum " + res + ": " + e, e);
         }
     }
 
-    private static void load() {
+    private static void load() throws UnsatisfiedLinkError {
 
         final URL res = Native.class.getClassLoader().getResource(DLL_NAME + ".dll");
 
@@ -100,7 +105,7 @@ class Native {
         }
     }
 
-    private static void loadByUrl(URL res) throws IOException {
+    private static void loadByUrl(@Nonnull URL res) throws IOException {
 
         String url = res.toExternalForm();
 
@@ -128,11 +133,12 @@ class Native {
         loadDll(dllFile);
     }
 
-    private static File extractToStaticLocation(URL url) throws IOException {
+    @Nonnull
+    private static File extractToStaticLocation(@Nonnull URL url) throws IOException {
 
         File jarFile = getJarFile(url);
         if (jarFile == null) {
-            throw new RuntimeException("Failed to locate JAR file by URL " + url);
+            throw new IOException("Failed to locate JAR file by URL " + url);
         }
 
         String preferred = System.getProperty(DLL_TARGET);
@@ -143,7 +149,8 @@ class Native {
         return destFile;
     }
 
-    private static File extractToTmpLocation(URL res) throws IOException {
+    @Nonnull
+    private static File extractToTmpLocation(@Nonnull URL res) throws IOException {
 
         File tmpFile = File.createTempFile(DLL_NAME, ".dll");
         tmpFile.deleteOnExit();
@@ -151,7 +158,8 @@ class Native {
         return tmpFile;
     }
 
-    private static File getJarFile(URL res) {
+    @CheckForNull
+    /**package*/ static File getJarFile(@Nonnull URL res) {
 
         String url = res.toExternalForm();
         if (!(url.startsWith("jar:") || url.startsWith("wsjar:"))) {
@@ -175,6 +183,7 @@ class Native {
             // this indicates file://host/path-in-host format
             // Windows maps UNC path to this. On Unix, there's no well defined
             // semantics for  this.
+            LOGGER.log(Level.FINE, "file://PATH semantics is used. On Unix the behavior is undefined, hence the results may differ from the expectation.");
         }
 
         filePortion = URLDecoder.decode(filePortion);
@@ -226,7 +235,8 @@ class Native {
     /**
      * Convert 128bit data into hex string.
      */
-    private static String toHex32(byte[] b) {
+    @Nonnull
+    private static String toHex32(@Nonnull byte[] b) {
         return String.format("%032X",new BigInteger(1,b));
     }
 }

@@ -48,6 +48,7 @@
         <version>${findbugs-maven-plugin.version}</version>
         <configuration>
           <effort>Max</effort>
+          <threshold>Low</threshold>
           <!--TODO: a couple of safe issues, so default to medium for a while <threshold>Low</threshold>-->
           <xmlOutput>true</xmlOutput>
           <findbugsXmlOutput>false</findbugsXmlOutput>
@@ -86,6 +87,11 @@
       <version>3.0.0</version>
       <scope>provided</scope>
     </dependency>
+    <dependency>
+      <groupId>org.kohsuke</groupId>
+      <artifactId>access-modifier-annotation</artifactId>
+      <version>1.7</version>
+    </dependency>
   </dependencies>
 
   <distributionManagement>
@@ -94,6 +100,13 @@
       <url>gitsite:git@github.com/kohsuke/${project.artifactId}.git</url>
     </site>
   </distributionManagement>
+  
+  <repositories>
+    <repository>
+      <id>repo.jenkins-ci.org</id>
+      <url>https://repo.jenkins-ci.org/public/</url>
+    </repository>
+  </repositories>
 
   <licenses>
     <license>

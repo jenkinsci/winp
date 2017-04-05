@@ -33,6 +33,15 @@ import org.junit.Assume;
  */
 class TestHelper {
     
+    public static boolean isWindows() throws AssertionError {
+        String property = System.getProperty("os.name");
+        if (property == null || property.trim().isEmpty()) {
+            return false;
+        }
+        
+        return property.contains("Windows");
+    }
+    
     public static void assumeIsWindows() {
         Assume.assumeThat("The test utilizes the native WinP Library. It can be executed on Windows only.", 
                 System.getProperty("os.name"), StringContains.containsString("Windows"));

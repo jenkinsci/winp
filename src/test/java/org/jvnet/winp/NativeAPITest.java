@@ -1,13 +1,13 @@
 package org.jvnet.winp;
 
+import java.io.File;
+import java.net.URL;
 import static org.hamcrest.CoreMatchers.equalTo;
 import org.junit.Assert;
 import static org.junit.Assume.assumeThat;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.jvnet.winp.WinProcess;
-import org.jvnet.winp.WinpException;
 
 /**
  * Basic tests of the native library.
@@ -15,6 +15,14 @@ import org.jvnet.winp.WinpException;
  */
 public class NativeAPITest extends Assert {
 
+    @BeforeClass
+    public static void enableDebug() {
+        // No use of Assume here, because we want all tests to be reported as skipped
+        if (TestHelper.isWindows()) {
+            WinProcess.enableDebugPrivilege();
+        }
+    }
+    
     @Before
     public void runOnWindowsOnly() {
         TestHelper.assumeIsWindows();
@@ -112,9 +120,10 @@ public class NativeAPITest extends Assert {
         Thread.sleep(100);
         wp.killRecursively();
     }
-
-    @BeforeClass
-    public static void enableDebug() {
-        WinProcess.enableDebugPrivilege();
+    
+    @Test
+    public void shouldNotFailWithUNCPath() throws Exception {
+        File jarFile = Native.getJarFile(new URL("file://myUnc/path.jar"));
+        assertNotNull("JAR path to UNC should have been resolved somehow", jarFile);
     }
 }
