@@ -21,14 +21,15 @@ install:
 
 # Build and test  
 build_script:
-  - .\build.cmd cleanbuild Release %APPVEYOR_BUILD_VERSION%
-  - ps: Get-ChildItem target\winp-$env:APPVEYOR_BUILD_VERSION.jar | % { Push-AppveyorArtifact $_.FullName -FileName $_.Name } 
   - .\build.cmd cleanbuild Debug %APPVEYOR_BUILD_VERSION%-Debug
   - ps: Get-ChildItem target\winp-$env:APPVEYOR_BUILD_VERSION-Debug.jar | % { Push-AppveyorArtifact $_.FullName -FileName $_.Name } 
+  - .\build.cmd cleanbuild Release %APPVEYOR_BUILD_VERSION%
+  - ps: Get-ChildItem target\winp-$env:APPVEYOR_BUILD_VERSION.jar | % { Push-AppveyorArtifact $_.FullName -FileName $_.Name } 
+
 
 on_finish:
-# TODO: enable once there are tests, implement aggregator somehow 
-# - ps: (new-object net.webclient).UploadFile("https://ci.appveyor.com/api/testresults/junit/$($env:APPVEYOR_JOB_ID)", (Resolve-Path .\tests.xml))
+  # Publish JUnit reports for the release version
+  - ps: Get-ChildItem target\surefire-reports\TEST-*.xml | (new-object net.webclient).UploadFile("https://ci.appveyor.com/api/testresults/junit/$($env:APPVEYOR_JOB_ID)", (Resolve-Path target\surefire-reports\$_.Name))
 
 artifacts:
 #x64
