@@ -1,13 +1,15 @@
 package org.jvnet.winp;
 
+import java.io.IOException;
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import org.junit.Assert;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeThat;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.jvnet.winp.WinProcess;
-import org.jvnet.winp.WinpException;
 
 /**
  * Basic tests of the native library.
@@ -99,14 +101,9 @@ public class NativeAPITest extends Assert {
 
     @Test
     public void testKill() throws Exception {
-        ProcessBuilder pb = new ProcessBuilder("notepad");
-        pb.environment().put("TEST", "foobar");
-        Process p = pb.start();
-        Thread.sleep(100); // Try to give the process a little time to start or getting the command line fails randomly
-
+        Process p = spawnNotepad();
+        
         WinProcess wp = new WinProcess(p);
-        System.out.println("pid=" + wp.getPid());
-
         System.out.println(wp.getCommandLine());
         assertTrue(wp.getCommandLine().contains("notepad"));
 
@@ -115,6 +112,59 @@ public class NativeAPITest extends Assert {
 
         Thread.sleep(100);
         wp.killRecursively();
+    }
+    
+    @Test
+    public void getCommandLine_shouldNotFailIfTheProcessIsDead() throws Exception {
+        Process p = spawnNotepad();
+        new WinProcess(p).killRecursively();
+        Thread.sleep(1000);
+        assertFalse("The process has not been stopped yet", p.isAlive());
+
+        try {
+            new WinProcess(p).getCommandLine();
+        } catch (WinpException ex) {
+            assertThat(ex.getMessage(), containsString("error=299 at envvar-cmdline"));
+            return;
+        }
+        
+        Assert.fail("Expected WinpException since the process is killed");
+    }
+    
+    @Test
+    public void getEnvironmentVariables_shouldFailIfTheProcessIsDead() throws Exception {
+        Process p = spawnNotepad();
+        new WinProcess(p).killRecursively();
+        Thread.sleep(1000);
+        assertFalse("The process has not been stopped yet", p.isAlive());
+        
+        try {
+            new WinProcess(p).getEnvironmentVariables();
+        } catch (WinpException ex) {
+            assertThat(ex.getMessage(), containsString("error=299 at envvar-cmdline"));
+            return;
+        }
+        
+        Assert.fail("Expected WinpException since the process is killed");
+    }
+    
+    /**
+     * Starts notepad process with the TEST environment variable.
+     */
+    private Process spawnNotepad() throws AssertionError, InterruptedException, IOException {
+        ProcessBuilder pb = new ProcessBuilder("notepad");
+        pb.environment().put("TEST", "foobar");
+        Process p = pb.start();
+        Thread.sleep(100); // Try to give the process a little time to start or getting the command line fails randomly
+
+        // Asserts the process status
+        WinProcess wp = new WinProcess(p);
+        System.out.println("pid=" + wp.getPid());
+        assertThat("Failed to determine the command line of the running process", 
+                wp.getCommandLine(), containsString("notepad"));
+        assertTrue("Failed to read Environment Variables, no PATH discovered",
+                wp.getEnvironmentVariables().containsKey("PATH"));
+        return p;
     }
 
     @BeforeClass
