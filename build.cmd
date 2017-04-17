@@ -54,7 +54,9 @@ if %errorlevel% neq 0 exit /b %errorlevel%
 
 echo ### Build and Test winp.jar for %version%
 cd %BUIDROOT%
-call mvn --batch-mode versions:set clean package verify -DnewVersion=%version%
+call mvn -q --batch-mode versions:set -DnewVersion=%version%
+if %errorlevel% neq 0 exit /b %errorlevel%
+call mvn --batch-mode clean package verify 
 if %errorlevel% neq 0 exit /b %errorlevel%
 goto :exit
 
