@@ -21,10 +21,10 @@ install:
 
 # Build and test  
 build_script:
-  - .\build.cmd cleanbuild Release $(appveyor_build_version)
-  - ps: Get-ChildItem target\winp-$(appveyor_build_version).jar | % { Push-AppveyorArtifact $_.FullName -FileName $_.Name } 
-  - .\build.cmd cleanbuild Debug $(appveyor_build_version)-Debug
-  - ps: Get-ChildItem target\winp-$(appveyor_build_version)-Debug.jar | % { Push-AppveyorArtifact $_.FullName -FileName $_.Name } 
+  - .\build.cmd cleanbuild Release %APPVEYOR_BUILD_VERSION%
+  - ps: Get-ChildItem target\winp-$env:APPVEYOR_BUILD_VERSION.jar | % { Push-AppveyorArtifact $_.FullName -FileName $_.Name } 
+  - .\build.cmd cleanbuild Debug %APPVEYOR_BUILD_VERSION%-Debug
+  - ps: Get-ChildItem target\winp-$env:APPVEYOR_BUILD_VERSION-Debug.jar | % { Push-AppveyorArtifact $_.FullName -FileName $_.Name } 
 
 on_finish:
 # TODO: enable once there are tests, implement aggregator somehow 
