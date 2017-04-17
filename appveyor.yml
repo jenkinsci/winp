@@ -2,6 +2,8 @@
 skip_tags: true
 skip_branch_with_pr: true
 
+version: 1.25.0.{build}-SNAPSHOT
+
 # MVS Project configuration
 image: Visual Studio 2013
 platform: Any CPU
@@ -19,10 +21,10 @@ install:
 
 # Build and test  
 build_script:
-  - .\build.cmd cleanbuild Release {version}
-  - ps: Get-ChildItem target\winp-{version}.jar | % { Push-AppveyorArtifact $_.FullName -FileName $_.Name } 
-  - .\build.cmd cleanbuild Debug {version}-Debug
-  - ps: Get-ChildItem target\winp-{version}-Debug.jar | % { Push-AppveyorArtifact $_.FullName -FileName $_.Name } 
+  - .\build.cmd cleanbuild Release $(appveyor_build_version)
+  - ps: Get-ChildItem target\winp-$(appveyor_build_version).jar | % { Push-AppveyorArtifact $_.FullName -FileName $_.Name } 
+  - .\build.cmd cleanbuild Debug $(appveyor_build_version)-Debug
+  - ps: Get-ChildItem target\winp-$(appveyor_build_version)-Debug.jar | % { Push-AppveyorArtifact $_.FullName -FileName $_.Name } 
 
 on_finish:
 # TODO: enable once there are tests, implement aggregator somehow 
