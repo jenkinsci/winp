@@ -14,7 +14,7 @@ if "%3"=="" (
 	echo No target version specified, will determine it from POM
 	REM TODO: Apply some MADSKILLZ to do it without the temporary file?
 	call mvn -q -Dexec.executable="cmd.exe" -Dexec.args="/c echo ${project.version}" --non-recursive org.codehaus.mojo:exec-maven-plugin:1.3.1:exec > version.txt
-	set version=<version.txt
+	for /f "delims=" %%x in (version.txt) do set version=%%x
 ) else (
 	echo Setting MVN project version to the externally defined %3%
 	set version=%3%	
