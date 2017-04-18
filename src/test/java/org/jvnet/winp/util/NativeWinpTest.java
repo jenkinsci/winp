@@ -21,21 +21,25 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+package org.jvnet.winp.util;
 
-package org.jvnet.winp;
-
-import org.hamcrest.core.StringContains;
-import org.junit.Assume;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.jvnet.winp.WinProcess;
 
 /**
- * Test helpers for the WinP library
+ * WinP Test class, which invokes the native part.
  * @author Oleg Nenashev
  */
-class TestHelper {
+public class NativeWinpTest {
     
-    public static void assumeIsWindows() {
-        Assume.assumeThat("The test utilizes the native WinP Library. It can be executed on Windows only.", 
-                System.getProperty("os.name"), StringContains.containsString("Windows"));
+    @BeforeClass
+    public static void enableDebug() {
+        WinProcess.enableDebugPrivilege();
     }
     
+    @Before
+    public void runOnWindowsOnly() {
+        TestHelper.assumeIsWindows();
+    }
 }
