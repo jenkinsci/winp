@@ -2,6 +2,8 @@
 skip_tags: true
 skip_branch_with_pr: true
 
+version: 1.25.0.{build}-SNAPSHOT
+
 # MVS Project configuration
 image: Visual Studio 2013
 platform: Any CPU
@@ -19,11 +21,10 @@ install:
 
 # Build and test  
 build_script:
-  - .\build.cmd cleanbuild
-
-# Publish the JAR file as an artifact
-after_build:
-  - ps: Get-ChildItem target\winp-*.jar | % { Push-AppveyorArtifact $_.FullName -FileName $_.Name }  
+  - .\build.cmd cleanbuild Release %APPVEYOR_BUILD_VERSION%
+  - ps: Get-ChildItem target\winp-$env:APPVEYOR_BUILD_VERSION.jar | % { Push-AppveyorArtifact $_.FullName -FileName $_.Name } 
+  - .\build.cmd cleanbuild Debug %APPVEYOR_BUILD_VERSION%-Debug
+  - ps: Get-ChildItem target\winp-$env:APPVEYOR_BUILD_VERSION-Debug.jar | % { Push-AppveyorArtifact $_.FullName -FileName $_.Name } 
 
 on_finish:
 # TODO: enable once there are tests, implement aggregator somehow 
