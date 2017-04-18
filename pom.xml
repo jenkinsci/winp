@@ -28,6 +28,7 @@
     <plugins>
       <plugin>
         <artifactId>maven-jar-plugin</artifactId>
+        <version>3.0.2</version>
         <configuration>
           <archive>
             <manifest>
@@ -38,6 +39,7 @@
       </plugin>
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
+        <version>2.20</version>
         <configuration>
           <forkMode>never</forkMode>
         </configuration>
@@ -69,6 +71,7 @@
     <plugins>
       <plugin>
         <artifactId>maven-javadoc-plugin</artifactId>
+        <version>2.10.4</version>
       </plugin>
     </plugins>
   </reporting>
