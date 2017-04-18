@@ -34,6 +34,10 @@ msbuild winp.vcxproj /t:Clean /p:Configuration=%configuration% /verbosity:minima
 if %errorlevel% neq 0 exit /b %errorlevel%
 msbuild winp.vcxproj /t:Clean /p:Configuration=%configuration% /verbosity:minimal /nologo /p:Platform="x64"
 if %errorlevel% neq 0 exit /b %errorlevel%
+msbuild ..\native_test\testapp\testapp.vcxproj /t:Clean /p:Configuration=%configuration% /verbosity:minimal /nologo /p:Platform="Win32"
+if %errorlevel% neq 0 exit /b %errorlevel%
+msbuild ..\native_test\testapp\testapp.vcxproj /t:Clean /p:Configuration=%configuration% /verbosity:minimal /nologo /p:Platform="x64"
+if %errorlevel% neq 0 exit /b %errorlevel%
 goto :build
 
 :build

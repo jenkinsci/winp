@@ -128,10 +128,10 @@ public class PlatformSpecificProcessTest extends ProcessSpawningTest {
         final String executable;
         switch (executablePlatform) {
             case X64:
-                executable = "native/x64/Release/testapp.exe";
+                executable = "native_test/testapp/x64/Release/testapp.exe";
                 break;
             case X86:
-                executable = "native/Release/testapp.exe";
+                executable = "native_test/testapp/Win32/Release/testapp.exe";
                 break;
             default:
                 Assert.fail("Unsupported platform: " + executablePlatform);
