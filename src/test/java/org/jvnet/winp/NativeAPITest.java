@@ -1,7 +1,9 @@
 package org.jvnet.winp;
 
 import java.io.IOException;
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
+import org.hamcrest.core.StringContains;
 import org.junit.Assert;
 import static org.junit.Assert.*;
 import static org.junit.Assume.assumeThat;
@@ -101,6 +103,18 @@ public class NativeAPITest extends ProcessSpawningTest {
 
         Thread.sleep(100);
         wp.killRecursively();
+    }
+    
+    @Test
+    public void shouldFailForNonExistentProcess() {
+        int nonExistentPid = Integer.MAX_VALUE;
+        try {
+            new WinProcess(nonExistentPid).getCommandLine();
+        } catch(WinpException ex) {
+            assertThat(ex.getMessage(), containsString("Failed to open process"));
+            return;
+        }
+        Assert.fail("Expected WinpException due to the non-existent process");
     }
     
     /**
