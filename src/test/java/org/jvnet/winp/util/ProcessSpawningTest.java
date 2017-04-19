@@ -23,11 +23,13 @@
  */
 package org.jvnet.winp.util;
 
+import java.io.File;
 import java.io.IOException;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import static org.hamcrest.CoreMatchers.containsString;
 import org.junit.After;
+import org.junit.Assert;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -60,6 +62,10 @@ public class ProcessSpawningTest extends NativeWinpTest {
     }
     
     public Process spawnProcess(String ... command) throws AssertionError, InterruptedException, IOException {
+        return spawnProcess(true, command);
+    }
+    
+    public Process spawnProcess(boolean spotcheckProcess, String ... command) throws AssertionError, InterruptedException, IOException {
         assertTrue("Command is undefined", command.length >= 1);
         assertNull("Test implementation error: The process has been already spawned", spawnedProcess);
         
@@ -69,12 +75,15 @@ public class ProcessSpawningTest extends NativeWinpTest {
         Thread.sleep(100); // Try to give the process a little time to start or getting the command line fails randomly
 
         // Asserts the process status
-        WinProcess wp = new WinProcess(spawnedProcess);
-        System.out.println("pid=" + wp.getPid());
-        assertThat("Failed to determine the command line of the running process", 
-                wp.getCommandLine(), containsString(command[0]));
-        assertTrue("Failed to read Environment Variables, no PATH discovered",
-                wp.getEnvironmentVariables().containsKey("PATH"));
+        if (spotcheckProcess) {
+            WinProcess wp = new WinProcess(spawnedProcess);
+            System.out.println("pid=" + wp.getPid());
+            assertThat("Failed to determine the command line of the running process", 
+                    wp.getCommandLine(), containsString(command[0]));
+            assertTrue("Failed to read Environment Variables, no PATH discovered",
+                    wp.getEnvironmentVariables().containsKey("PATH"));
+        }
+        
         return spawnedProcess;
     }
     
@@ -86,6 +95,22 @@ public class ProcessSpawningTest extends NativeWinpTest {
         } catch (IllegalThreadStateException ex) {
            return true;
         }
+    }
+    
+    protected static File getTestAppExecutable(ExecutablePlatform executablePlatform) {
+        final String executable;
+        switch (executablePlatform) {
+            case X64:
+                executable = "native_test/testapp/x64/Release/testapp.exe";
+                break;
+            case X86:
+                executable = "native_test/testapp/Win32/Release/testapp.exe";
+                break;
+            default:
+                Assert.fail("Unsupported platform: " + executablePlatform);
+                throw new IllegalStateException();
+        }
+        return new File(executable);
     }
 
 }

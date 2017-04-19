@@ -37,6 +37,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
+import org.jvnet.winp.util.ExecutablePlatform;
 import org.jvnet.winp.util.ProcessSpawningTest;
 import static org.jvnet.winp.util.ProcessSpawningTest.isAlive;
 import org.jvnet.winp.util.TestHelper;
@@ -64,7 +65,7 @@ public class PlatformSpecificProcessTest extends ProcessSpawningTest {
             TestHelper.assumeIs64BitHost();
         }
         
-        File exec = getExecutable();
+        File exec = getTestAppExecutable(executablePlatform);
         System.out.println("Target executable: " + exec.getAbsolutePath());
         Assert.assertTrue("Cannot locate the required executable: " + exec.getAbsolutePath(), exec.exists());
     }
@@ -121,34 +122,11 @@ public class PlatformSpecificProcessTest extends ProcessSpawningTest {
     }
     
     private Process spawnTestApp() throws IOException, InterruptedException {
-        return spawnProcess(getExecutable().getAbsolutePath());
+        return spawnProcess(getTestAppExecutable(executablePlatform).getAbsolutePath());
     }
     
-    private File getExecutable() {
-        final String executable;
-        switch (executablePlatform) {
-            case X64:
-                executable = "native_test/testapp/x64/Release/testapp.exe";
-                break;
-            case X86:
-                executable = "native_test/testapp/Win32/Release/testapp.exe";
-                break;
-            default:
-                Assert.fail("Unsupported platform: " + executablePlatform);
-                throw new IllegalStateException();
-        }
-        return new File(executable);
-    }
-    
-     
     @Parameters
     public static Collection<Object[]> data() {
         return Arrays.asList(new Object[][] { {ExecutablePlatform.X64}, {ExecutablePlatform.X86}});  
-    }
-    
-    public enum ExecutablePlatform {
-        X64,
-        X86;
-        //TODO: Add support of ARM?
     }
 }
