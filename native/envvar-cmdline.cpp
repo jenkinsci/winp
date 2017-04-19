@@ -7,6 +7,8 @@
 // TODO: there are probably better ways to define this
 #define PTR32(T)	DWORD
 
+// Max size of error messages in the methods. Defines static buffer sizes
+#define ERRMSG_SIZE 128
 
 struct UNICODE_STRING {
 	USHORT	Length;
@@ -30,6 +32,7 @@ struct RTL_USER_PROCESS_PARAMETERS {
 	PVOID	dwFiller2[10];
 	UNICODE_STRING ImagePathName;
 	UNICODE_STRING CommandLine;
+	//TODO: It goes beyond the documented structure and likely causes https://github.com/kohsuke/winp/issues/29
 	LPCWSTR env;
 };
 
@@ -38,6 +41,7 @@ struct RTL_USER_PROCESS_PARAMETERS32 {// used on wow64
 	PTR32(PVOID)	dwFiller2[10];
 	UNICODE_STRING32 ImagePathName;
 	UNICODE_STRING32 CommandLine;
+	//TODO: It goes beyond the documented structure and likely causes https://github.com/kohsuke/winp/issues/29
 	PTR32(LPCWSTR) env;
 };
 
@@ -90,12 +94,16 @@ JNIEXPORT jstring JNICALL Java_org_jvnet_winp_Native_getCmdLineAndEnvVars(
 jstring getCmdLineAndEnvVars(
 	JNIEnv* pEnv, jclass clazz, jint pid, jint retrieveEnvVars){
 	
+	char errorBuffer[ERRMSG_SIZE];
+	bool isWoW64 = false;
+
 	// see http://msdn2.microsoft.com/en-us/library/ms674678%28VS.85%29.aspx
 	// for kernel string functions
 
 	auto_handle hProcess = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, pid);
 	if(!hProcess) {
-		reportError(pEnv, "Failed to open process");
+		sprintf_s<ERRMSG_SIZE>(errorBuffer, "Failed to open process pid=%d for QUERY and VM_READ", pid);
+		reportError(pEnv, errorBuffer);
 		return NULL;
 	}
 
@@ -112,30 +120,31 @@ jstring getCmdLineAndEnvVars(
 
 	if (peb32!=NULL) {
 		// target process is a 32bit process running in wow64 environment
+		isWoW64 = true;
 
 		// read PEB
 		PEB32 ProcPEB;
 		if(!ReadProcessMemory(hProcess, peb32, &ProcPEB, sizeof(ProcPEB), &sRead)) {
-			reportError(pEnv, "Failed to read PEB32 (wow64)");
+			reportError(pEnv, "Failed to read PEB32 (mode=WoW64)");
 			return NULL;
 		}
 
 		// then to INFOBLOCK
 		RTL_USER_PROCESS_PARAMETERS32 ProcBlock;
 		if(!ReadProcessMemory(hProcess, Ptr32ToPtr64(ProcPEB.dwInfoBlockAddress), &ProcBlock, sizeof(ProcBlock), &sRead)) {
-			reportError(pEnv, "Failed to read RT_USER_PROCESS_PARAMETERS32 (wow64)");
+			reportError(pEnv, "Failed to read RT_USER_PROCESS_PARAMETERS32 (mode=WoW64)");
 			return NULL;
 		}
 
 		// now read command line aguments
 		pszCmdLine.allocate(ProcBlock.CommandLine.Length + 2);
 		if(!pszCmdLine) {
-			reportError(pEnv, "Failed to allocate memory for reading command line (wow64)");
+			reportError(pEnv, "Failed to allocate memory for reading command line (mode=WoW64)");
 			return NULL;
 		}
 
 		if(!ReadProcessMemory(hProcess, Ptr32ToPtr64(ProcBlock.CommandLine.Buffer), pszCmdLine, ProcBlock.CommandLine.Length, &sRead)) {
-			reportError(pEnv, "Failed to read command line arguments (wow64)");
+			reportError(pEnv, "Failed to read command line arguments (mode=WoW64)");
 			return NULL;
 		}
 
@@ -165,9 +174,11 @@ jstring getCmdLineAndEnvVars(
 	}
 
 	// now read command line aguments
-	pszCmdLine.allocate(ProcBlock.CommandLine.Length + 2);
+	size_t pszCmdLineSize = ProcBlock.CommandLine.Length + 2;
+	pszCmdLine.allocate(pszCmdLineSize);
 	if(!pszCmdLine) {
-		reportError(pEnv, "Failed to allocate memory for reading command line");
+		sprintf_s<ERRMSG_SIZE>(errorBuffer, "Failed to allocate memory for reading command line (size=%d)", pszCmdLineSize);
+		reportError(pEnv, errorBuffer);
 		return NULL;
 	}
 
@@ -195,18 +206,40 @@ jstring getCmdLineAndEnvVars(
 		return packedStr;
 	}
 
-	// figure out the size of the env var block
+	// Figure out the size of the Process memory block and ensure it is readable
 	MEMORY_BASIC_INFORMATION info;
 	if(VirtualQueryEx(hProcess, pEnvStr, &info, sizeof(info))==0) {
-		reportError(pEnv, "VirtualQueryEx failed");
+		sprintf_s<ERRMSG_SIZE>(errorBuffer, "VirtualQueryEx failed, Cannot read process memory information (base=%p, mode=%s)", pEnvStr, isWoW64 ? "WoW64" : "Normal");
+		reportError(pEnv, errorBuffer);
 		return NULL;
 	}
 	
-	size_t envSize = info.RegionSize - ((char*)pEnvStr - (char*)info.BaseAddress);
+	if (info.State != MBI_REGION_STATE::Allocated) {
+		sprintf_s<ERRMSG_SIZE>(errorBuffer, "Process memory region has not been allocated yet (base=%p, size=%d, state=0x%X)", pEnvStr, info.RegionSize, info.State);
+		reportError(pEnv, errorBuffer);
+		//TODO: Technically it is not a fatal failure, the caller should retry the method after the delay
+		return NULL;
+	}
 	
-	auto_localmem<LPWSTR> buf((cmdLineLen + 1/*for \0*/) * 2 + envSize);
+	if (info.Protect == MBI_REGION_PROTECT::NoAccessToCheck || info.Protect & MBI_REGION_PROTECT::NoAccess || info.Protect & MBI_REGION_PROTECT::ExecuteOnly) {
+		sprintf_s<ERRMSG_SIZE>(errorBuffer, "No READ access to the process memory region (base=%p, size=%d, protect mode=0x%X, mode=%s)", pEnvStr, info.RegionSize, info.Protect, isWoW64 ? "WoW64" : "Normal");
+		reportError(pEnv, errorBuffer);
+		return NULL;
+	}
+
+	size_t bytesBeforeEnv = (char*)pEnvStr - (char*)info.BaseAddress;
+	if (bytesBeforeEnv > info.RegionSize) {
+		sprintf_s<ERRMSG_SIZE>(errorBuffer, "Process memory header has been read incorrectly. Environment Table points to an address from outside of the region (base=%p, size=%d, envPointer=%p)", pEnvStr, info.RegionSize, pEnvStr);
+		reportError(pEnv, errorBuffer);
+		return NULL;
+	}
+	size_t envSize = info.RegionSize - bytesBeforeEnv;
+	
+	size_t bufferSize = ((size_t)cmdLineLen + 1/*for \0*/) * 2 + envSize;
+	auto_localmem<LPWSTR> buf(bufferSize);
 	if(!buf) {
-		reportError(pEnv, "Buffer allocation failed");
+		sprintf_s<ERRMSG_SIZE>(errorBuffer, "Environment Variable Table buffer allocation failed (size=%d)", bufferSize);
+		reportError(pEnv, errorBuffer);
 		return NULL;
 	}
 	lstrcpy(buf, pszCmdLine);
@@ -217,7 +250,8 @@ jstring getCmdLineAndEnvVars(
 	// it will succeed for partial reads that read _some_ data, where the other approach fails.
 	ReadProcessMemory(hProcess, pEnvStr, buf+cmdLineLen+1, envSize, &sRead);
 	if(!sRead) {
-		reportError(pEnv, "Failed to read environment variable table");
+		sprintf_s<ERRMSG_SIZE>(errorBuffer, "Failed to read the process memory region with the Environment Variable Table (base=%p, size=%d, mode=%s)", pEnvStr, envSize, isWoW64 ? "WoW64" : "Normal");
+		reportError(pEnv, errorBuffer);
 		return NULL;
 	}
 
