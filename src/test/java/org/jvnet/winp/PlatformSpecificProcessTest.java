@@ -90,16 +90,17 @@ public class PlatformSpecificProcessTest extends ProcessSpawningTest {
     @Test
     public void getCommandLine_shouldNotFailIfTheProcessIsDead() throws Exception {
         Process p = spawnTestApp();
-        new WinProcess(p).killRecursively();
+        WinProcess wp = new WinProcess(p);
+        int pid = wp.getPid();
+        wp.killRecursively();
         Thread.sleep(1000);
         assertFalse("The process has not been stopped yet", isAlive(p));
 
         try {
             new WinProcess(p).getCommandLine();
         } catch (WinpException ex) {
-            assertThat(ex.getMessage(), allOf(
-                    containsString("Failed to read " + getExpectedPEBName(false)), 
-                    containsString("error=299 at envvar-cmdline")));
+            assertThat(ex.getMessage(), containsString("Process with pid=" + pid + " has already stopped. Exit code is -1"));
+            assertThat(ex.getWin32ErrorCode(), equalTo(UserErrorType.PROCESS_IS_NOT_RUNNING.getSystemErrorCode()));
             return;
         }
         
@@ -109,16 +110,17 @@ public class PlatformSpecificProcessTest extends ProcessSpawningTest {
     @Test
     public void getEnvironmentVariables_shouldFailIfTheProcessIsDead() throws Exception {
         Process p = spawnTestApp();
-        new WinProcess(p).killRecursively();
+        WinProcess wp = new WinProcess(p);
+        int pid = wp.getPid();
+        wp.killRecursively();
         Thread.sleep(1000);
         assertFalse("The process has not been stopped yet", isAlive(p));
         
         try {
             new WinProcess(p).getEnvironmentVariables();
         } catch (WinpException ex) {
-            assertThat(ex.getMessage(), allOf(
-                    containsString("Failed to read " + getExpectedPEBName(false)), 
-                    containsString("error=299 at envvar-cmdline")));
+            assertThat(ex.getMessage(), containsString("Process with pid=" + pid + " has already stopped. Exit code is -1"));
+            assertThat(ex.getWin32ErrorCode(), equalTo(UserErrorType.PROCESS_IS_NOT_RUNNING.getSystemErrorCode()));
             return;
         }
         

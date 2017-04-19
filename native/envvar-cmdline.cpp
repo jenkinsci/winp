@@ -107,6 +107,20 @@ jstring getCmdLineAndEnvVars(
 		return NULL;
 	}
 
+	// Ensure the process is running, do not waste time otherwise
+	DWORD exitCode;
+	if (!GetExitCodeProcess(hProcess, &exitCode)) {
+		sprintf_s<ERRMSG_SIZE>(errorBuffer, "Failed to check status of the process with pid=%d", pid);
+		reportError(pEnv, errorBuffer);
+		return NULL;
+	}
+
+	if (exitCode != STILL_ACTIVE) {
+		sprintf_s<ERRMSG_SIZE>(errorBuffer, "Process with pid=%d has already stopped. Exit code is %d", pid, exitCode);
+		reportErrorWithCode(pEnv, 1, errorBuffer);
+		return NULL;
+	}
+
 	SIZE_T sRead;
 	auto_localmem<LPWSTR> pszCmdLine;
 	LPCWSTR pEnvStr;	// value of RTL_USER_PROCESS_PARAMETERS.env
@@ -150,6 +164,24 @@ jstring getCmdLineAndEnvVars(
 
 		pEnvStr = reinterpret_cast<LPCWSTR>(Ptr32ToPtr64(ProcBlock.env));
 	} else {
+#else
+	// We are running in 32 bit DLL, accept only WoW64 processes
+	// There is a risk that somebody starts the 32bit DLL in x64 process, but within WinP JAR it must not happen.
+	// TODO: Consider adding defensive logic just in case
+	BOOL procIsWow64 = FALSE;
+	if (!IsWow64Process(hProcess, &procIsWow64))
+	{
+		reportError(pEnv, "Failed to determine if the process is a 32bit or 64bit executable");
+		return NULL;
+	}
+	
+	if (!procIsWow64) {
+		// We are trying to query a 64-bit process from a 32-bit DLL
+		sprintf_s<ERRMSG_SIZE>(errorBuffer, "Process with pid=%d is not a 32bit process (or it is not running). Cannot query it from a 32bit library", pid);
+		reportErrorWithCode(pEnv, 2, errorBuffer);
+		return NULL;
+	}
+
 #endif
 
 	// obtain PROCESS_BASIC_INFORMATION
@@ -214,6 +246,7 @@ jstring getCmdLineAndEnvVars(
 		return NULL;
 	}
 	
+	//TODO: set error codes for all the checks below?
 	if (info.State != MBI_REGION_STATE::Allocated) {
 		sprintf_s<ERRMSG_SIZE>(errorBuffer, "Process memory region has not been allocated yet (base=%p, size=%d, state=0x%X)", pEnvStr, info.RegionSize, info.State);
 		reportError(pEnv, errorBuffer);

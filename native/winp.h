@@ -1,17 +1,23 @@
 #pragma once
 #include "stdafx.h"
 
-BOOL WINAPI KillProcessEx(IN DWORD dwProcessId, IN BOOL bTree);
-
+// Sets bit 29 in order to keep the codes in the user space
+#define reportErrorWithCode(env,code,msg)	SetLastError(code + 0x10000000); error(env,__FILE__,__LINE__,msg);
 #define reportError(env,msg)	error(env,__FILE__,__LINE__,msg);
 void error(JNIEnv* env, const char* file, int line, const char* msg);
 
-
-
 //
+// Kernel32.dll
+//
+BOOL WINAPI KillProcessEx(IN DWORD dwProcessId, IN BOOL bTree);
+// https://msdn.microsoft.com/en-us/library/ms684139.aspx
+extern "C" BOOL WINAPI IsWow64Process(HANDLE, PBOOL);
+// https://msdn.microsoft.com/en-us/library/ms683189(VS.85).aspx
+//BOOL WINAPI GetExitCodeProcess(HANDLE, LPDWORD);
+//VOID WINAPI SetLastError(DWORD);
+
 //
 // NTDLL functions
-//
 //
 
 // see http://msdn2.microsoft.com/en-us/library/aa489609.aspx
@@ -33,7 +39,7 @@ enum MBI_REGION_STATE : DWORD {
 };
 
 enum MBI_REGION_PROTECT : DWORD {
-	/// For MEMORY_BASIC_IONFORMATION#Prptect
+	/// For MEMORY_BASIC_IONFORMATION#Protect
 	// https://msdn.microsoft.com/en-us/library/windows/desktop/aa366786(v=vs.85).aspx
 	NoAccessToCheck = 0,
 	NoAccess = PAGE_NOACCESS,
