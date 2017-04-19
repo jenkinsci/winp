@@ -53,15 +53,8 @@ public class ProcessSpawningTest extends NativeWinpTest {
             spawnedProcess.destroy();
         }
     }
-       
-    /**
-     * Spawns test process, which is guaranteed to be a 32-bit one.
-     */
-    private Process spawnTestApp32() throws AssertionError, InterruptedException, IOException {
-        return spawnProcess("C:\\Users\\Oleg\\Documents\\jenkins\\windows\\winp\\native\\Release\\testapp32.exe");
-    }
     
-    public Process spawnProcess(String ... command) throws AssertionError, InterruptedException, IOException {
+    protected Process spawnProcess(String ... command) throws AssertionError, InterruptedException, IOException {
         return spawnProcess(true, command);
     }
     
