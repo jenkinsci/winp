@@ -21,40 +21,38 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+package org.jvnet.winp;
 
-package org.jvnet.winp.util;
-
-import static org.hamcrest.CoreMatchers.equalTo;
-import org.hamcrest.core.StringContains;
-import org.junit.Assume;
+import javax.annotation.Nonnegative;
 
 /**
- * Test helpers for the WinP library.
+ * User-scope error codes in WinP. 
  * @author Oleg Nenashev
  */
-public class TestHelper {
+enum UserErrorType {
+    PROCESS_IS_NOT_RUNNING(1),
+    QUERY_64BIT_PROC_FROM_32BIT(2);
     
-    /**
-     * Checks if current system is Windows and skips the test otherwise.
-     */
-    public static void assumeIsWindows() {
-        Assume.assumeThat("The test utilizes the native WinP Library. It can be executed on Windows only.", 
-                System.getProperty("os.name"), StringContains.containsString("Windows"));
+    private final int shortCode;
+    
+    UserErrorType(@Nonnegative int shortCode) {
+        this.shortCode = shortCode;
+    }
+
+    public int getShortCode() {
+        return shortCode;
     }
     
-    /**
-     * Checks if current system is 64bit and skips the test otherwise.
-     */
-    public static void assumeIs64BitHost() {
-        Assume.assumeThat("This test can run ony on 64-bit platforms.", 
-                System.getProperty("sun.arch.data.model"), equalTo("64"));
+    public int getSystemErrorCode() {
+        return toSystemErrorCode(shortCode);
     }
     
-    public static boolean is64BitJVM() {
-        return "64".equals(System.getProperty("sun.arch.data.model"));
+    public boolean matches(int systemCode) {
+        return systemCode == toSystemErrorCode(shortCode);
     }
     
-    public static boolean is32BitJVM() {
-        return "32".equals(System.getProperty("sun.arch.data.model"));
+    // TODO: refactor to Enum in the API
+    private static int toSystemErrorCode(int minor) {
+        return 0x10000000 + minor;
     }
 }
