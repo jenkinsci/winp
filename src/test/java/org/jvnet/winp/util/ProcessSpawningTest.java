@@ -52,21 +52,26 @@ public class ProcessSpawningTest extends NativeWinpTest {
             //TODO: destroyForcibly() in Java8
             spawnedProcess.destroy();
         }
+        
+        spawnedProcess = null;
     }
     
     protected Process spawnProcess(String ... command) throws AssertionError, InterruptedException, IOException {
-        return spawnProcess(true, command);
+        return spawnProcess(true, true, command);
     }
     
-    public Process spawnProcess(boolean spotcheckProcess, String ... command) throws AssertionError, InterruptedException, IOException {
+    public Process spawnProcess(boolean delayAfterCreate, boolean spotcheckProcess, String ... command) throws AssertionError, InterruptedException, IOException {
         assertTrue("Command is undefined", command.length >= 1);
         assertNull("Test implementation error: The process has been already spawned", spawnedProcess);
         
         ProcessBuilder pb = new ProcessBuilder(command);
         pb.environment().put("TEST", "foobar");
         spawnedProcess = pb.start();     
-        Thread.sleep(100); // Try to give the process a little time to start or getting the command line fails randomly
-
+        
+        if (delayAfterCreate) {
+            Thread.sleep(100); // Try to give the process a little time to start or getting the command line fails randomly
+        }
+        
         // Asserts the process status
         if (spotcheckProcess) {
             WinProcess wp = new WinProcess(spawnedProcess);

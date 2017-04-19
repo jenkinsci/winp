@@ -38,7 +38,7 @@ public class ProfileSingleEnvVars_32bit extends ProcessSpawningTest {
     @Test
     public void doProfile() throws Exception {
         File executable = getTestAppExecutable(ExecutablePlatform.X86);
-        Process proc = spawnProcess(false, executable.getAbsolutePath());
+        Process proc = spawnProcess(true, false, executable.getAbsolutePath());
         WinProcess wp = new WinProcess(proc);
         wp.getEnvironmentVariables();
     }
