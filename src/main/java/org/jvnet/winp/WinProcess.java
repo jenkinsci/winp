@@ -99,8 +99,8 @@ public class WinProcess {
      * The tokenization semantics is up to applications.
      *
      * @throws WinpException
-     *      If we fail to obtain the command line. For example,
-     *      maybe we didn't have enough security privileges.
+     *      If Winp fails to obtain the command line. 
+     *      The process may be dead or there is not enough security privileges.
      */
     public synchronized String getCommandLine() {
         if(commandline == null) {
@@ -119,8 +119,8 @@ public class WinProcess {
      *      Never null. 
      *
      * @throws WinpException
-     *      If we fail to obtain the command line. For example,
-     *      maybe we didn't have enough security privileges.
+     *      If Winp fails to obtain the environment variables.
+     *      The process may be dead or there is not enough security privileges.
      */
     public synchronized TreeMap<String,String> getEnvironmentVariables() {
         if(envVars==null)

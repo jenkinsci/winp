@@ -1,25 +1,21 @@
 package org.jvnet.winp;
 
+import java.io.IOException;
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
+import org.hamcrest.core.StringContains;
 import org.junit.Assert;
+import static org.junit.Assert.*;
 import static org.junit.Assume.assumeThat;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
-import org.jvnet.winp.WinProcess;
-import org.jvnet.winp.WinpException;
+import org.jvnet.winp.util.ProcessSpawningTest;
 
 /**
  * Basic tests of the native library.
  * @author Kohsuke Kawaguchi
  */
-public class NativeAPITest extends Assert {
+public class NativeAPITest extends ProcessSpawningTest {
 
-    @Before
-    public void runOnWindowsOnly() {
-        TestHelper.assumeIsWindows();
-    }
-    
     @Test
     public void testEnumProcesses() {
         for (WinProcess p : WinProcess.all()) {
@@ -99,26 +95,35 @@ public class NativeAPITest extends Assert {
 
     @Test
     public void testKill() throws Exception {
-        ProcessBuilder pb = new ProcessBuilder("notepad");
-        pb.environment().put("TEST", "foobar");
-        Process p = pb.start();
-        Thread.sleep(100); // Try to give the process a little time to start or getting the command line fails randomly
-
+        Process p = spawnNotepad();
+        
         WinProcess wp = new WinProcess(p);
-        System.out.println("pid=" + wp.getPid());
-
-        System.out.println(wp.getCommandLine());
         assertTrue(wp.getCommandLine().contains("notepad"));
-
-        System.out.println(wp.getEnvironmentVariables());
         assertEquals("foobar", wp.getEnvironmentVariables().get("TEST"));
 
         Thread.sleep(100);
         wp.killRecursively();
     }
-
-    @BeforeClass
-    public static void enableDebug() {
-        WinProcess.enableDebugPrivilege();
+    
+    @Test
+    public void shouldFailForNonExistentProcess() {
+        int nonExistentPid = Integer.MAX_VALUE;
+        try {
+            new WinProcess(nonExistentPid).getCommandLine();
+        } catch(WinpException ex) {
+            assertThat(ex.getMessage(), containsString("Failed to open process"));
+            return;
+        }
+        Assert.fail("Expected WinpException due to the non-existent process");
     }
+    
+    /**
+     * Starts notepad process with the TEST environment variable.
+     * Notepad process may be either 64bit or 32bit depending on the OS Platform.
+     * 
+     */
+    private Process spawnNotepad() throws AssertionError, InterruptedException, IOException {
+        return spawnProcess("notepad");
+    }
+
 }

@@ -34,6 +34,10 @@ msbuild winp.vcxproj /t:Clean /p:Configuration=%configuration% /verbosity:minima
 if %errorlevel% neq 0 exit /b %errorlevel%
 msbuild winp.vcxproj /t:Clean /p:Configuration=%configuration% /verbosity:minimal /nologo /p:Platform="x64"
 if %errorlevel% neq 0 exit /b %errorlevel%
+msbuild ..\native_test\testapp\testapp.vcxproj /t:Clean /p:Configuration=%configuration% /verbosity:minimal /nologo /p:Platform="Win32"
+if %errorlevel% neq 0 exit /b %errorlevel%
+msbuild ..\native_test\testapp\testapp.vcxproj /t:Clean /p:Configuration=%configuration% /verbosity:minimal /nologo /p:Platform="x64"
+if %errorlevel% neq 0 exit /b %errorlevel%
 goto :build
 
 :build
@@ -43,6 +47,12 @@ REM /verbosity:minimal
 msbuild winp.vcxproj /p:Configuration=%configuration% /nologo /p:Platform="Win32"
 if %errorlevel% neq 0 exit /b %errorlevel%
 msbuild winp.vcxproj /p:Configuration=%configuration% /nologo /p:Platform="x64"
+if %errorlevel% neq 0 exit /b %errorlevel%
+
+echo ### Building test applications
+msbuild ..\native_test\testapp\testapp.vcxproj /verbosity:minimal /p:Configuration=%configuration% /nologo /p:Platform="Win32"
+if %errorlevel% neq 0 exit /b %errorlevel%
+msbuild ..\native_test\testapp\testapp.vcxproj /verbosity:minimal /p:Configuration=%configuration% /nologo /p:Platform="x64"
 if %errorlevel% neq 0 exit /b %errorlevel%
 
 echo ### Updating WinP resource files for the %configuration% build
