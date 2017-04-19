@@ -227,9 +227,15 @@ jstring getCmdLineAndEnvVars(
 		return NULL;
 	}
 
+	if (pEnvStr < info.BaseAddress) {
+		sprintf_s<ERRMSG_SIZE>(errorBuffer, "Process memory header has been read incorrectly. Environment Table points to the address lower than the start address of the region (base=%p, envPointer=%p)", pEnvStr, pEnvStr);
+		reportError(pEnv, errorBuffer);
+		return NULL;
+	}
+
 	size_t bytesBeforeEnv = (char*)pEnvStr - (char*)info.BaseAddress;
 	if (bytesBeforeEnv > info.RegionSize) {
-		sprintf_s<ERRMSG_SIZE>(errorBuffer, "Process memory header has been read incorrectly. Environment Table points to an address from outside of the region (base=%p, size=%d, envPointer=%p)", pEnvStr, info.RegionSize, pEnvStr);
+		sprintf_s<ERRMSG_SIZE>(errorBuffer, "Process memory header has been read incorrectly. Environment Table points to the address beyond the max address of the region (base=%p, size=%d, envPointer=%p)", pEnvStr, info.RegionSize, pEnvStr);
 		reportError(pEnv, errorBuffer);
 		return NULL;
 	}
