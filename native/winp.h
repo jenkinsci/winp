@@ -9,12 +9,14 @@ void error(JNIEnv* env, const char* file, int line, const char* msg);
 //
 // Kernel32.dll
 //
+
 BOOL WINAPI KillProcessEx(IN DWORD dwProcessId, IN BOOL bTree);
+
 // https://msdn.microsoft.com/en-us/library/ms684139.aspx
-extern "C" BOOL WINAPI IsWow64Process(HANDLE, PBOOL);
-// https://msdn.microsoft.com/en-us/library/ms683189(VS.85).aspx
-//BOOL WINAPI GetExitCodeProcess(HANDLE, LPDWORD);
-//VOID WINAPI SetLastError(DWORD);
+typedef BOOL(WINAPI *LPFN_ISWOW64PROCESS) (HANDLE, PBOOL);
+// Reference to the IsWow64Process method.
+// It is being handled via the reference, because the method is not available for the non-desktop-app mode (e.g. Windows service or AppVeyor build)
+extern LPFN_ISWOW64PROCESS fnIsWow64Process;
 
 //
 // NTDLL functions

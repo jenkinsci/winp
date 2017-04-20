@@ -169,17 +169,20 @@ jstring getCmdLineAndEnvVars(
 	// There is a risk that somebody starts the 32bit DLL in x64 process, but within WinP JAR it must not happen.
 	// TODO: Consider adding defensive logic just in case
 	BOOL procIsWow64 = FALSE;
-	if (!IsWow64Process(hProcess, &procIsWow64))
+	if (fnIsWow64Process != NULL)
 	{
-		reportError(pEnv, "Failed to determine if the process is a 32bit or 64bit executable");
-		return NULL;
-	}
-	
-	if (!procIsWow64) {
-		// We are trying to query a 64-bit process from a 32-bit DLL
-		sprintf_s<ERRMSG_SIZE>(errorBuffer, "Process with pid=%d is not a 32bit process (or it is not running). Cannot query it from a 32bit library", pid);
-		reportErrorWithCode(pEnv, 2, errorBuffer);
-		return NULL;
+		if (!fnIsWow64Process(hProcess, &procIsWow64))
+		{
+			reportError(pEnv, "Failed to determine if the process is a 32bit or 64bit executable");
+			return NULL;
+		}
+
+		if (!procIsWow64) {
+			// We are trying to query a 64-bit process from a 32-bit DLL
+			sprintf_s<ERRMSG_SIZE>(errorBuffer, "Process with pid=%d is not a 32bit process (or it is not running). Cannot query it from a 32bit library", pid);
+			reportErrorWithCode(pEnv, 2, errorBuffer);
+			return NULL;
+		}
 	}
 
 #endif
@@ -194,7 +197,17 @@ jstring getCmdLineAndEnvVars(
 	// from there to PEB
 	PEB ProcPEB;
 	if(!ReadProcessMemory(hProcess, ProcInfo.PebBaseAddress, &ProcPEB, sizeof(ProcPEB), &sRead)) {
-		reportError(pEnv, "Failed to read PEB");
+#ifndef _WIN64
+		if (fnIsWow64Process == NULL) {
+			// We are unable to determine it, no API call available
+			reportError(pEnv, "Failed to read PEB. Probably the process is 64bit, which cannot be read from the 32bit WinP DLL");
+		}
+		else {
+#endif
+			reportError(pEnv, "Failed to read PEB");
+#ifndef _WIN64
+		}
+#endif
 		return NULL;
 	}
 

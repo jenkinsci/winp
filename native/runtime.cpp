@@ -1,7 +1,12 @@
 #include "stdafx.h"
+#include "winp.h"
+
+LPFN_ISWOW64PROCESS fnIsWow64Process;
 
 extern "C"
 BOOL WINAPI _DllMainCRTStartup(HANDLE  hDllHandle, DWORD   dwReason, LPVOID  lpreserved) {
+	fnIsWow64Process = (LPFN_ISWOW64PROCESS)GetProcAddress(
+		GetModuleHandle(TEXT("kernel32")), "IsWow64Process");
 	return TRUE;
 }
 
