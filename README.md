@@ -1,5 +1,7 @@
 # Windows process management library (WinP)
 
+[![Build status](https://ci.appveyor.com/api/projects/status/0w6ivhpkt20d88md?svg=true)](https://ci.appveyor.com/project/oleg-nenashev/winp)
+
 This project develops a library that lets you control Windows processes better, beyond what's available in JDK. 
 
 Features summary:
