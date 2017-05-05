@@ -9,6 +9,7 @@ import static org.junit.Assert.*;
 import static org.junit.Assume.assumeThat;
 import org.junit.Test;
 import org.jvnet.winp.util.ProcessSpawningTest;
+import org.jvnet.winp.util.TestHelper;
 
 /**
  * Basic tests of the native library.
@@ -74,13 +75,27 @@ public class NativeAPITest extends ProcessSpawningTest {
                 // some processes in the full list it's not allowed to tinker with, even if we skip past the
                 // first ten. So, if the error code is ERROR_ACCESS_DENIED (see winerror.h), ignore it
                 ++failed;
-                if (e.getWin32ErrorCode() != 5) { //ERROR_ACCESS_DENIED
-                    // On Vista and higher, the most common error here is 299, ERROR_PARTIAL_COPY. A bit of
-                    // research online seems to suggest that's related to how those versions of Windows use
-                    // randomized memory locations for process's
-                    Assert.fail("Unexpected failure getting command line for process " + p.getPid() +
-                            ": (" + e.getWin32ErrorCode() + ") " + e.getMessage());
+                
+                int errorCode = e.getWin32ErrorCode();
+                if (errorCode == 5) { //ERROR_ACCESS_DENIED
+                    continue;
                 }
+                
+                if (UserErrorType.QUERY_64BIT_PROC_FROM_32BIT.matches(errorCode) && TestHelper.is32BitJVM()) {
+                    // Skipping warnings for 64 bit processes when running in 32bit Java
+                    continue;
+                }
+                
+                if (UserErrorType.PROCESS_IS_NOT_RUNNING.matches(errorCode)) {
+                    // Sometimes the process may just dies till we get to its check
+                    continue;
+                }
+                
+                // On Vista and higher, the most common error here is 299, ERROR_PARTIAL_COPY. A bit of
+                // research online seems to suggest that's related to how those versions of Windows use
+                // randomized memory locations for process's
+                Assert.fail("Unexpected failure getting command line for process " + p.getPid() +
+                            ": (" + e.getWin32ErrorCode() + ") " + e.getMessage());
             }
         }
         if (failed != 0) {
