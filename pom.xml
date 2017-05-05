@@ -16,7 +16,7 @@
     <findbugs-maven-plugin.version>3.0.4</findbugs-maven-plugin.version>
     <findbugs.failOnError>true</findbugs.failOnError>
     <java.level>6</java.level>
-    <java.level.test>6</java.level.test>
+    <java.level.test>${java.level}</java.level.test>
   </properties>
 
   <scm>
@@ -60,11 +60,15 @@
                   <ignoredScopes>
                     <ignoredScope>test</ignoredScope>
                   </ignoredScopes>
+                  <excludes>
+                    <!--  findbugs dep managed to provided and optional so is not shipped and missing annotations ok -->
+                    <exclude>com.google.code.findbugs:annotations</exclude>
+                  </excludes>
                 </enforceBytecodeVersion>
                 <requireReleaseDeps>
                   <message>No Snapshots Allowed For Release Versions</message>
                   <onlyWhenRelease>true</onlyWhenRelease>
-                </requireReleaseDeps>
+                </requireReleaseDeps>              
               </rules>
             </configuration>
           </execution>
@@ -76,6 +80,25 @@
             <version>1.0-beta-4</version>
           </dependency>
         </dependencies>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>animal-sniffer-maven-plugin</artifactId>
+        <version>1.15</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>check</goal>
+            </goals>
+            <id>check</id>
+          </execution>
+        </executions>
+        <configuration>
+          <signature>
+            <groupId>org.codehaus.mojo.signature</groupId>
+            <artifactId>java1${java.level}</artifactId>
+          </signature>
+        </configuration>
       </plugin>
       <plugin>
         <artifactId>maven-jar-plugin</artifactId>
