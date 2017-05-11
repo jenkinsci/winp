@@ -1,6 +1,36 @@
 Changelog
 ====
 
+##### 1.25
+
+Release date: Coming soon
+
+Enhancements:
+
+* [PR #42](https://github.com/kohsuke/winp/pull/42) - 
+Update minimal Java requirement to Java 1.6.
+* [PR #39](https://github.com/kohsuke/winp/pull/39) -
+Improve diagnostics of process reading errors in the Native code.
+More info will be available in `WinpException`.
+It helps to diagnose root causes of issues like [Issue #29](https://github.com/kohsuke/winp/issues/29).
+* [PR #29](https://github.com/kohsuke/winp/issues/29) - 
+Performance: Do not retrieve process Environment Variables when reading process command line. 
+Also reduces impact of [Issue #29](https://github.com/kohsuke/winp/issues/29).
+
+Fixed issues:
+
+* [Issue #28](https://github.com/kohsuke/winp/issues/28) -
+`WinProcess#isCritical()` should not require the `PROCESS_TERMINATE` permission.
+
+Non-code changes:
+
+* [PR #43](https://github.com/kohsuke/winp/pull/43) - 
+Explicitly document supported platforms, operating systems and Java versions.
+* Deploy Continuous Integration and Pull Request Builder on AppVeyor.
+[Project page](https://ci.appveyor.com/project/oleg-nenashev/winp).
+* [PR #36](https://github.com/kohsuke/winp/pull/36) - 
+Allow building WinP JAR with Debug DLLs locally and on the CI infrastructure.
+
 ##### 1.24
 
 Release date: Nov 2, 2016
