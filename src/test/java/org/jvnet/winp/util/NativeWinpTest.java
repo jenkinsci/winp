@@ -35,6 +35,7 @@ public class NativeWinpTest {
     
     @BeforeClass
     public static void enableDebug() {
+        TestHelper.assumeIsWindows();
         WinProcess.enableDebugPrivilege();
     }
     
