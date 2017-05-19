@@ -119,7 +119,7 @@
         </li>
                   
     <li class="none">
-              <a href="license.html">Licenses</a>
+              <a href="license.html">Project License</a>
         </li>
                   
     <li class="none">
@@ -127,19 +127,19 @@
         </li>
                   
     <li class="none">
-              <a href="plugins.html">Plugins</a>
+              <a href="plugins.html">Project Plugins</a>
         </li>
                   
     <li class="none">
-              <a href="team-list.html">Team</a>
+              <a href="team-list.html">Project Team</a>
         </li>
                   
     <li class="none">
-              <a href="source-repository.html">Source Code Management</a>
+              <a href="source-repository.html">Source Repository</a>
         </li>
                   
     <li class="none">
-              <a href="project-summary.html">Summary</a>
+              <a href="project-summary.html">Project Summary</a>
         </li>
               </ul>
         </li>
@@ -170,13 +170,29 @@
 <th>ArtifactId</th>
 <th>Version</th>
 <th>Type</th>
-<th>Licenses</th></tr>
+<th>License</th></tr>
 <tr class="b">
 <td>junit</td>
 <td><a class="externalLink" href="http://junit.org">junit</a></td>
-<td>4.10</td>
+<td>4.12</td>
 <td>jar</td>
-<td><a class="externalLink" href="http://www.opensource.org/licenses/cpl1.0.txt">Common Public License Version 1.0</a></td></tr></table></div></div><a name="Project_Transitive_Dependencies"></a>
+<td><a class="externalLink" href="http://www.eclipse.org/legal/epl-v10.html">Eclipse Public License 1.0</a></td></tr></table></div><a name="Project_Dependencies_provided"></a>
+<div class="section">
+<h3>provided<a name="provided"></a></h3>
+<p>The following is a list of provided dependencies for this project. These dependencies are required to compile the application, but should be provided by default when using the library:</p>
+<table border="0" class="bodyTable">
+<tr class="a">
+<th>GroupId</th>
+<th>ArtifactId</th>
+<th>Version</th>
+<th>Type</th>
+<th>License</th></tr>
+<tr class="b">
+<td>com.google.code.findbugs</td>
+<td><a class="externalLink" href="http://findbugs.sourceforge.net/">annotations</a></td>
+<td>3.0.0</td>
+<td>jar</td>
+<td><a class="externalLink" href="http://www.gnu.org/licenses/lgpl.html">GNU Lesser Public License</a></td></tr></table></div></div><a name="Project_Transitive_Dependencies"></a>
 <div class="section">
 <h2>Project Transitive Dependencies<a name="Project_Transitive_Dependencies"></a></h2>
 <p>The following is a list of transitive dependencies for this project. Transitive dependencies are the dependencies of the project dependencies.</p><a name="Project_Transitive_Dependencies_test"></a>
@@ -189,17 +205,16 @@
 <th>ArtifactId</th>
 <th>Version</th>
 <th>Type</th>
-<th>Licenses</th></tr>
+<th>License</th></tr>
 <tr class="b">
 <td>org.hamcrest</td>
-<td>hamcrest-core</td>
-<td>1.1</td>
+<td><a class="externalLink" href="https://github.com/hamcrest/JavaHamcrest/hamcrest-core">hamcrest-core</a></td>
+<td>1.3</td>
 <td>jar</td>
-<td><a class="externalLink" href="http://www.opensource.org/licenses/bsd-license.php">BSD style</a></td></tr></table></div></div><a name="Project_Dependency_Graph"></a>
+<td><a class="externalLink" href="http://www.opensource.org/licenses/bsd-license.php">New BSD License</a></td></tr></table></div></div><a name="Project_Dependency_Graph"></a>
 <div class="section">
-<h2>Project Dependency Graph<a name="Project_Dependency_Graph"></a></h2>
-<script language="javascript" type="text/javascript">
-      function toggleDependencyDetails( divId, imgId )
+<h2>Project Dependency Graph<a name="Project_Dependency_Graph"></a></h2><script language="javascript" type="text/javascript">
+      function toggleDependencyDetail( divId, imgId )
       {
         var div = document.getElementById( divId );
         var img = document.getElementById( imgId );
@@ -207,13 +222,11 @@
         {
           div.style.display = 'none';
           img.src='./images/icon_info_sml.gif';
-          img.alt='[Information]';
         }
         else
         {
           div.style.display = '';
           img.src='./images/close.gif';
-          img.alt='[Close]';
         }
       }
 </script>
@@ -221,7 +234,7 @@
 <div class="section">
 <h3>Dependency Tree<a name="Dependency_Tree"></a></h3>
 <ul>
-<li>org.jvnet.winp:winp:jar:1.24 <img id="_img1" src="./images/icon_info_sml.gif" alt="[Information]" onclick="toggleDependencyDetails( '_dep0', '_img1' );" style="cursor: pointer; vertical-align: text-bottom;"></img><div id="_dep0" style="display:none">
+<li>org.jvnet.winp:winp:jar:1.25 <img id="_img1" src="./images/icon_info_sml.gif" alt="Information" onclick="toggleDependencyDetail( '_dep0', '_img1' );" style="cursor: pointer;vertical-align:text-bottom;"></img><div id="_dep0" style="display:none">
 <table border="0" class="bodyTable">
 <tr class="a">
 <th>winp</th></tr>
@@ -229,32 +242,42 @@
 <td>
 <p><b>Description: </b>Kill process tree in Windows</p>
 <p><b>URL: </b><a class="externalLink" href="http://kohsuke.org/winp/">http://kohsuke.org/winp/</a></p>
-<p><b>Project Licenses: </b><a class="externalLink" href="http://www.opensource.org/licenses/mit-license.php">The MIT license</a></p></td></tr></table></div>
+<p><b>Project License: </b><a class="externalLink" href="http://www.opensource.org/licenses/mit-license.php">The MIT license</a></p></td></tr></table></div>
 <ul>
-<li>junit:junit:jar:4.10 (test) <img id="_img3" src="./images/icon_info_sml.gif" alt="[Information]" onclick="toggleDependencyDetails( '_dep2', '_img3' );" style="cursor: pointer; vertical-align: text-bottom;"></img><div id="_dep2" style="display:none">
+<li>junit:junit:jar:4.12 (test) <img id="_img3" src="./images/icon_info_sml.gif" alt="Information" onclick="toggleDependencyDetail( '_dep2', '_img3' );" style="cursor: pointer;vertical-align:text-bottom;"></img><div id="_dep2" style="display:none">
 <table border="0" class="bodyTable">
 <tr class="a">
 <th>JUnit</th></tr>
 <tr class="b">
 <td>
-<p><b>Description: </b>JUnit is a regression testing framework written by Erich Gamma and Kent Beck.
-        It is used by the developer who implements unit tests in Java.</p>
+<p><b>Description: </b>JUnit is a unit testing framework for Java, created by Erich Gamma and Kent Beck.</p>
 <p><b>URL: </b><a class="externalLink" href="http://junit.org">http://junit.org</a></p>
-<p><b>Project Licenses: </b><a class="externalLink" href="http://www.opensource.org/licenses/cpl1.0.txt">Common Public License Version 1.0</a></p></td></tr></table></div>
+<p><b>Project License: </b><a class="externalLink" href="http://www.eclipse.org/legal/epl-v10.html">Eclipse Public License 1.0</a></p></td></tr></table></div>
 <ul>
-<li>org.hamcrest:hamcrest-core:jar:1.1 (test) <img id="_img5" src="./images/icon_info_sml.gif" alt="[Information]" onclick="toggleDependencyDetails( '_dep4', '_img5' );" style="cursor: pointer; vertical-align: text-bottom;"></img><div id="_dep4" style="display:none">
+<li>org.hamcrest:hamcrest-core:jar:1.3 (test) <img id="_img5" src="./images/icon_info_sml.gif" alt="Information" onclick="toggleDependencyDetail( '_dep4', '_img5' );" style="cursor: pointer;vertical-align:text-bottom;"></img><div id="_dep4" style="display:none">
 <table border="0" class="bodyTable">
 <tr class="a">
 <th>Hamcrest Core</th></tr>
 <tr class="b">
 <td>
-<p><b>Description: </b>There is currently no description associated with this project.</p>
-<p><b>Project Licenses: </b><a class="externalLink" href="http://www.opensource.org/licenses/bsd-license.php">BSD style</a></p></td></tr></table></div></li></ul></li></ul></li></ul></div></div><a name="Licenses"></a>
+<p><b>Description: </b>This is the core API of hamcrest matcher framework to be used by third-party framework providers. This includes the a foundation set of matcher implementations for common operations.</p>
+<p><b>URL: </b><a class="externalLink" href="https://github.com/hamcrest/JavaHamcrest/hamcrest-core">https://github.com/hamcrest/JavaHamcrest/hamcrest-core</a></p>
+<p><b>Project License: </b><a class="externalLink" href="http://www.opensource.org/licenses/bsd-license.php">New BSD License</a></p></td></tr></table></div></li></ul></li>
+<li>com.google.code.findbugs:annotations:jar:3.0.0 (provided) <img id="_img7" src="./images/icon_info_sml.gif" alt="Information" onclick="toggleDependencyDetail( '_dep6', '_img7' );" style="cursor: pointer;vertical-align:text-bottom;"></img><div id="_dep6" style="display:none">
+<table border="0" class="bodyTable">
+<tr class="a">
+<th>FindBugs-Annotations</th></tr>
+<tr class="b">
+<td>
+<p><b>Description: </b>Annotation supports the FindBugs tool</p>
+<p><b>URL: </b><a class="externalLink" href="http://findbugs.sourceforge.net/">http://findbugs.sourceforge.net/</a></p>
+<p><b>Project License: </b><a class="externalLink" href="http://www.gnu.org/licenses/lgpl.html">GNU Lesser Public License</a></p></td></tr></table></div></li></ul></li></ul></div></div><a name="Licenses"></a>
 <div class="section">
 <h2>Licenses<a name="Licenses"></a></h2>
-<p><b>BSD style: </b>Hamcrest Core</p>
+<p><b>Eclipse Public License 1.0: </b>JUnit</p>
+<p><b>New BSD License: </b>Hamcrest Core</p>
 <p><b>The MIT license: </b>winp</p>
-<p><b>Common Public License Version 1.0: </b>JUnit</p></div><a name="Dependency_File_Details"></a>
+<p><b>GNU Lesser Public License: </b>FindBugs-Annotations</p></div><a name="Dependency_File_Details"></a>
 <div class="section">
 <h2>Dependency File Details<a name="Dependency_File_Details"></a></h2>
 <table border="0" class="bodyTable">
@@ -267,22 +290,30 @@
 <th>Java Version</th>
 <th title="Indicates whether these dependencies have been compiled with debug information.">Debug Information</th></tr>
 <tr class="b">
-<td>junit-4.10.jar</td>
-<td>253.2 kB</td>
-<td>290</td>
-<td>252</td>
-<td>31</td>
-<td>1.5</td>
+<td>annotations-3.0.0.jar</td>
+<td>77.21 kB</td>
+<td>138</td>
+<td>64</td>
+<td>5</td>
+<td>1.6</td>
 <td>Yes</td></tr>
 <tr class="a">
-<td>hamcrest-core-1.1.jar</td>
-<td>76.6 kB</td>
-<td>54</td>
-<td>21</td>
-<td>3</td>
+<td>junit-4.12.jar</td>
+<td>314.93 kB</td>
+<td>323</td>
+<td>286</td>
+<td>30</td>
 <td>1.5</td>
 <td>Yes</td></tr>
 <tr class="b">
+<td>hamcrest-core-1.3.jar</td>
+<td>45.02 kB</td>
+<td>52</td>
+<td>45</td>
+<td>3</td>
+<td>1.5</td>
+<td>Yes</td></tr>
+<tr class="a">
 <th>Total</th>
 <th>Size</th>
 <th>Entries</th>
@@ -290,22 +321,30 @@
 <th>Packages</th>
 <th>Java Version</th>
 <th>Debug Information</th></tr>
-<tr class="a">
-<td>2</td>
-<td>329.8 kB</td>
-<td>344</td>
-<td>273</td>
-<td>34</td>
-<td>1.5</td>
-<td>2</td></tr>
 <tr class="b">
+<td>3</td>
+<td>437.17 kB</td>
+<td>513</td>
+<td>395</td>
+<td>38</td>
+<td>1.6</td>
+<td>3</td></tr>
+<tr class="a">
 <td>test: 2</td>
-<td>test: 329.8 kB</td>
-<td>test: 344</td>
-<td>test: 273</td>
-<td>test: 34</td>
+<td>test: 359.96 kB</td>
+<td>test: 375</td>
+<td>test: 331</td>
+<td>test: 33</td>
 <td>-</td>
-<td>test: 2</td></tr></table></div><a name="Dependency_Repository_Locations"></a>
+<td>test: 2</td></tr>
+<tr class="b">
+<td>provided: 1</td>
+<td>provided: 77.21 kB</td>
+<td>provided: 138</td>
+<td>provided: 64</td>
+<td>provided: 5</td>
+<td>-</td>
+<td>provided: 1</td></tr></table></div><a name="Dependency_Repository_Locations"></a>
 <div class="section">
 <h2>Dependency Repository Locations<a name="Dependency_Repository_Locations"></a></h2>
 <table border="0" class="bodyTable">
@@ -320,24 +359,50 @@
 <td><a class="externalLink" href="https://repo.maven.apache.org/maven2">https://repo.maven.apache.org/maven2</a></td>
 <td>Yes</td>
 <td>No</td>
-<td>Yes</td></tr></table>
+<td>No</td></tr>
+<tr class="a">
+<td>cloudbees-nexus-snapshots</td>
+<td><a class="externalLink" href="https://repo-internal.cloudbees.com/">https://repo-internal.cloudbees.com/</a></td>
+<td>Yes</td>
+<td>Yes</td>
+<td>Yes</td></tr>
+<tr class="b">
+<td>repo.jenkins-ci.org</td>
+<td><a class="externalLink" href="http://repo.jenkins-ci.org/public/">http://repo.jenkins-ci.org/public/</a></td>
+<td>Yes</td>
+<td>Yes</td>
+<td>No</td></tr></table>
 <p>Repository locations for each of the Dependencies.</p>
 <table border="0" class="bodyTable">
 <tr class="a">
-<th>Artifact</th></tr>
+<th>Artifact</th>
+<th>central</th>
+<th>repo.jenkins-ci.org</th></tr>
 <tr class="b">
-<td>junit:junit:jar:4.10</td></tr>
+<td>com.google.code.findbugs:annotations:jar:3.0.0</td>
+<td><a class="externalLink" href="https://repo.maven.apache.org/maven2/com/google/code/findbugs/annotations/3.0.0/annotations-3.0.0.jar"><img alt="Found at https://repo.maven.apache.org/maven2" src="images/icon_success_sml.gif" /></a></td>
+<td><a class="externalLink" href="http://repo.jenkins-ci.org/public//com/google/code/findbugs/annotations/3.0.0/annotations-3.0.0.jar"><img alt="Found at http://repo.jenkins-ci.org/public/" src="images/icon_success_sml.gif" /></a></td></tr>
 <tr class="a">
-<td>org.hamcrest:hamcrest-core:jar:1.1</td></tr>
+<td>junit:junit:jar:4.12</td>
+<td><a class="externalLink" href="https://repo.maven.apache.org/maven2/junit/junit/4.12/junit-4.12.jar"><img alt="Found at https://repo.maven.apache.org/maven2" src="images/icon_success_sml.gif" /></a></td>
+<td><a class="externalLink" href="http://repo.jenkins-ci.org/public//junit/junit/4.12/junit-4.12.jar"><img alt="Found at http://repo.jenkins-ci.org/public/" src="images/icon_success_sml.gif" /></a></td></tr>
 <tr class="b">
-<th>Total</th></tr>
+<td>org.hamcrest:hamcrest-core:jar:1.3</td>
+<td><a class="externalLink" href="https://repo.maven.apache.org/maven2/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar"><img alt="Found at https://repo.maven.apache.org/maven2" src="images/icon_success_sml.gif" /></a></td>
+<td><a class="externalLink" href="http://repo.jenkins-ci.org/public//org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar"><img alt="Found at http://repo.jenkins-ci.org/public/" src="images/icon_success_sml.gif" /></a></td></tr>
 <tr class="a">
-<td>2 (test: 2)</td></tr></table></div>
+<th>Total</th>
+<th>central</th>
+<th>repo.jenkins-ci.org</th></tr>
+<tr class="b">
+<td>3 (test: 2, provided: 1)</td>
+<td>3</td>
+<td>3</td></tr></table></div>
       </div>
     </div>
     <div id="footer">
       <div class="xright">&#169;  
-          2016
+          2017
     
           <a href="http://kohsuke.org/">Kohsuke Kawaguchi</a> and other contributors
           
@@ -345,8 +410,8 @@
 
   
   
-  &nbsp;| Last Published: 2016-11-02
-  &nbsp;| Version: 1.24
+  &nbsp;| Last Published: 2017-05-19
+  &nbsp;| Version: 1.25
 </div>
       <div class="clear">
         <hr/>
