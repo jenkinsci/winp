@@ -3,7 +3,7 @@ Changelog
 
 ##### 1.25
 
-Release date: Coming soon
+Release date: May 18, 2017
 
 Enhancements:
 
