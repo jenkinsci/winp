@@ -163,28 +163,29 @@ class Native {
     private static File getJarFile(URL res) {
 
         String url = res.toExternalForm();
-        if (!(url.startsWith("jar:") || url.startsWith("wsjar:"))) {
+        if (!(url.startsWith("jar:") || url.startsWith("wsjar:") || url.startsWith("zip:"))) {
             return null;
         }
 
         int idx = url.lastIndexOf('!');
         String filePortion = url.substring(url.indexOf(':') + 1, idx);
-        while (filePortion.startsWith("/"))
+        while (filePortion.startsWith("/")) {
             filePortion = filePortion.substring(1);
-
-        if (!filePortion.startsWith("file:")) {
-            return null;
         }
-        filePortion = filePortion.substring(5);
+
+        if (filePortion.startsWith("file:")) {
+        	filePortion = filePortion.substring(5);
+        }
+        
         if (filePortion.startsWith("///")) {
             // JDK on Unix uses file:/home/kohsuke/abc, whereas
             // I believe RFC says file:///home/kohsuke/abc/... is correct.
             filePortion = filePortion.substring(2);
-        } else if (filePortion.startsWith("//")) {
+        } /*else if (filePortion.startsWith("//")) {
             // this indicates file://host/path-in-host format
             // Windows maps UNC path to this. On Unix, there's no well defined
             // semantics for  this.
-        }
+        }*/
 
         filePortion = URLDecoder.decode(filePortion);
         return new File(filePortion.replace('/', File.separatorChar));
