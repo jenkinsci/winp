@@ -1,6 +1,15 @@
 Changelog
 ====
 
+##### 1.26
+
+Release date: Apr 18, 2018
+
+* [Issue #46](https://github.com/kohsuke/winp/issues/46) - 
+WinP was unable to locate JAR file by URL `zip:` prefix, e.g.
+in Jenkins classloaders when running in Weblogic 
+([JENKINS-48347](https://issues.jenkins-ci.org/browse/JENKINS-48347)).
+
 ##### 1.25
 
 Release date: May 18, 2017
