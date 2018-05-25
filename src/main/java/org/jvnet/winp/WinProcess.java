@@ -78,6 +78,12 @@ public class WinProcess {
         Native.kill(pid,false);
     }
 
+    public boolean sendCtrlC() {
+        if (LOGGER.isLoggable(FINE))
+            LOGGER.fine(String.format("Attempting to send CTRL+C to pid=%d (%s)",pid,getCommandLine()));
+        return Native.sendCtrlC(pid);
+    }
+
     public boolean isCriticalProcess() {
         return Native.isCriticalProcess(pid);
     }

@@ -5,6 +5,41 @@
 #include "winp.h"
 #include "auto_handle.h"
 #include "java-interface.h"
+#include <vector>
+#include <iostream>
+//---------------------------------------------------------------------------
+// SendCtrlC
+//
+//  Sends CTRL+C to the specified process.
+//
+//  Parameters:
+//	  dwProcessId - identifier of the process to terminate
+//
+//  Returns:
+//	  TRUE, if successful, FALSE - otherwise.
+//
+BOOL WINAPI SendCtrlC(IN DWORD dwProcessId) {
+  STARTUPINFO         si;
+  PROCESS_INFORMATION pi;
+  ZeroMemory(&si, sizeof(si));
+  si.cb = sizeof(si);
+  ZeroMemory(&pi, sizeof(pi));
+
+  std::wstring cmd = L"rundll32.exe " + GetDllFilename() + L",SendCtrlCMain " +
+                     std::to_wstring(dwProcessId);
+  std::vector<wchar_t> cmd_buffer(cmd.begin(), cmd.end()); // with C++17, could just use cmd.data()
+
+  BOOL started = CreateProcessW(NULL, &cmd_buffer[0], NULL, NULL,
+                                FALSE, 0, NULL, NULL, &si, &pi);
+  if (started) {
+    // wait for termination if the process started
+    WaitForSingleObject(pi.hProcess, INFINITE);
+  }
+  CloseHandle(pi.hProcess);
+  CloseHandle(pi.hThread);
+
+  return started;
+}
 
 //---------------------------------------------------------------------------
 // KillProcess

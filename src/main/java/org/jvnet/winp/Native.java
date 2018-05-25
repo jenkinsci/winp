@@ -21,6 +21,7 @@ class Native {
     public static final String DLL_NAME = "64".equals(System.getProperty("sun.arch.data.model")) ? "winp.x64" : "winp";
 
     native static boolean kill(int pid, boolean recursive);
+    native static boolean sendCtrlC(int pid);
     native static boolean isCriticalProcess(int pid);
     native static int setPriority(int pid, int value);
     native static int getProcessId(int handle);

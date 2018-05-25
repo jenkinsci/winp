@@ -6,6 +6,10 @@
 #define reportError(env,msg)	error(env,__FILE__,__LINE__,msg);
 void error(JNIEnv* env, const char* file, int line, const char* msg);
 
+std::wstring GetDllFilename();
+
+BOOL WINAPI SendCtrlC(IN DWORD dwProcessId);
+
 //
 // Kernel32.dll
 //

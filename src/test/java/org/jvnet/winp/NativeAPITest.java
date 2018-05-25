@@ -119,7 +119,20 @@ public class NativeAPITest extends ProcessSpawningTest {
         Thread.sleep(100);
         wp.killRecursively();
     }
-    
+
+    @Test
+    public void testSendCtrlC() throws Exception {
+        Process p = spawnProcess("cmd");
+        
+        WinProcess wp = new WinProcess(p);
+        Thread.sleep(100);
+        
+        wp.sendCtrlC();
+        Thread.sleep(4000);
+        
+        wp.killRecursively();
+    }
+
     @Test
     public void shouldFailForNonExistentProcess() {
         int nonExistentPid = Integer.MAX_VALUE;
