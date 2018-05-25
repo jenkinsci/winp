@@ -34,6 +34,10 @@ msbuild winp.vcxproj /t:Clean /p:Configuration=%configuration% /verbosity:minima
 if %errorlevel% neq 0 exit /b %errorlevel%
 msbuild winp.vcxproj /t:Clean /p:Configuration=%configuration% /verbosity:minimal /nologo /p:Platform="x64"
 if %errorlevel% neq 0 exit /b %errorlevel%
+msbuild sendctrlc\sendctrlc.vcxproj /t:Clean /p:Configuration=Release /verbosity:minimal /nologo /p:Platform="Win32"
+if %errorlevel% neq 0 exit /b %errorlevel%
+msbuild sendctrlc\sendctrlc.vcxproj /t:Clean /p:Configuration=Release /verbosity:minimal /nologo /p:Platform="x64"
+if %errorlevel% neq 0 exit /b %errorlevel%
 msbuild ..\native_test\testapp\testapp.vcxproj /t:Clean /p:Configuration=Release /verbosity:minimal /nologo /p:Platform="Win32"
 if %errorlevel% neq 0 exit /b %errorlevel%
 msbuild ..\native_test\testapp\testapp.vcxproj /t:Clean /p:Configuration=Release /verbosity:minimal /nologo /p:Platform="x64"
@@ -48,6 +52,10 @@ msbuild winp.vcxproj /p:Configuration=%configuration% /nologo /p:Platform="Win32
 if %errorlevel% neq 0 exit /b %errorlevel%
 msbuild winp.vcxproj /p:Configuration=%configuration% /nologo /p:Platform="x64"
 if %errorlevel% neq 0 exit /b %errorlevel%
+msbuild sendctrlc\sendctrlc.vcxproj /p:Configuration=%configuration% /nologo /p:Platform="Win32"
+if %errorlevel% neq 0 exit /b %errorlevel%
+msbuild sendctrlc\sendctrlc.vcxproj /p:Configuration=%configuration% /nologo /p:Platform="x64"
+if %errorlevel% neq 0 exit /b %errorlevel%
 
 echo ### Building test applications
 msbuild ..\native_test\testapp\testapp.vcxproj /verbosity:minimal /p:Configuration=Release /nologo /p:Platform="Win32"
@@ -60,6 +68,10 @@ cd %BUIDROOT%
 COPY native\%configuration%\winp.dll src\main\resources\winp.dll
 if %errorlevel% neq 0 exit /b %errorlevel%
 COPY native\x64\%configuration%\winp.dll src\main\resources\winp.x64.dll
+if %errorlevel% neq 0 exit /b %errorlevel%
+COPY native\sendctrlc\Win32\%configuration%\sendctrlc.exe src\main\resources\sendctrlc.exe
+if %errorlevel% neq 0 exit /b %errorlevel%
+COPY native\sendctrlc\x64\%configuration%\sendctrlc.exe src\main\resources\sendctrlc.x64.exe
 if %errorlevel% neq 0 exit /b %errorlevel%
 
 echo ### Build and Test winp.jar for %version%

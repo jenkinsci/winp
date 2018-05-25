@@ -84,6 +84,15 @@ public class WinProcess {
         return Native.sendCtrlC(pid);
     }
 
+    public boolean isRunning() {
+        try {
+            Native.getCmdLine(pid);
+            return true;
+        } catch (WinpException e) {
+            return false;
+        }
+    }
+
     public boolean isCriticalProcess() {
         return Native.isCriticalProcess(pid);
     }

@@ -5,6 +5,8 @@ VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "winp", "winp.vcxproj", "{6B623E61-2427-4C6A-B028-35E9A397AC3A}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sendctrlc", "sendctrlc\sendctrlc.vcxproj", "{AF1488B6-BF5B-4F3F-8AB7-5114D5BF93B1}"
+EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "native_test", "native_test", "{3F7718C9-97FF-4839-8197-63A69FAD6E54}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testapp", "..\native_test\testapp\testapp.vcxproj", "{AF1488B6-BF5B-4F3F-8AB7-5114D5BF93A1}"
@@ -25,6 +27,13 @@ Global
 		{6B623E61-2427-4C6A-B028-35E9A397AC3A}.Release|Win32.Build.0 = Release|Win32
 		{6B623E61-2427-4C6A-B028-35E9A397AC3A}.Release|x64.ActiveCfg = Release|x64
 		{6B623E61-2427-4C6A-B028-35E9A397AC3A}.Release|x64.Build.0 = Release|x64
+		{AF1488B6-BF5B-4F3F-8AB7-5114D5BF93B1}.Debug|Win32.ActiveCfg = Debug|Win32
+		{AF1488B6-BF5B-4F3F-8AB7-5114D5BF93B1}.Debug|Win32.Build.0 = Debug|Win32
+		{AF1488B6-BF5B-4F3F-8AB7-5114D5BF93B1}.Debug|x64.ActiveCfg = Debug|Win32
+		{AF1488B6-BF5B-4F3F-8AB7-5114D5BF93B1}.Release|Win32.ActiveCfg = Release|Win32
+		{AF1488B6-BF5B-4F3F-8AB7-5114D5BF93B1}.Release|Win32.Build.0 = Release|Win32
+		{AF1488B6-BF5B-4F3F-8AB7-5114D5BF93B1}.Release|x64.ActiveCfg = Release|x64
+		{AF1488B6-BF5B-4F3F-8AB7-5114D5BF93B1}.Release|x64.Build.0 = Release|x64
 		{AF1488B6-BF5B-4F3F-8AB7-5114D5BF93A1}.Debug|Win32.ActiveCfg = Debug|Win32
 		{AF1488B6-BF5B-4F3F-8AB7-5114D5BF93A1}.Debug|Win32.Build.0 = Debug|Win32
 		{AF1488B6-BF5B-4F3F-8AB7-5114D5BF93A1}.Debug|x64.ActiveCfg = Debug|Win32

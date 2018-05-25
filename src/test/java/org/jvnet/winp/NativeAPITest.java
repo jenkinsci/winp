@@ -121,15 +121,36 @@ public class NativeAPITest extends ProcessSpawningTest {
     }
 
     @Test
-    public void testSendCtrlC() throws Exception {
-        Process p = spawnProcess("cmd");
+    public void testPingAsDelay() throws Exception {
+        Process p = spawnProcess("PING", "-n", "10", "127.0.0.1"); // run for 10 secs
         
         WinProcess wp = new WinProcess(p);
-        Thread.sleep(100);
+        assertTrue(wp.isRunning());
         
-        wp.sendCtrlC();
-        Thread.sleep(4000);
+        Thread.sleep(4000); // just wait, don't send Ctrl+C
+
+        assertTrue(wp.isRunning());
+        wp.killRecursively();
+    }
+
+    @Test
+    public void testSendCtrlC() throws Exception {
+        Process p = spawnProcess("PING", "-n", "10", "127.0.0.1"); // run for 10 secs
         
+        WinProcess wp = new WinProcess(p);
+        assertTrue(wp.isRunning());
+        
+        // send Ctrl+C, then wait for a max of 4 secs
+        boolean sent = wp.sendCtrlC();
+        assertTrue(sent);
+        for (int i = 0; i < 40; ++i) {
+            if (!wp.isRunning()) {
+                break;
+            }
+            Thread.sleep(100);
+        }
+
+        assertTrue(!wp.isRunning());
         wp.killRecursively();
     }
 

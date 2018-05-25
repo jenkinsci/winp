@@ -13,22 +13,6 @@ BOOL WINAPI DllMain(HANDLE hInst, ULONG dwReason, LPVOID lpReserved) {
 	return TRUE;
 }
 
-extern "C" __declspec(dllexport) void CALLBACK SendCtrlCMain(HWND hwnd, HINSTANCE hinst, LPCSTR pszCmdLine, int nCmdShow) {
-  int pid = -1;
-  int count = sscanf_s(pszCmdLine, "%i", &pid);
-  if (count != 1) {
-    return;
-  }
-
-  FreeConsole();
-  if (!AttachConsole(pid)) {
-    return;
-  }
-
-  SetConsoleCtrlHandler(NULL, TRUE);
-  GenerateConsoleCtrlEvent(CTRL_C_EVENT, 0);
-}
-
 std::wstring GetDllFilename() {
   std::vector<wchar_t> pathBuf;
   DWORD copied = 0;
