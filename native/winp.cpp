@@ -5,6 +5,8 @@
 #include "winp.h"
 #include "auto_handle.h"
 #include "java-interface.h"
+
+#include <string>
 #include <vector>
 
 //---------------------------------------------------------------------------

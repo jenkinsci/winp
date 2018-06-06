@@ -9,7 +9,6 @@
 #include <tchar.h>
 #include <tlhelp32.h>
 #include <jni.h>
-#include <string>
 #include <psapi.h>
 #pragma comment(lib, "psapi.lib")
 // if you don't have ntdll.lib, download Windows DDK
