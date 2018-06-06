@@ -8,7 +8,7 @@ void error(JNIEnv* env, const char* file, int line, const char* msg);
 
 std::wstring GetDllFilename();
 
-BOOL WINAPI SendCtrlC(IN DWORD dwProcessId);
+BOOL WINAPI SendCtrlC(IN DWORD dwProcessId, const wchar_t* pExePath);
 
 //
 // Kernel32.dll
@@ -62,7 +62,7 @@ enum MBI_REGION_TYPE : DWORD {
 	Private = MEM_PRIVATE
 };
 
-extern "C" NTSTATUS NTAPI ZwQueryInformationProcess(HANDLE hProcess, PROCESSINFOCLASS infoType, /*out*/ PVOID pBuf, /*sizeof pBuf*/ ULONG lenBuf, SIZE_T* /*PULONG*/ returnLength); 
+extern "C" NTSTATUS NTAPI ZwQueryInformationProcess(HANDLE hProcess, PROCESSINFOCLASS infoType, /*out*/ PVOID pBuf, /*sizeof pBuf*/ ULONG lenBuf, SIZE_T* /*PULONG*/ returnLength);
 
 
 #define	SystemProcessesAndThreadsInformation 5

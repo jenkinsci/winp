@@ -7,13 +7,6 @@
 #include "java-interface.h"
 #include <vector>
 
-static void str_replace_last(std::wstring& exepath, const wchar_t* from, const wchar_t* to) {
-  std::wstring::size_type pos = exepath.rfind(from);
-  if (pos != std::wstring::npos) {
-    exepath.replace(pos, wcslen(from), to);
-  }
-}
-
 //---------------------------------------------------------------------------
 // SendCtrlC
 //
@@ -25,18 +18,15 @@ static void str_replace_last(std::wstring& exepath, const wchar_t* from, const w
 //  Returns:
 //	  TRUE, if successful, FALSE - otherwise.
 //
-BOOL WINAPI SendCtrlC(IN DWORD dwProcessId) {
+BOOL WINAPI SendCtrlC(IN DWORD dwProcessId, const wchar_t* pExePath) {
   STARTUPINFO         si;
   PROCESS_INFORMATION pi;
   ZeroMemory(&si, sizeof(si));
   si.cb = sizeof(si);
   ZeroMemory(&pi, sizeof(pi));
 
-  std::wstring exepath = GetDllFilename();
-  str_replace_last(exepath, L"\\winp.dll", L"\\sendctrlc.exe");
-  str_replace_last(exepath, L"\\winp.x64.dll", L"\\sendctrlc.x64.exe");
-
-  std::wstring cmd = exepath + L' ' + std::to_wstring(dwProcessId);
+  std::wstring exepath(pExePath);
+  std::wstring cmd = L'"' + exepath + L"\" " + std::to_wstring(dwProcessId);
   std::vector<wchar_t> cmd_buffer(cmd.begin(), cmd.end()); // with C++17, could just use cmd.data()
 
   BOOL started = CreateProcessW(NULL, &cmd_buffer[0], NULL, NULL,
@@ -46,7 +36,7 @@ BOOL WINAPI SendCtrlC(IN DWORD dwProcessId) {
   if (started) {
     // wait for termination if the process started, max. 5 secs
     WaitForSingleObject(pi.hProcess, 5000);
-    
+
     // then set success flag if the exit code was 0
     DWORD exit_code;
     if (GetExitCodeProcess(pi.hProcess, &exit_code) != FALSE) {

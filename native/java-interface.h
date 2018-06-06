@@ -18,10 +18,10 @@ JNIEXPORT jboolean JNICALL Java_org_jvnet_winp_Native_kill
 /*
  * Class:     org_jvnet_winp_Native
  * Method:    sendCtrlC
- * Signature: (I)Z
+ * Signature: (ILjava/lang/String)Z
  */
 JNIEXPORT jboolean JNICALL Java_org_jvnet_winp_Native_sendCtrlC
-  (JNIEnv *, jclass, jint);
+  (JNIEnv *, jclass, jint, jstring);
 
 /*
  * Class:     org_jvnet_winp_Native
