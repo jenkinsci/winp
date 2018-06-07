@@ -24,9 +24,7 @@ public class WinProcess {
     private final int pid;
 
     // these values are lazily obtained, in a pair
-    private String 
-        
-        ;
+    private String commandline;
     private TreeMap<String,String> envVars;
 
     /**
