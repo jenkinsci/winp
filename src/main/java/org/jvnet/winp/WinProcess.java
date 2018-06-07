@@ -24,7 +24,9 @@ public class WinProcess {
     private final int pid;
 
     // these values are lazily obtained, in a pair
-    private String commandline;
+    private String 
+        
+        ;
     private TreeMap<String,String> envVars;
 
     /**
@@ -52,7 +54,7 @@ public class WinProcess {
 
     @Override
     public String toString() {
-        return "WinProcess pid#" + pid + " - " + commandline;
+        return "WinProcess pid#" + pid + " - " + getCommandLine();
     }
     
     /**
