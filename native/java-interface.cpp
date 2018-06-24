@@ -9,7 +9,7 @@ JNIEXPORT jboolean JNICALL Java_org_jvnet_winp_Native_kill(JNIEnv* env, jclass c
 
 JNIEXPORT jboolean JNICALL Java_org_jvnet_winp_Native_sendCtrlC(JNIEnv* env, jclass clazz, jint pid, jstring sendctrlcExePath) {
   const wchar_t* exePath = (wchar_t*)env->GetStringChars(sendctrlcExePath, NULL);
-  return SendCtrlC(pid, exePath);
+  return SendCtrlC(env, clazz, pid, exePath);
 }
 
 JNIEXPORT jint JNICALL Java_org_jvnet_winp_Native_setPriority(JNIEnv* env, jclass clazz, jint pid, jint priority) {

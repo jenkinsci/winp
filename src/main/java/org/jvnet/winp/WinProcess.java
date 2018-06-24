@@ -1,5 +1,6 @@
 package org.jvnet.winp;
 
+import javax.annotation.CheckReturnValue;
 import java.lang.reflect.Field;
 import java.util.Comparator;
 import java.util.TreeMap;
@@ -78,7 +79,15 @@ public class WinProcess {
         Native.kill(pid,false);
     }
 
-    public boolean sendCtrlC() {
+    /**
+     * Sends Ctrl+C to the process.
+     * Due to the Windows platform specifics, this execution will spawn a separate thread to deliver the signal.
+     * This process is expected to be executed within a 5-second timeout.
+     * @return {@code true} if the signal was delivered successfully
+     * @throws WinpException Execution error
+     */
+    @CheckReturnValue
+    public boolean sendCtrlC() throws WinpException {
         if (LOGGER.isLoggable(FINE))
             LOGGER.fine(String.format("Attempting to send CTRL+C to pid=%d (%s)",pid,getCommandLine()));
         return Native.sendCtrlC(pid);
