@@ -15,7 +15,7 @@ int main(int argc, char** argv) {
 
   FreeConsole();
   if (!AttachConsole(pid)) {
-    return 1;
+    return GetLastError();
   }
 
   SetConsoleCtrlHandler(NULL, TRUE);

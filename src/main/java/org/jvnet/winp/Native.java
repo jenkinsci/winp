@@ -1,6 +1,8 @@
 package org.jvnet.winp;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
+import javax.annotation.CheckReturnValue;
 import java.math.BigInteger;
 import java.net.URL;
 import java.net.URLDecoder;
@@ -70,8 +72,18 @@ class Native {
 
     private static String ctrlCExePath;
 
-    public static boolean sendCtrlC(int pid) {
+    /**
+     * Sends Ctrl+C to the process.
+     * Due to the Windows platform specifics, this execution will spawn a separate thread to deliver the signal.
+     * This process is expected to be executed within a 5-second timeout.
+     * @param pid PID to receive the signal
+     * @return {@code true} if the signal was delivered successfully
+     * @throws WinpException Execution error
+     */
+    @CheckReturnValue
+    public static boolean sendCtrlC(int pid) throws WinpException {
         if (ctrlCExePath == null) {
+            LOGGER.log(Level.WARNING, "Cannot send the CtrlC signal to the process. Cannot find the executable {0}.dll", CTRLCEXE_NAME);
             return false;
         }
         return sendCtrlC(pid, ctrlCExePath);
