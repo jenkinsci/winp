@@ -52,7 +52,7 @@ public class WinProcess {
 
     @Override
     public String toString() {
-        return "WinProcess pid#" + pid + " - " + commandline;
+        return "WinProcess pid#" + pid + ", command line: " +  (commandline != null ? commandline : "not ready");
     }
     
     /**
