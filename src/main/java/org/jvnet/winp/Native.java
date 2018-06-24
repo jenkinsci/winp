@@ -19,8 +19,10 @@ import java.util.logging.Logger;
 class Native {
 
     public static final String DLL_NAME = "64".equals(System.getProperty("sun.arch.data.model")) ? "winp.x64" : "winp";
+    public static final String CTRLCEXE_NAME = "64".equals(System.getProperty("sun.arch.data.model")) ? "sendctrlc.x64" : "sendctrlc";
 
     native static boolean kill(int pid, boolean recursive);
+    native static boolean sendCtrlC(int pid, String sendctrlcExePath);
     native static boolean isCriticalProcess(int pid);
     native static int setPriority(int pid, int value);
     native static int getProcessId(int handle);
@@ -66,8 +68,18 @@ class Native {
     private static final String DLL_TARGET = "winp.folder.preferred";
     private static final String UNPACK_DLL_TO_PARENT_DIR = "winp.unpack.dll.to.parent.dir";
 
+    private static String ctrlCExePath;
+
+    public static boolean sendCtrlC(int pid) {
+        if (ctrlCExePath == null) {
+            return false;
+        }
+        return sendCtrlC(pid, ctrlCExePath);
+    }
+
     static {
-        load();
+        File exeFile = load();
+        ctrlCExePath = (exeFile == null) ? null : exeFile.getPath();
     }
 
     private static String md5(URL res) {
@@ -90,16 +102,18 @@ class Native {
         }
     }
 
-    private static void load() {
+    private static File load() {
 
-        final URL res = Native.class.getClassLoader().getResource(DLL_NAME + ".dll");
+        final URL dllRes = Native.class.getClassLoader().getResource(DLL_NAME + ".dll");
 
         try {
-            if (res != null) {
-                loadByUrl(res);
+            if (dllRes != null) {
+                final URL exeRes = Native.class.getClassLoader().getResource(CTRLCEXE_NAME + ".exe");
+                return loadByUrl(dllRes, exeRes);
             } else {
                 // we don't know where winp.dll is, so let's just hope the user put it somewhere
                 System.loadLibrary(DLL_NAME);
+                return null;
             }
         } catch (Throwable cause) {
 
@@ -109,32 +123,40 @@ class Native {
         }
     }
 
-    private static void loadByUrl(URL res) throws IOException {
+    private static File loadByUrl(URL dllRes, URL exeRes) throws IOException {
 
-        String url = res.toExternalForm();
+        String dllUrl = dllRes.toExternalForm();
+        if (dllUrl.startsWith("file:")) {
+            // during debug the files are on disk and not in a jar
+            if (!exeRes.toExternalForm().startsWith("file:")) {
+                LOGGER.log(Level.WARNING, "DLL and EXE are inconsistenly present on disk");
+            }
 
-        if (url.startsWith("file:")) {
-            // during debug
             File f;
             try {
-                f = new File(res.toURI());
+                f = new File(dllRes.toURI());
             } catch (URISyntaxException e) {
-                f = new File(res.getPath());
+                f = new File(dllRes.getPath());
             }
             loadDll(f);
-            return;
+
+            File exeFile = new File(f.getParentFile(), CTRLCEXE_NAME + ".exe");
+            return exeFile;
         }
 
         try {
-            File dllFile = extractToStaticLocation(res);
+            File dllFile = extractToStaticLocation(dllRes);
+            File exeFile = extractExe(exeRes, dllFile.getParentFile());
             loadDll(dllFile);
-            return;
+            return exeFile;
         } catch (Throwable e) {
             LOGGER.log(Level.WARNING, "Failed to load DLL from static location", e);
         }
 
-        File dllFile = extractToTmpLocation(res);
+        File dllFile = extractToTmpLocation(dllRes);
+        File exeFile = extractExe(exeRes, dllFile.getParentFile());
         loadDll(dllFile);
+        return exeFile;
     }
 
     private static File extractToStaticLocation(URL url) throws IOException {
@@ -158,6 +180,14 @@ class Native {
         tmpFile.deleteOnExit();
         copyStream(res.openStream(), new FileOutputStream(tmpFile));
         return tmpFile;
+    }
+
+    private static File extractExe(URL res, File dir) throws IOException {
+        File destFile = new File(dir, CTRLCEXE_NAME + '.' + md5(res) + ".exe");
+        if (!destFile.exists()) {
+            copyStream(res.openStream(), new FileOutputStream(destFile));
+        }
+        return destFile;
     }
 
     private static File getJarFile(URL res) {

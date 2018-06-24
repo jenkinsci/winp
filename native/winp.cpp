@@ -6,6 +6,52 @@
 #include "auto_handle.h"
 #include "java-interface.h"
 
+#include <string>
+#include <vector>
+
+//---------------------------------------------------------------------------
+// SendCtrlC
+//
+//  Sends CTRL+C to the specified process.
+//
+//  Parameters:
+//	  dwProcessId - identifier of the process to terminate
+//
+//  Returns:
+//	  TRUE, if successful, FALSE - otherwise.
+//
+BOOL WINAPI SendCtrlC(IN DWORD dwProcessId, const wchar_t* pExePath) {
+  STARTUPINFO         si;
+  PROCESS_INFORMATION pi;
+  ZeroMemory(&si, sizeof(si));
+  si.cb = sizeof(si);
+  ZeroMemory(&pi, sizeof(pi));
+
+  std::wstring exepath(pExePath);
+  std::wstring cmd = L'"' + exepath + L"\" " + std::to_wstring(dwProcessId);
+  std::vector<wchar_t> cmd_buffer(cmd.begin(), cmd.end()); // with C++17, could just use cmd.data()
+
+  BOOL started = CreateProcessW(NULL, &cmd_buffer[0], NULL, NULL,
+                                FALSE, 0, NULL, NULL, &si, &pi);
+
+  BOOL success = FALSE;
+  if (started) {
+    // wait for termination if the process started, max. 5 secs
+    WaitForSingleObject(pi.hProcess, 5000);
+
+    // then set success flag if the exit code was 0
+    DWORD exit_code;
+    if (GetExitCodeProcess(pi.hProcess, &exit_code) != FALSE) {
+      success = (exit_code == 0);
+    }
+  }
+
+  CloseHandle(pi.hProcess);
+  CloseHandle(pi.hThread);
+
+  return success;
+}
+
 //---------------------------------------------------------------------------
 // KillProcess
 //

@@ -1,10 +1,13 @@
 #include "stdafx.h"
 #include "winp.h"
+#include <vector>
 
+HANDLE              hDllInst;
 LPFN_ISWOW64PROCESS fnIsWow64Process;
 
 extern "C"
 BOOL WINAPI DllMain(HANDLE hInst, ULONG dwReason, LPVOID lpReserved) {
+	hDllInst = hInst;
 	fnIsWow64Process = (LPFN_ISWOW64PROCESS)GetProcAddress(
 		GetModuleHandle(TEXT("kernel32")), "IsWow64Process");
 	return TRUE;
