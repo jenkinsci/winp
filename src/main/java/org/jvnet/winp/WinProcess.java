@@ -41,7 +41,7 @@ public class WinProcess {
         try {
             Field f = proc.getClass().getDeclaredField("handle");
             f.setAccessible(true);
-            int handle = ((Number)f.get(proc)).intValue();
+            long handle = f.getLong(proc);
             pid = Native.getProcessId(handle);
         } catch (NoSuchFieldException e) {
             throw new NotWindowsException(e);

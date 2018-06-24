@@ -42,10 +42,10 @@ JNIEXPORT jint JNICALL Java_org_jvnet_winp_Native_setPriority
 /*
  * Class:     org_jvnet_winp_Native
  * Method:    getProcessId
- * Signature: (I)I
+ * Signature: (J)I
  */
 JNIEXPORT jint JNICALL Java_org_jvnet_winp_Native_getProcessId
-  (JNIEnv *, jclass, jint);
+  (JNIEnv *, jclass, jlong);
 
 /*
  * Class:     org_jvnet_winp_Native
