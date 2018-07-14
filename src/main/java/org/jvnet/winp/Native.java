@@ -28,7 +28,7 @@ class Native {
     native static boolean isCriticalProcess(int pid);
     native static boolean isProcessRunning(int pid);
     native static int setPriority(int pid, int value);
-    native static int getProcessId(int handle);
+    native static int getProcessId(long handle);
     native static boolean exitWindowsEx(int flags,int reasonCode);
 
     /**

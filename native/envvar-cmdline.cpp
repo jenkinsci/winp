@@ -312,22 +312,14 @@ jstring getCmdLineAndEnvVars(
 	return packedStr;
 }
 
-JNIEXPORT jint JNICALL Java_org_jvnet_winp_Native_getProcessId(JNIEnv* pEnv, jclass clazz, jint handle) {
+JNIEXPORT jint JNICALL Java_org_jvnet_winp_Native_getProcessId(JNIEnv* pEnv, jclass clazz, jlong handle) {
+	char errorBuffer[ERRMSG_SIZE];
 	HANDLE hProcess = (HANDLE)handle;
-	PROCESS_BASIC_INFORMATION ProcInfo;
-	SIZE_T sRead;
-	if(!NT_SUCCESS(ZwQueryInformationProcess(hProcess, ProcessBasicInformation, &ProcInfo, sizeof(ProcInfo), &sRead))) {
-		reportError(pEnv,"Failed to ZWQueryInformationProcess");
+	DWORD pid = GetProcessId(hProcess);
+	if (!pid) {
+		sprintf_s<ERRMSG_SIZE>(errorBuffer, "Failed to get process id from handle=%ld.", handle);
+		reportError(pEnv, errorBuffer);
 		return -1;
 	}
-	
-	return (jint)ProcInfo.UniqueProcessId;
-/*	ULONG id=0;
-
-	if(!ReadProcessMemory(hProcess, ProcInfo.UniqueProcessId, &id, sizeof(ULONG), &_)) {
-		reportError(pEnv,"Failed to read process ID");
-		return NULL;
-	}
-
-	return id;*/
+	return pid;
 }

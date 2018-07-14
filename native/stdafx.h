@@ -3,7 +3,7 @@
 // are changed infrequently
 #pragma once
 
-#define _WIN32_WINNT 0x500
+#define _WIN32_WINNT 0x501
 
 #include <windows.h>
 #include <tchar.h>
