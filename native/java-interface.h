@@ -33,6 +33,14 @@ JNIEXPORT jboolean JNICALL Java_org_jvnet_winp_Native_isCriticalProcess
 
 /*
  * Class:     org_jvnet_winp_Native
+ * Method:    isProcessRunning
+ * Signature: (I)Z
+ */
+JNIEXPORT jboolean JNICALL Java_org_jvnet_winp_Native_isProcessRunning
+  (JNIEnv *, jclass, jint);
+
+/*
+ * Class:     org_jvnet_winp_Native
  * Method:    setPriority
  * Signature: (II)I
  */

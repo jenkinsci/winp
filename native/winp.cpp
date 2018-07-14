@@ -491,3 +491,17 @@ JNIEXPORT jboolean JNICALL Java_org_jvnet_winp_Native_isCriticalProcess(JNIEnv* 
 
 	return isCritical!=0;
 }
+
+JNIEXPORT jboolean JNICALL Java_org_jvnet_winp_Native_isProcessRunning(JNIEnv* pEnv, jclass clazz, jint dwProcessId) {
+	auto_handle hProcess = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, dwProcessId);
+	if (!hProcess) {
+		return false;
+	}
+
+	DWORD exitCode;
+	if (!GetExitCodeProcess(hProcess, &exitCode)) {
+		return false;
+	}
+
+	return (exitCode == STILL_ACTIVE);
+}
