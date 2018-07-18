@@ -8,7 +8,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.jvnet.winp</groupId>
   <artifactId>winp</artifactId>
-  <version>1.27</version>
+  <version>1.28-SNAPSHOT</version>
   <name>winp</name>
   <description>Kill process tree in Windows</description>
 
@@ -21,7 +21,7 @@
     <connection>scm:git:git@github.com/kohsuke/${project.artifactId}.git</connection>
     <developerConnection>scm:git:ssh://git@github.com/kohsuke/${project.artifactId}.git</developerConnection>
     <url>http://${project.artifactId}.kohsuke.org/</url>
-    <tag>winp-1.27</tag>
+    <tag>HEAD</tag>
   </scm>
 
   <build>
