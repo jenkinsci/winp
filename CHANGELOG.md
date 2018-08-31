@@ -1,6 +1,24 @@
 Changelog
 ====
 
+##### 1.27
+
+Release date: Jul 18, 2018
+
+Changes:
+
+* [PR #49](https://github.com/kohsuke/winp/pull/49) -
+Add `WinProcess#sendCtrlC()` method for sending graceful abort signals to processes.
+* [PR #49](https://github.com/kohsuke/winp/pull/49) -
+Add `WinProcess#isRunning()` method
+* [PR #53](https://github.com/kohsuke/winp/pull/53/) - 
+Fix handling of process IDs on 64-bit systems.
+Before the change there was a risk of incorrect process ID retrieval due to the long => int conversion
+
+Compatibility notes:
+
+* Minimal required Windows version is now Windows XMP instead of Windows 2000 (`_WIN32_WINNT=0x0501`)
+
 ##### 1.26
 
 Release date: Apr 18, 2018
