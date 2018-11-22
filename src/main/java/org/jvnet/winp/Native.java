@@ -24,7 +24,6 @@ class Native {
     public static final String CTRLCEXE_NAME = "64".equals(System.getProperty("sun.arch.data.model")) ? "sendctrlc.x64" : "sendctrlc";
 
     native static boolean kill(int pid, boolean recursive);
-    native static boolean sendCtrlC(int pid, String sendctrlcExePath);
     native static boolean isCriticalProcess(int pid);
     native static boolean isProcessRunning(int pid);
     native static int setPriority(int pid, int value);
@@ -75,7 +74,7 @@ class Native {
 
     /**
      * Sends Ctrl+C to the process.
-     * Due to the Windows platform specifics, this execution will spawn a separate thread to deliver the signal.
+     * Due to the Windows platform specifics, this execution will spawn a separate process to deliver the signal.
      * This process is expected to be executed within a 5-second timeout.
      * @param pid PID to receive the signal
      * @return {@code true} if the signal was delivered successfully
@@ -87,7 +86,7 @@ class Native {
             LOGGER.log(Level.WARNING, "Cannot send the CtrlC signal to the process. Cannot find the executable {0}.dll", CTRLCEXE_NAME);
             return false;
         }
-        return sendCtrlC(pid, ctrlCExePath);
+        return CtrlCSender.sendCtrlC(pid, ctrlCExePath);
     }
 
     static {
