@@ -14,63 +14,6 @@
 #define ERRMSG_SIZE 512
 
 //---------------------------------------------------------------------------
-// SendCtrlC
-//
-//  Sends CTRL+C to the specified process.
-//
-//  Parameters:
-//	  dwProcessId - identifier of the process to terminate
-//
-//  Returns:
-//	  TRUE, if successful, FALSE - otherwise.
-//    When used from JNI, exceptions may be thrown instead
-//
-BOOL WINAPI SendCtrlC(JNIEnv* pEnv, jclass clazz, IN DWORD dwProcessId, const wchar_t* pExePath) {
-  char errorBuffer[ERRMSG_SIZE];
-  STARTUPINFO         si;
-  PROCESS_INFORMATION pi;
-  ZeroMemory(&si, sizeof(si));
-  si.cb = sizeof(si);
-  ZeroMemory(&pi, sizeof(pi));
-
-  std::wstring exepath(pExePath);
-  std::wstring cmd = L'"' + exepath + L"\" " + std::to_wstring(dwProcessId);
-  std::vector<wchar_t> cmd_buffer(cmd.begin(), cmd.end()); // with C++17, could just use cmd.data()
-
-  BOOL started = CreateProcessW(NULL, &cmd_buffer[0], NULL, NULL,
-                                FALSE, 0, NULL, NULL, &si, &pi);
-
-  BOOL success = FALSE;
-  if (started) {
-    // wait for termination if the process started, max. 5 secs
-    DWORD ret = WaitForSingleObject(pi.hProcess, 5000);
-    if (ret != WAIT_OBJECT_0) {
-        sprintf_s<ERRMSG_SIZE>(errorBuffer, "Failed to send Ctrl+C to process with pid=%d. WaitForSingleObject exit code: %d (last error: d).", dwProcessId, ret, GetLastError());
-        reportError(pEnv, errorBuffer);
-    }
-
-    // then set success flag if the exit code was 0
-    DWORD exit_code;
-    if (GetExitCodeProcess(pi.hProcess, &exit_code) != FALSE) {
-      success = (exit_code == 0);
-      if (exit_code != 0) {
-        sprintf_s<ERRMSG_SIZE>(errorBuffer, "External Ctrl+C execution failed for process pid=%d. Ctrl+C process exited with code %d: %s.", dwProcessId, exit_code,
-            (exit_code == -1) ? "Wrong arguments" : "Failed to attach to the console (see the AttachConsole WinAPI call)");
-        reportError(pEnv, errorBuffer);
-      }
-    }
-  } else {
-    sprintf_s<ERRMSG_SIZE>(errorBuffer, "Failed to send Ctrl+C to process with pid=%d. Signal process did not start: %s.", dwProcessId, cmd);
-    reportError(pEnv, errorBuffer);
-  }
-
-  CloseHandle(pi.hProcess);
-  CloseHandle(pi.hThread);
-
-  return success;
-}
-
-//---------------------------------------------------------------------------
 // KillProcess
 //
 //  Terminates the specified process.

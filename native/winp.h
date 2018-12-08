@@ -6,8 +6,6 @@
 #define reportError(env,msg)	error(env,__FILE__,__LINE__,msg);
 void error(JNIEnv* env, const char* file, int line, const char* msg);
 
-BOOL WINAPI SendCtrlC(JNIEnv* pEnv, jclass clazz, IN DWORD dwProcessId, const wchar_t* pExePath);
-
 //
 // Kernel32.dll
 //
