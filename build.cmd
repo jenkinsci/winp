@@ -1,6 +1,6 @@
 @echo off
 setlocal
-set PATH=%PATH%;%ProgramFiles(x86)%\MSBuild\12.0\Bin\;
+set PATH=%PATH%;%ProgramFiles(x86)%\Microsoft Visual Studio\2017\Community\MSBuild\15.0\Bin\;
 set BUIDROOT=%cd%
 
 :getopts

@@ -16,3 +16,4 @@ x64
 *.pfx
 version.txt
 nb-configuration.xml
+native/.vs/
