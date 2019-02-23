@@ -1,6 +1,7 @@
 @echo off
 setlocal
-set PATH=%PATH%;%ProgramFiles(x86)%\MSBuild\12.0\Bin\;
+set PATH=%PATH%;%ProgramFiles(x86)%\Microsoft Visual Studio\2017\BuildTools\MSBuild\15.0\bin\amd64
+set VCTargetsPath=C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V140
 set BUIDROOT=%cd%
 
 :getopts

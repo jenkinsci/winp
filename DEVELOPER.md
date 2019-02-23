@@ -4,7 +4,7 @@ WinP Developer info
 ## Building
 
 In order to build and test the project, use the `build.cmd` script available in the repository. 
-In order to build the project, you need Microsoft Visual Studio 2013 or above.
+In order to build the project, you need MSbuild 15.0 and Microsoft Visual Studio 2017 with Windows XP support and BuildTools v140.
 
 * `build.cmd cleanbuild` - Build and test the release version of the JAR file.
 Code will not be signed automatically.
