@@ -15,7 +15,7 @@
   <properties>
     <findbugs-maven-plugin.version>3.0.4</findbugs-maven-plugin.version>
     <findbugs.failOnError>true</findbugs.failOnError>
-    <java.level>6</java.level>
+    <java.level>8</java.level>
     <java.level.test>${java.level}</java.level.test>
   </properties>
 
