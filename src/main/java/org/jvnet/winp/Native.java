@@ -70,7 +70,7 @@ class Native {
     private static final String DLL_TARGET = "winp.folder.preferred";
     private static final String UNPACK_DLL_TO_PARENT_DIR = "winp.unpack.dll.to.parent.dir";
 
-    private static String ctrlCExePath;
+    private static volatile String ctrlCExePath;
 
     /**
      * Sends Ctrl+C to the process.
@@ -82,6 +82,9 @@ class Native {
      */
     @CheckReturnValue
     public static boolean sendCtrlC(int pid) throws WinpException {
+        if (loadFailure != null) {
+            throw new WinpException("Cannot send the CtrlC signal to the process: winp init failed", loadFailure);
+        }
         if (ctrlCExePath == null) {
             LOGGER.log(Level.WARNING, "Cannot send the CtrlC signal to the process. Cannot find the executable {0}.dll", CTRLCEXE_NAME);
             return false;
@@ -89,9 +92,16 @@ class Native {
         return CtrlCSender.sendCtrlC(pid, ctrlCExePath);
     }
 
+    private static volatile Throwable loadFailure;
+
     static {
-        File exeFile = load();
-        ctrlCExePath = (exeFile == null) ? null : exeFile.getPath();
+        try {
+            File exeFile = load();
+            ctrlCExePath = (exeFile == null) ? null : exeFile.getPath();
+        } catch (Throwable t) {
+            loadFailure = t;
+            LOGGER.log(Level.SEVERE, "Cannot init winp native", t);
+        }
     }
 
     private static String md5(URL res) {
