@@ -1,6 +1,22 @@
 Changelog
 ====
 
+##### 1.28
+
+Release date: Feb 28, 2019
+
+* [#58](https://github.com/kohsuke/winp/issues/58) -
+WinP was failing to send Ctrl+C on some platforms due to the missing DLL
+* [#60](https://github.com/kohsuke/winp/pull/61) -
+Prevent flickering console window from showing up during the process termination
+* [#56](https://github.com/kohsuke/winp/issues/56) -
+Cache and rethrow initialization errors in the native logic when Ctrl+C signal is invoked  
+
+Internal:
+
+* [PR #61](https://github.com/kohsuke/winp/pull/61) -
+Ctrl+C sending logic is now implemented in Java instead of the native code
+
 ##### 1.27
 
 Release date: Jul 18, 2018
