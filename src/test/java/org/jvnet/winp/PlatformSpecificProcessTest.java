@@ -152,40 +152,6 @@ public class PlatformSpecificProcessTest extends ProcessSpawningTest {
         assertThat(remaining, Matchers.anEmptyMap());
     }
 
-    @Test
-    public void getEnvironmentVariables_shouldReturnCorrectValuesNewCode() throws Exception {
-        Process p = spawnTestApp();
-        WinProcess wp = new WinProcess(p);
-        // spawned processes should inherit our environment variables
-        Map<String, String> inheritedEnv = System.getenv();
-        Map<String, String> processEnv = wp.getEnvironmentVariablesNew();
-
-        // environment variable that start with = is just some funky stuff!
-        // and there are some that start with "=" that won't show up in set e.g. =ExitCode =CLINK.SCRIPTS
-        for (Map.Entry<String, String> entry : inheritedEnv.entrySet()) {
-            if (!(entry.getKey().equals("") || entry.getKey().startsWith("=") || // :-o  special
-                    ARCHITECTURE_DEPENDANT_ENVIRONMENT_VARS.contains(entry.getKey())))  {
-                assertThat(processEnv, Matchers.hasEntry(entry.getKey(), entry.getValue()));
-            }
-        }
-        // the extra env added by spawnTestApp
-        assertThat(processEnv, Matchers.hasEntry("TEST", "foobar"));
-
-        // what remains?
-        Map<String, String> remaining = new HashMap<>();
-        for (Map.Entry<String, String>  kv : processEnv.entrySet()) {
-            if (! (inheritedEnv.containsKey(kv.getKey()) || kv.getKey().equals("TEST") || kv.getKey().equals("")
-                    || kv.getKey().startsWith("="))) {
-                // some vars are changed by windows depending on if you are a 32bit process running in a 64 bit os or 64 on 64.
-                // just filter those out
-                if (!ARCHITECTURE_DEPENDANT_ENVIRONMENT_VARS.contains(kv.getKey())) {
-                    remaining.put(kv.getKey(), kv.getValue());
-                }
-            }
-        }
-        assertThat(remaining, Matchers.anEmptyMap());
-    }
-
 
     @Test
     public void getEnvironmentVariables_shouldFailIfTheProcessIsDead() throws Exception {

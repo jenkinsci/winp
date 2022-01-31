@@ -139,14 +139,8 @@ public class WinProcess {
      *      The process may be dead or there is not enough security privileges.
      */
     public synchronized TreeMap<String,String> getEnvironmentVariables() {
-        if(envVars==null)
-            parseCmdLineAndEnvVars();
-        return envVars;
-    }
-
-    public synchronized TreeMap<String,String> getEnvironmentVariablesNew() {
         if(envVars==null) {
-            parseCmdLineAndEnvVarsNew();
+            parseCmdLineAndEnvVars();
         }
         return envVars;
     }
@@ -160,34 +154,6 @@ public class WinProcess {
     }
     
     private void parseCmdLineAndEnvVars() {
-        String s = Native.getCmdLineAndEnvVars(pid);
-        if(s==null)
-            throw new WinpException("Failed to obtain for PID="+pid);
-        int sep = s.indexOf('\0');
-        commandline = s.substring(0,sep);
-        envVars = new TreeMap<String,String>(CASE_INSENSITIVE_COMPARATOR);
-        s = s.substring(sep+1);
-
-        while(s.length()>0) {
-            sep = s.indexOf('\0');
-            if(sep==0)  return;
-            
-            String t;
-            if(sep==-1) {
-                t = s;
-                s = "";
-            } else {
-                t = s.substring(0,sep);
-                s = s.substring(sep+1);
-            }
-
-            sep = t.indexOf('=');
-            if  (sep!=-1) // be defensive. not exactly sure when this happens, but see HUDSON-4034
-                envVars.put(t.substring(0,sep),t.substring(sep+1));
-        }
-    }
-
-    private void parseCmdLineAndEnvVarsNew() {
         String s = Native.getCmdLineAndEnvVars(pid);
         if(s==null)
             throw new WinpException("Failed to obtain for PID="+pid);
