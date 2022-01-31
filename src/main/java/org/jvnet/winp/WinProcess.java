@@ -2,7 +2,10 @@ package org.jvnet.winp;
 
 import javax.annotation.CheckReturnValue;
 import java.lang.reflect.Field;
-import java.util.*;
+import java.util.Comparator;
+import java.util.TreeMap;
+import java.util.Iterator;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static java.util.logging.Level.FINE;
