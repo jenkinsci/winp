@@ -174,12 +174,6 @@ public class WinProcess {
         }
     }
 
-    private static final Comparator<String> CASE_INSENSITIVE_COMPARATOR = new Comparator<String>() {
-        public int compare(String o1, String o2) {
-            return o1.toUpperCase().compareTo(o2.toUpperCase());
-        }
-    };
-
     /**
      * Enumerates all the processes in the system.
      *
