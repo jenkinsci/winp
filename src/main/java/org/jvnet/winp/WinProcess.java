@@ -2,10 +2,7 @@ package org.jvnet.winp;
 
 import javax.annotation.CheckReturnValue;
 import java.lang.reflect.Field;
-import java.util.Comparator;
-import java.util.TreeMap;
-import java.util.Iterator;
-import java.util.logging.Level;
+import java.util.*;
 import java.util.logging.Logger;
 
 import static java.util.logging.Level.FINE;
@@ -147,6 +144,13 @@ public class WinProcess {
         return envVars;
     }
 
+    public synchronized TreeMap<String,String> getEnvironmentVariablesNew() {
+        if(envVars==null) {
+            parseCmdLineAndEnvVarsNew();
+        }
+        return envVars;
+    }
+
     private void parseCmdLine() throws WinpException {
         String s = Native.getCmdLine(pid);
         if(s == null) {
@@ -180,6 +184,27 @@ public class WinProcess {
             sep = t.indexOf('=');
             if  (sep!=-1) // be defensive. not exactly sure when this happens, but see HUDSON-4034
                 envVars.put(t.substring(0,sep),t.substring(sep+1));
+        }
+    }
+
+    private void parseCmdLineAndEnvVarsNew() {
+        String s = Native.getCmdLineAndEnvVars(pid);
+        if(s==null)
+            throw new WinpException("Failed to obtain for PID="+pid);
+        // a double null indicates the end of the envvars (but the string can be longer!) so truncate here.
+        int end = s.indexOf("\0\0");
+        if (end != -1) {
+            s = s.substring(0, end);
+        }
+        StringTokenizer st = new StringTokenizer(s, "\0", false);
+        commandline = st.nextToken();
+        envVars = new TreeMap<String,String>(String.CASE_INSENSITIVE_ORDER);
+        while (st.hasMoreElements()) {
+            final String kv = st.nextToken();
+            int sep = kv.indexOf('=');
+            if  (sep!=-1) { // be defensive. not exactly sure when this happens, but see HUDSON-4034
+                envVars.put(kv.substring(0, sep), kv.substring(sep + 1));
+            }
         }
     }
 
