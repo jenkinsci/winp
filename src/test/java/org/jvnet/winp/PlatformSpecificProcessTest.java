@@ -25,9 +25,11 @@ package org.jvnet.winp;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collection;
+import java.util.*;
+
 import static org.hamcrest.CoreMatchers.*;
+
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -39,7 +41,6 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 import org.jvnet.winp.util.ExecutablePlatform;
 import org.jvnet.winp.util.ProcessSpawningTest;
-import static org.jvnet.winp.util.ProcessSpawningTest.isAlive;
 import org.jvnet.winp.util.TestHelper;
 
 /**
@@ -50,7 +51,17 @@ import org.jvnet.winp.util.TestHelper;
  */
 @RunWith(Parameterized.class)
 public class PlatformSpecificProcessTest extends ProcessSpawningTest {
-    
+
+    private static final Set<String> ARCHITECTURE_DEPENDANT_ENVIRONMENT_VARS;
+
+    static {
+        ARCHITECTURE_DEPENDANT_ENVIRONMENT_VARS = new HashSet<>();
+        ARCHITECTURE_DEPENDANT_ENVIRONMENT_VARS.add("PROCESSOR_ARCHITEW6432");
+        ARCHITECTURE_DEPENDANT_ENVIRONMENT_VARS.add("PROCESSOR_ARCHITECTURE");
+        ARCHITECTURE_DEPENDANT_ENVIRONMENT_VARS.add("PROGRAMFILES");
+        ARCHITECTURE_DEPENDANT_ENVIRONMENT_VARS.add("COMMONPROGRAMFILES");
+    }
+
     private final ExecutablePlatform executablePlatform; 
     
     public PlatformSpecificProcessTest(ExecutablePlatform p) {
@@ -106,7 +117,42 @@ public class PlatformSpecificProcessTest extends ProcessSpawningTest {
         
         Assert.fail("Expected WinpException since the process is killed");
     }
-    
+
+    @Test
+    public void getEnvironmentVariables_shouldReturnCorrectValues() throws Exception {
+        Process p = spawnTestApp();
+        WinProcess wp = new WinProcess(p);
+        // spawned processes should inherit our environment variables
+        Map<String, String> inheritedEnv = System.getenv();
+        Map<String, String> processEnv = wp.getEnvironmentVariables();
+
+        // environment variable that start with = is just some funky stuff!
+        // and there are some that start with "=" that won't show up in set e.g. =ExitCode =CLINK.SCRIPTS
+        for (Map.Entry<String, String> entry : inheritedEnv.entrySet()) {
+            if (!(entry.getKey().equals("") || entry.getKey().startsWith("=") || // :-o  special
+                    ARCHITECTURE_DEPENDANT_ENVIRONMENT_VARS.contains(entry.getKey())))  {
+                assertThat(processEnv, Matchers.hasEntry(entry.getKey(), entry.getValue()));
+            }
+        }
+        // the extra env added by spawnTestApp
+        assertThat(processEnv, Matchers.hasEntry("TEST", "foobar"));
+
+        // what remains?
+        Map<String, String> remaining = new HashMap<>();
+        for (Map.Entry<String, String>  kv : processEnv.entrySet()) {
+            if (! (inheritedEnv.containsKey(kv.getKey()) || kv.getKey().equals("TEST") || kv.getKey().equals("")
+                    || kv.getKey().startsWith("="))) {
+                // some vars are changed by windows depending on if you are a 32bit process running in a 64 bit os or 64 on 64.
+                // just filter those out
+                if (!ARCHITECTURE_DEPENDANT_ENVIRONMENT_VARS.contains(kv.getKey())) {
+                    remaining.put(kv.getKey(), kv.getValue());
+                }
+            }
+        }
+        assertThat(remaining, Matchers.anEmptyMap());
+    }
+
+
     @Test
     public void getEnvironmentVariables_shouldFailIfTheProcessIsDead() throws Exception {
         Process p = spawnTestApp();
