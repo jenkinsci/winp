@@ -39,7 +39,6 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 import org.jvnet.winp.util.ExecutablePlatform;
 import org.jvnet.winp.util.ProcessSpawningTest;
-import static org.jvnet.winp.util.ProcessSpawningTest.isAlive;
 import org.jvnet.winp.util.TestHelper;
 
 /**
@@ -94,7 +93,7 @@ public class PlatformSpecificProcessTest extends ProcessSpawningTest {
         int pid = wp.getPid();
         wp.killRecursively();
         Thread.sleep(1000);
-        assertFalse("The process has not been stopped yet", isAlive(p));
+        assertFalse("The process has not been stopped yet", p.isAlive());
 
         try {
             new WinProcess(p).getCommandLine();
@@ -114,7 +113,7 @@ public class PlatformSpecificProcessTest extends ProcessSpawningTest {
         int pid = wp.getPid();
         wp.killRecursively();
         Thread.sleep(1000);
-        assertFalse("The process has not been stopped yet", isAlive(p));
+        assertFalse("The process has not been stopped yet", p.isAlive());
         
         try {
             new WinProcess(p).getEnvironmentVariables();

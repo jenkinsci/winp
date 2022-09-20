@@ -23,8 +23,6 @@
  */
 package org.jvnet.winp;
 
-import javax.annotation.Nonnegative;
-
 /**
  * User-scope error codes in WinP. 
  * @author Oleg Nenashev
@@ -35,7 +33,7 @@ enum UserErrorType {
     
     private final int shortCode;
     
-    UserErrorType(@Nonnegative int shortCode) {
+    UserErrorType(/* @java.annotation.Nonnegative */ int shortCode) {
         this.shortCode = shortCode;
     }
 
