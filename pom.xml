@@ -45,7 +45,7 @@
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
-            <argLine>-XX:+CreateMinidumpOnCrash</argLine>
+            <argLine>-XX:+CreateCoredumpOnCrash</argLine>
         </configuration>
       </plugin>
     </plugins>
