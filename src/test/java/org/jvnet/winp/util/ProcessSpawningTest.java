@@ -32,7 +32,6 @@ import edu.umd.cs.findbugs.annotations.CheckForNull;
 import java.io.File;
 import java.io.IOException;
 import org.junit.After;
-import org.junit.Assert;
 import org.jvnet.winp.WinProcess;
 
 /**
@@ -94,8 +93,7 @@ public class ProcessSpawningTest extends NativeWinpTest {
                 executable = "native_test/testapp/Win32/Release/testapp.exe";
                 break;
             default:
-                Assert.fail("Unsupported platform: " + executablePlatform);
-                throw new IllegalStateException();
+                throw new IllegalArgumentException("Unsupported platform: " + executablePlatform);
         }
         return new File(executable);
     }
