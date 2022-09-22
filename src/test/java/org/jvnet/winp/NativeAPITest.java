@@ -5,6 +5,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeThat;
 
@@ -157,25 +158,23 @@ public class NativeAPITest extends ProcessSpawningTest {
         wp.killRecursively();
     }
 
-    @Test(expected = WinpException.class)
+    @Test
     public void testSendCtrlC_nonExistentPID() throws Exception {
         WinProcess wp = new WinProcess(Integer.MAX_VALUE);
         assertFalse("Process is running when it should not: " + wp, wp.isRunning());
 
         // send Ctrl+C, then wait for a max of 4 secs
-        boolean sent = wp.sendCtrlC();
+        assertThrows(WinpException.class, wp::sendCtrlC);
     }
 
     @Test
     public void shouldFailForNonExistentProcess() {
         int nonExistentPid = Integer.MAX_VALUE;
-        try {
-            new WinProcess(nonExistentPid).getCommandLine();
-        } catch(WinpException ex) {
-            assertThat(ex.getMessage(), containsString("Failed to open process"));
-            return;
-        }
-        Assert.fail("Expected WinpException due to the non-existent process");
+        WinpException e = assertThrows(
+                "Expected WinpException due to the non-existent process",
+                WinpException.class,
+                () -> new WinProcess(nonExistentPid).getCommandLine());
+        assertThat(e.getMessage(), containsString("Failed to open process"));
     }
     
     /**
