@@ -75,13 +75,6 @@
     </dependency>
   </dependencies>
 
-  <distributionManagement>
-    <site>
-      <id>github.com</id>
-      <url>gitsite:git@github.com/${gitHubRepo}.git</url>
-    </site>
-  </distributionManagement>
-
   <licenses>
     <license>
       <name>MIT License</name>
