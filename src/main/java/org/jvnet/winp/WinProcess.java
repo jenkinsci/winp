@@ -186,6 +186,7 @@ public class WinProcess {
      */
     public static Iterable<WinProcess> all() {
         return new Iterable<WinProcess>() {
+            @Override
             public Iterator<WinProcess> iterator() {
                 return new Iterator<WinProcess>() {
                     private int pos=0;
@@ -203,14 +204,17 @@ public class WinProcess {
                         }
                     }
 
+                    @Override
                     public boolean hasNext() {
                         return pos<total;
                     }
 
+                    @Override
                     public WinProcess next() {
                         return new WinProcess(pids[pos++]);
                     }
 
+                    @Override
                     public void remove() {
                         throw new UnsupportedOperationException();
                     }
