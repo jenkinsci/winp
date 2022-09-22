@@ -37,7 +37,7 @@ public class NativeAPITest extends ProcessSpawningTest {
             try {
                 commandLine = p.getCommandLine();
             } catch (WinpException e) {
-                System.out.println("Cannot determine the process name for process " + p + ": " + e.toString());
+                System.out.println("Cannot determine the process name for process " + p + ": " + e);
                 continue;
             }
             
@@ -47,7 +47,7 @@ public class NativeAPITest extends ProcessSpawningTest {
                     assertTrue(p.isCriticalProcess());
                     p.kill();   // this should fail (but if the test fails, then we'll see BSoD
                 } catch (WinpException e) {
-                    System.out.println("Ignoring exception for process " + p + ": " + e.toString());
+                    System.out.println("Ignoring exception for process " + p + ": " + e);
                     e.printStackTrace(System.out);
                 }
             }
