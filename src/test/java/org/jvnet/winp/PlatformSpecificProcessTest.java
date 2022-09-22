@@ -132,7 +132,7 @@ public class PlatformSpecificProcessTest extends ProcessSpawningTest {
     
     private String getExpectedPEBName(boolean processIsRunning) {
         // We cannot read Wow64 Process info from the terminated process, hence PEB32 structure won't be discovered
-        return (executablePlatform == ExecutablePlatform.X86 && processIsRunning) ? "PEB32" : "PEB";
+        return executablePlatform == ExecutablePlatform.X86 && processIsRunning ? "PEB32" : "PEB";
     }
     
     @Parameters

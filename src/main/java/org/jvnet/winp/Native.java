@@ -97,7 +97,7 @@ class Native {
     static {
         try {
             File exeFile = load();
-            ctrlCExePath = (exeFile == null) ? null : exeFile.getPath();
+            ctrlCExePath = exeFile == null ? null : exeFile.getPath();
         } catch (Throwable t) {
             loadFailure = t;
             LOGGER.log(Level.SEVERE, "Cannot init winp native", t);
