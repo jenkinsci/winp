@@ -154,7 +154,7 @@ public class NativeAPITest extends ProcessSpawningTest {
             Thread.sleep(100);
         }
 
-        assertTrue("Process has not been terminated after Ctrl+C", !wp.isRunning());
+        assertFalse("Process has not been terminated after Ctrl+C", wp.isRunning());
         wp.killRecursively();
     }
 
