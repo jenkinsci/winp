@@ -1,13 +1,16 @@
 package org.jvnet.winp;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
 import edu.umd.cs.findbugs.annotations.CheckReturnValue;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.math.BigInteger;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
-import java.net.URISyntaxException;
-import java.io.*;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.logging.Level;
@@ -97,7 +100,7 @@ class Native {
     static {
         try {
             File exeFile = load();
-            ctrlCExePath = (exeFile == null) ? null : exeFile.getPath();
+            ctrlCExePath = exeFile == null ? null : exeFile.getPath();
         } catch (Throwable t) {
             loadFailure = t;
             LOGGER.log(Level.SEVERE, "Cannot init winp native", t);

@@ -23,15 +23,18 @@
  */
 package org.jvnet.winp;
 
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThrows;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
-import static org.hamcrest.CoreMatchers.*;
 import org.junit.Assert;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -95,15 +98,16 @@ public class PlatformSpecificProcessTest extends ProcessSpawningTest {
         Thread.sleep(1000);
         assertFalse("The process has not been stopped yet", p.isAlive());
 
-        try {
-            new WinProcess(p).getCommandLine();
-        } catch (WinpException ex) {
-            assertThat(ex.getMessage(), containsString("Process with pid=" + pid + " has already stopped. Exit code is -1"));
-            assertThat(ex.getWin32ErrorCode(), equalTo(UserErrorType.PROCESS_IS_NOT_RUNNING.getSystemErrorCode()));
-            return;
-        }
-        
-        Assert.fail("Expected WinpException since the process is killed");
+        WinpException e = assertThrows(
+                "Expected WinpException since the process is killed",
+                WinpException.class,
+                () -> new WinProcess(p).getCommandLine());
+        assertThat(
+                e.getMessage(),
+                containsString("Process with pid=" + pid + " has already stopped. Exit code is -1"));
+        assertThat(
+                e.getWin32ErrorCode(),
+                equalTo(UserErrorType.PROCESS_IS_NOT_RUNNING.getSystemErrorCode()));
     }
     
     @Test
@@ -114,16 +118,17 @@ public class PlatformSpecificProcessTest extends ProcessSpawningTest {
         wp.killRecursively();
         Thread.sleep(1000);
         assertFalse("The process has not been stopped yet", p.isAlive());
-        
-        try {
-            new WinProcess(p).getEnvironmentVariables();
-        } catch (WinpException ex) {
-            assertThat(ex.getMessage(), containsString("Process with pid=" + pid + " has already stopped. Exit code is -1"));
-            assertThat(ex.getWin32ErrorCode(), equalTo(UserErrorType.PROCESS_IS_NOT_RUNNING.getSystemErrorCode()));
-            return;
-        }
-        
-        Assert.fail("Expected WinpException since the process is killed");
+
+        WinpException e = assertThrows(
+                "Expected WinpException since the process is killed",
+                WinpException.class,
+                () -> new WinProcess(p).getEnvironmentVariables());
+        assertThat(
+                e.getMessage(),
+                containsString("Process with pid=" + pid + " has already stopped. Exit code is -1"));
+        assertThat(
+                e.getWin32ErrorCode(),
+                equalTo(UserErrorType.PROCESS_IS_NOT_RUNNING.getSystemErrorCode()));
     }
     
     private Process spawnTestApp() throws IOException, InterruptedException {
@@ -132,7 +137,7 @@ public class PlatformSpecificProcessTest extends ProcessSpawningTest {
     
     private String getExpectedPEBName(boolean processIsRunning) {
         // We cannot read Wow64 Process info from the terminated process, hence PEB32 structure won't be discovered
-        return (executablePlatform == ExecutablePlatform.X86 && processIsRunning) ? "PEB32" : "PEB";
+        return executablePlatform == ExecutablePlatform.X86 && processIsRunning ? "PEB32" : "PEB";
     }
     
     @Parameters

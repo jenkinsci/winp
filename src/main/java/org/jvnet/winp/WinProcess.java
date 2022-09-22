@@ -1,10 +1,8 @@
 package org.jvnet.winp;
 
 import edu.umd.cs.findbugs.annotations.CheckReturnValue;
-import java.util.Comparator;
 import java.util.TreeMap;
 import java.util.Iterator;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static java.util.logging.Level.FINE;
@@ -155,7 +153,7 @@ public class WinProcess {
             throw new WinpException("Failed to obtain for PID="+pid);
         int sep = s.indexOf('\0');
         commandline = s.substring(0,sep);
-        envVars = new TreeMap<String,String>(CASE_INSENSITIVE_COMPARATOR);
+        envVars = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         s = s.substring(sep+1);
 
         while(s.length()>0) {
@@ -177,12 +175,6 @@ public class WinProcess {
         }
     }
 
-    private static final Comparator<String> CASE_INSENSITIVE_COMPARATOR = new Comparator<String>() {
-        public int compare(String o1, String o2) {
-            return o1.toUpperCase().compareTo(o2.toUpperCase());
-        }
-    };
-
     /**
      * Enumerates all the processes in the system.
      *
@@ -192,9 +184,10 @@ public class WinProcess {
      *      Never null.
      */
     public static Iterable<WinProcess> all() {
-        return new Iterable<WinProcess>() {
+        return new Iterable<>() {
+            @Override
             public Iterator<WinProcess> iterator() {
-                return new Iterator<WinProcess>() {
+                return new Iterator<>() {
                     private int pos=0;
                     private int[] pids = new int[256];
                     private int total;
@@ -210,14 +203,17 @@ public class WinProcess {
                         }
                     }
 
+                    @Override
                     public boolean hasNext() {
                         return pos<total;
                     }
 
+                    @Override
                     public WinProcess next() {
                         return new WinProcess(pids[pos++]);
                     }
 
+                    @Override
                     public void remove() {
                         throw new UnsupportedOperationException();
                     }
