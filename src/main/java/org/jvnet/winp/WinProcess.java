@@ -185,10 +185,10 @@ public class WinProcess {
      *      Never null.
      */
     public static Iterable<WinProcess> all() {
-        return new Iterable<WinProcess>() {
+        return new Iterable<>() {
             @Override
             public Iterator<WinProcess> iterator() {
-                return new Iterator<WinProcess>() {
+                return new Iterator<>() {
                     private int pos=0;
                     private int[] pids = new int[256];
                     private int total;
