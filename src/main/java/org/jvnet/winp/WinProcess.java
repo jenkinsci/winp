@@ -1,7 +1,6 @@
 package org.jvnet.winp;
 
 import edu.umd.cs.findbugs.annotations.CheckReturnValue;
-import java.util.Comparator;
 import java.util.TreeMap;
 import java.util.Iterator;
 import java.util.logging.Level;
@@ -155,7 +154,7 @@ public class WinProcess {
             throw new WinpException("Failed to obtain for PID="+pid);
         int sep = s.indexOf('\0');
         commandline = s.substring(0,sep);
-        envVars = new TreeMap<String,String>(CASE_INSENSITIVE_COMPARATOR);
+        envVars = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         s = s.substring(sep+1);
 
         while(s.length()>0) {
@@ -176,12 +175,6 @@ public class WinProcess {
                 envVars.put(t.substring(0,sep),t.substring(sep+1));
         }
     }
-
-    private static final Comparator<String> CASE_INSENSITIVE_COMPARATOR = new Comparator<String>() {
-        public int compare(String o1, String o2) {
-            return o1.toUpperCase().compareTo(o2.toUpperCase());
-        }
-    };
 
     /**
      * Enumerates all the processes in the system.
