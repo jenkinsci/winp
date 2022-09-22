@@ -1,7 +1,6 @@
 package org.jvnet.winp;
 
-import javax.annotation.CheckReturnValue;
-import java.lang.reflect.Field;
+import edu.umd.cs.findbugs.annotations.CheckReturnValue;
 import java.util.Comparator;
 import java.util.TreeMap;
 import java.util.Iterator;
@@ -39,15 +38,10 @@ public class WinProcess {
      * Wraps {@link Process} into {@link WinProcess}.
      */
     public WinProcess(Process proc) {
-        try {
-            Field f = proc.getClass().getDeclaredField("handle");
-            f.setAccessible(true);
-            long handle = f.getLong(proc);
-            pid = Native.getProcessId(handle);
-        } catch (NoSuchFieldException e) {
-            throw new NotWindowsException(e);
-        } catch (IllegalAccessException e) {
-            throw new NotWindowsException(e);
+        long pidLong = proc.pid();
+        this.pid = (int) pidLong;
+        if (this.pid != pidLong) {
+            throw new IllegalArgumentException("Out of range: " + pidLong);
         }
     }
 

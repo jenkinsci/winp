@@ -16,7 +16,7 @@
     <menu name="Windows Process Library">
       <item name="Introduction"                   href="/index.html"/>
       <item name="Download"               href="http://mvnrepository.com/artifact/${project.groupId}/${project.artifactId}"/>
-      <item name="Source code" href="https://github.com/kohsuke/${project.artifactId}"/>
+      <item name="Source code" href="https://github.com/jenkinsci/${project.artifactId}"/>
     </menu>
 
     <menu name="References">

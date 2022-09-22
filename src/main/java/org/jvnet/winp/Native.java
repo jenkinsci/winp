@@ -2,7 +2,7 @@ package org.jvnet.winp;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
-import javax.annotation.CheckReturnValue;
+import edu.umd.cs.findbugs.annotations.CheckReturnValue;
 import java.math.BigInteger;
 import java.net.URL;
 import java.net.URLDecoder;
@@ -104,18 +104,16 @@ class Native {
         }
     }
 
+    @SuppressFBWarnings(value = "WEAK_MESSAGE_DIGEST_MD5", justification = "TODO needs triage")
     private static String md5(URL res) {
         try {
             MessageDigest md5 = MessageDigest.getInstance("MD5");
-            InputStream in = res.openStream();
-            try {
+            try (InputStream in = res.openStream()) {
                 byte[] buf = new byte[8192];
                 int len;
                 while((len=in.read(buf))>=0)
                     md5.update(buf, 0, len);
                 return toHex32(md5.digest());
-            } finally {
-                in.close();
             }
         } catch (NoSuchAlgorithmException e) {
             throw new AssertionError(e);
