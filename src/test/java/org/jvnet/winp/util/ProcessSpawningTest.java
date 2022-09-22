@@ -23,15 +23,16 @@
  */
 package org.jvnet.winp.util;
 
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import java.io.File;
 import java.io.IOException;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import static org.hamcrest.CoreMatchers.containsString;
 import org.junit.After;
 import org.junit.Assert;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 import org.jvnet.winp.WinProcess;
 
 /**
