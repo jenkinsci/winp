@@ -14,10 +14,20 @@ Features summary:
 
 See [the library's Javadoc][javadoc] for more details.
 
+## Maven repository
+
+Starting with 1.29, this library is published at:
+
+```xml
+<repository>
+  <id>repo.jenkins-ci.org</id>
+  <url>https://repo.jenkins-ci.org/releases/</url>
+</repository>
+```
+
 ## Java support
 
-Starting from `winp-1.25`, the library supports versions from Java 1.6 to Java 8. 
-Currently pre-release Java 9 versions are not being tested.
+Starting with 1.29, this library requires Java 11 or newer.
  
 WinP Library includes native libraries for all supported platforms, hence it can run on both 32bit and 64bit Java versions without any additional configuration.
 
