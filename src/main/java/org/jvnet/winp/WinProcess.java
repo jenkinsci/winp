@@ -1,8 +1,9 @@
 package org.jvnet.winp;
 
 import edu.umd.cs.findbugs.annotations.CheckReturnValue;
-import java.util.TreeMap;
 import java.util.Iterator;
+import java.util.StringTokenizer;
+import java.util.TreeMap;
 import java.util.logging.Logger;
 
 import static java.util.logging.Level.FINE;
@@ -134,8 +135,9 @@ public class WinProcess {
      *      The process may be dead or there is not enough security privileges.
      */
     public synchronized TreeMap<String,String> getEnvironmentVariables() {
-        if(envVars==null)
+        if(envVars==null) {
             parseCmdLineAndEnvVars();
+        }
         return envVars;
     }
 
@@ -151,27 +153,20 @@ public class WinProcess {
         String s = Native.getCmdLineAndEnvVars(pid);
         if(s==null)
             throw new WinpException("Failed to obtain for PID="+pid);
-        int sep = s.indexOf('\0');
-        commandline = s.substring(0,sep);
+        // a double null indicates the end of the envvars (but the string can be longer!) so truncate here.
+        int end = s.indexOf("\0\0");
+        if (end != -1) {
+            s = s.substring(0, end);
+        }
+        StringTokenizer st = new StringTokenizer(s, "\0", false);
+        commandline = st.nextToken();
         envVars = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-        s = s.substring(sep+1);
-
-        while(s.length()>0) {
-            sep = s.indexOf('\0');
-            if(sep==0)  return;
-            
-            String t;
-            if(sep==-1) {
-                t = s;
-                s = "";
-            } else {
-                t = s.substring(0,sep);
-                s = s.substring(sep+1);
+        while (st.hasMoreElements()) {
+            final String kv = st.nextToken();
+            int sep = kv.indexOf('=');
+            if  (sep!=-1) { // be defensive. not exactly sure when this happens, but see HUDSON-4034
+                envVars.put(kv.substring(0, sep), kv.substring(sep + 1));
             }
-
-            sep = t.indexOf('=');
-            if  (sep!=-1) // be defensive. not exactly sure when this happens, but see HUDSON-4034
-                envVars.put(t.substring(0,sep),t.substring(sep+1));
         }
     }
 
