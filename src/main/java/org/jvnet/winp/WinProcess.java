@@ -1,11 +1,9 @@
 package org.jvnet.winp;
 
-import javax.annotation.CheckReturnValue;
-import java.lang.reflect.Field;
-import java.util.Comparator;
-import java.util.TreeMap;
+import edu.umd.cs.findbugs.annotations.CheckReturnValue;
 import java.util.Iterator;
-import java.util.logging.Level;
+import java.util.StringTokenizer;
+import java.util.TreeMap;
 import java.util.logging.Logger;
 
 import static java.util.logging.Level.FINE;
@@ -39,15 +37,10 @@ public class WinProcess {
      * Wraps {@link Process} into {@link WinProcess}.
      */
     public WinProcess(Process proc) {
-        try {
-            Field f = proc.getClass().getDeclaredField("handle");
-            f.setAccessible(true);
-            long handle = f.getLong(proc);
-            pid = Native.getProcessId(handle);
-        } catch (NoSuchFieldException e) {
-            throw new NotWindowsException(e);
-        } catch (IllegalAccessException e) {
-            throw new NotWindowsException(e);
+        long pidLong = proc.pid();
+        this.pid = (int) pidLong;
+        if (this.pid != pidLong) {
+            throw new IllegalArgumentException("Out of range: " + pidLong);
         }
     }
 
@@ -167,7 +160,7 @@ public class WinProcess {
         }
         StringTokenizer st = new StringTokenizer(s, "\0", false);
         commandline = st.nextToken();
-        envVars = new TreeMap<String,String>(String.CASE_INSENSITIVE_ORDER);
+        envVars = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         while (st.hasMoreElements()) {
             final String kv = st.nextToken();
             int sep = kv.indexOf('=');
@@ -186,9 +179,10 @@ public class WinProcess {
      *      Never null.
      */
     public static Iterable<WinProcess> all() {
-        return new Iterable<WinProcess>() {
+        return new Iterable<>() {
+            @Override
             public Iterator<WinProcess> iterator() {
-                return new Iterator<WinProcess>() {
+                return new Iterator<>() {
                     private int pos=0;
                     private int[] pids = new int[256];
                     private int total;
@@ -204,14 +198,17 @@ public class WinProcess {
                         }
                     }
 
+                    @Override
                     public boolean hasNext() {
                         return pos<total;
                     }
 
+                    @Override
                     public WinProcess next() {
                         return new WinProcess(pids[pos++]);
                     }
 
+                    @Override
                     public void remove() {
                         throw new UnsupportedOperationException();
                     }

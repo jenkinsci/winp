@@ -1,6 +1,9 @@
 Changelog
 ====
 
+* All notable changes prior to 1.29 are documented in this changelog.
+* Release notes for versions 1.29 and newer can be found on the [GitHub releases page](https://github.com/jenkinsci/winp/releases).
+
 ##### 1.28
 
 Release date: Feb 28, 2019

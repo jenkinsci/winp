@@ -1,12 +1,16 @@
 package org.jvnet.winp;
 
-import java.io.IOException;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
-import org.hamcrest.core.StringContains;
-import org.junit.Assert;
-import static org.junit.Assert.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeThat;
+
+import java.io.IOException;
+import org.junit.Assert;
 import org.junit.Test;
 import org.jvnet.winp.util.ProcessSpawningTest;
 import org.jvnet.winp.util.TestHelper;
@@ -34,7 +38,7 @@ public class NativeAPITest extends ProcessSpawningTest {
             try {
                 commandLine = p.getCommandLine();
             } catch (WinpException e) {
-                System.out.println("Cannot determine the process name for process " + p + ": " + e.toString());
+                System.out.println("Cannot determine the process name for process " + p + ": " + e);
                 continue;
             }
             
@@ -44,7 +48,7 @@ public class NativeAPITest extends ProcessSpawningTest {
                     assertTrue(p.isCriticalProcess());
                     p.kill();   // this should fail (but if the test fails, then we'll see BSoD
                 } catch (WinpException e) {
-                    System.out.println("Ignoring exception for process " + p + ": " + e.toString());
+                    System.out.println("Ignoring exception for process " + p + ": " + e);
                     e.printStackTrace(System.out);
                 }
             }
@@ -150,29 +154,27 @@ public class NativeAPITest extends ProcessSpawningTest {
             Thread.sleep(100);
         }
 
-        assertTrue("Process has not been terminated after Ctrl+C", !wp.isRunning());
+        assertFalse("Process has not been terminated after Ctrl+C", wp.isRunning());
         wp.killRecursively();
     }
 
-    @Test(expected = WinpException.class)
+    @Test
     public void testSendCtrlC_nonExistentPID() throws Exception {
         WinProcess wp = new WinProcess(Integer.MAX_VALUE);
         assertFalse("Process is running when it should not: " + wp, wp.isRunning());
 
         // send Ctrl+C, then wait for a max of 4 secs
-        boolean sent = wp.sendCtrlC();
+        assertThrows(WinpException.class, wp::sendCtrlC);
     }
 
     @Test
     public void shouldFailForNonExistentProcess() {
         int nonExistentPid = Integer.MAX_VALUE;
-        try {
-            new WinProcess(nonExistentPid).getCommandLine();
-        } catch(WinpException ex) {
-            assertThat(ex.getMessage(), containsString("Failed to open process"));
-            return;
-        }
-        Assert.fail("Expected WinpException due to the non-existent process");
+        WinpException e = assertThrows(
+                "Expected WinpException due to the non-existent process",
+                WinpException.class,
+                () -> new WinProcess(nonExistentPid).getCommandLine());
+        assertThat(e.getMessage(), containsString("Failed to open process"));
     }
     
     /**

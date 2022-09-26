@@ -23,16 +23,15 @@
  */
 package org.jvnet.winp.util;
 
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import java.io.File;
 import java.io.IOException;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
-import static org.hamcrest.CoreMatchers.containsString;
 import org.junit.After;
-import org.junit.Assert;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 import org.jvnet.winp.WinProcess;
 
 /**
@@ -47,10 +46,9 @@ public class ProcessSpawningTest extends NativeWinpTest {
     
     @After
     public void killSpawnedProcess() {
-        if (spawnedProcess != null && isAlive(spawnedProcess)) {
+        if (spawnedProcess != null && spawnedProcess.isAlive()) {
             System.err.println("Killing process " + spawnedProcess.toString());
-            //TODO: destroyForcibly() in Java8
-            spawnedProcess.destroy();
+            spawnedProcess.destroyForcibly();
         }
         
         spawnedProcess = null;
@@ -85,16 +83,6 @@ public class ProcessSpawningTest extends NativeWinpTest {
         return spawnedProcess;
     }
     
-    //TODO: replace by Process#isAlive() in Java8
-    public static boolean isAlive(@Nonnull Process proc) {
-        try {
-            int exitCode = proc.exitValue();
-            return false;
-        } catch (IllegalThreadStateException ex) {
-           return true;
-        }
-    }
-    
     protected static File getTestAppExecutable(ExecutablePlatform executablePlatform) {
         final String executable;
         switch (executablePlatform) {
@@ -105,8 +93,7 @@ public class ProcessSpawningTest extends NativeWinpTest {
                 executable = "native_test/testapp/Win32/Release/testapp.exe";
                 break;
             default:
-                Assert.fail("Unsupported platform: " + executablePlatform);
-                throw new IllegalStateException();
+                throw new IllegalArgumentException("Unsupported platform: " + executablePlatform);
         }
         return new File(executable);
     }

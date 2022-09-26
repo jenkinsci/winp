@@ -1,13 +1,16 @@
 package org.jvnet.winp;
 
+import edu.umd.cs.findbugs.annotations.CheckReturnValue;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
-import javax.annotation.CheckReturnValue;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.math.BigInteger;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
-import java.net.URISyntaxException;
-import java.io.*;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.logging.Level;
@@ -97,25 +100,23 @@ class Native {
     static {
         try {
             File exeFile = load();
-            ctrlCExePath = (exeFile == null) ? null : exeFile.getPath();
+            ctrlCExePath = exeFile == null ? null : exeFile.getPath();
         } catch (Throwable t) {
             loadFailure = t;
             LOGGER.log(Level.SEVERE, "Cannot init winp native", t);
         }
     }
 
+    @SuppressFBWarnings(value = "WEAK_MESSAGE_DIGEST_MD5", justification = "TODO needs triage")
     private static String md5(URL res) {
         try {
             MessageDigest md5 = MessageDigest.getInstance("MD5");
-            InputStream in = res.openStream();
-            try {
+            try (InputStream in = res.openStream()) {
                 byte[] buf = new byte[8192];
                 int len;
                 while((len=in.read(buf))>=0)
                     md5.update(buf, 0, len);
                 return toHex32(md5.digest());
-            } finally {
-                in.close();
             }
         } catch (NoSuchAlgorithmException e) {
             throw new AssertionError(e);

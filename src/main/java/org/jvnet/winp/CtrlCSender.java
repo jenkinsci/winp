@@ -75,6 +75,7 @@ class CtrlCSender {
       this.thread.start();
     }
 
+    @Override
     public void run() {
       char[] buf = new char[8192];
       try {

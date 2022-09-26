@@ -1,5 +1,4 @@
 import org.jvnet.winp.WinProcess;
-import org.jvnet.winp.Priority;
 
 /**
  * Test program.
