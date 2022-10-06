@@ -28,53 +28,42 @@ goto :exit
 :default
 goto :cleanbuild
 
+:clean
+echo ### Cleaning the %configuration% build directory
+call build-native.cmd clean %configuration%
+goto :exit
+
 :cleanbuild
 echo ### Cleaning the %configuration% build directory
-cd %BUIDROOT%\native
-msbuild winp.vcxproj /t:Clean /p:Configuration=%configuration% /verbosity:minimal /nologo /p:Platform="Win32"
-if %errorlevel% neq 0 exit /b %errorlevel%
-msbuild winp.vcxproj /t:Clean /p:Configuration=%configuration% /verbosity:minimal /nologo /p:Platform="x64"
-if %errorlevel% neq 0 exit /b %errorlevel%
-msbuild sendctrlc\sendctrlc.vcxproj /t:Clean /p:Configuration=Release /verbosity:minimal /nologo /p:Platform="Win32"
-if %errorlevel% neq 0 exit /b %errorlevel%
-msbuild sendctrlc\sendctrlc.vcxproj /t:Clean /p:Configuration=Release /verbosity:minimal /nologo /p:Platform="x64"
-if %errorlevel% neq 0 exit /b %errorlevel%
-msbuild ..\native_test\testapp\testapp.vcxproj /t:Clean /p:Configuration=Release /verbosity:minimal /nologo /p:Platform="Win32"
-if %errorlevel% neq 0 exit /b %errorlevel%
-msbuild ..\native_test\testapp\testapp.vcxproj /t:Clean /p:Configuration=Release /verbosity:minimal /nologo /p:Platform="x64"
-if %errorlevel% neq 0 exit /b %errorlevel%
+call build-native.cmd clean %configuration%
 goto :build
 
 :build
+:build_native
 echo ### Building the %configuration% configuration
-cd %BUIDROOT%\native
-REM /verbosity:minimal
-msbuild winp.vcxproj /p:Configuration=%configuration% /nologo /p:Platform="Win32"
-if %errorlevel% neq 0 exit /b %errorlevel%
-msbuild winp.vcxproj /p:Configuration=%configuration% /nologo /p:Platform="x64"
-if %errorlevel% neq 0 exit /b %errorlevel%
-msbuild sendctrlc\sendctrlc.vcxproj /p:Configuration=%configuration% /nologo /p:Platform="Win32"
-if %errorlevel% neq 0 exit /b %errorlevel%
-msbuild sendctrlc\sendctrlc.vcxproj /p:Configuration=%configuration% /nologo /p:Platform="x64"
-if %errorlevel% neq 0 exit /b %errorlevel%
+call build-native.cmd build %configuration%
+if "%1"=="" goto :copy_native
+goto :exit
 
-echo ### Building test applications
-msbuild ..\native_test\testapp\testapp.vcxproj /verbosity:minimal /p:Configuration=Release /nologo /p:Platform="Win32"
-if %errorlevel% neq 0 exit /b %errorlevel%
-msbuild ..\native_test\testapp\testapp.vcxproj /verbosity:minimal /p:Configuration=Release /nologo /p:Platform="x64"
-if %errorlevel% neq 0 exit /b %errorlevel%
-
+:copy_native
 echo ### Updating WinP resource files for the %configuration% build
 cd %BUIDROOT%
 COPY native\Win32\%configuration%\winp.dll src\main\resources\
 if %errorlevel% neq 0 exit /b %errorlevel%
 COPY native\x64\%configuration%\winp.x64.dll src\main\resources\
 if %errorlevel% neq 0 exit /b %errorlevel%
+COPY native\arm64\%configuration%\winp.arm64.dll src\main\resources\
+if %errorlevel% neq 0 exit /b %errorlevel%
 COPY native\Win32\%configuration%\sendctrlc.exe src\main\resources\
 if %errorlevel% neq 0 exit /b %errorlevel%
 COPY native\x64\%configuration%\sendctrlc.x64.exe src\main\resources\
 if %errorlevel% neq 0 exit /b %errorlevel%
+COPY native\arm64\%configuration%\sendctrlc.arm64.exe src\main\resources\
+if %errorlevel% neq 0 exit /b %errorlevel%
+if "%1"=="" goto :maven
+goto :exit
 
+:maven
 echo ### Build and Test winp.jar for %version%
 cd %BUIDROOT%
 call mvn -q --batch-mode versions:set -DnewVersion=%version%
