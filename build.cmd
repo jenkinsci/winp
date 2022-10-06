@@ -66,13 +66,13 @@ if %errorlevel% neq 0 exit /b %errorlevel%
 
 echo ### Updating WinP resource files for the %configuration% build
 cd %BUIDROOT%
-COPY native\%configuration%\winp.dll src\main\resources\winp.dll
+COPY native\Win32\%configuration%\winp.dll src\main\resources\
 if %errorlevel% neq 0 exit /b %errorlevel%
-COPY native\x64\%configuration%\winp.dll src\main\resources\winp.x64.dll
+COPY native\x64\%configuration%\winp.x64.dll src\main\resources\
 if %errorlevel% neq 0 exit /b %errorlevel%
-COPY native\sendctrlc\Win32\%configuration%\sendctrlc.exe src\main\resources\sendctrlc.exe
+COPY native\Win32\%configuration%\sendctrlc.exe src\main\resources\
 if %errorlevel% neq 0 exit /b %errorlevel%
-COPY native\sendctrlc\x64\%configuration%\sendctrlc.exe src\main\resources\sendctrlc.x64.exe
+COPY native\x64\%configuration%\sendctrlc.x64.exe src\main\resources\
 if %errorlevel% neq 0 exit /b %errorlevel%
 
 echo ### Build and Test winp.jar for %version%
