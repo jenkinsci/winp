@@ -79,10 +79,13 @@ public class PlatformSpecificProcessTest extends ProcessSpawningTest {
     public void verifyTargetPlatform() {
         
         // Run 64bit tests only if the platform supports it
-        if (executablePlatform == ExecutablePlatform.X64) {
+        if (executablePlatform == ExecutablePlatform.X64 || executablePlatform == ExecutablePlatform.ARM64) {
             TestHelper.assumeIs64BitHost();
         }
-        
+        if (executablePlatform == ExecutablePlatform.ARM64) {
+            TestHelper.assumeIsArm64Host();
+        }
+
         File exec = getTestAppExecutable(executablePlatform);
         System.out.println("Target executable: " + exec.getAbsolutePath());
         Assert.assertTrue("Cannot locate the required executable: " + exec.getAbsolutePath(), exec.exists());
@@ -193,6 +196,6 @@ public class PlatformSpecificProcessTest extends ProcessSpawningTest {
     
     @Parameters
     public static Collection<Object[]> data() {
-        return Arrays.asList(new Object[][] { {ExecutablePlatform.X64}, {ExecutablePlatform.X86}});  
+        return Arrays.asList(new Object[][] { {ExecutablePlatform.ARM64}, {ExecutablePlatform.X64}, {ExecutablePlatform.X86}});
     }
 }
