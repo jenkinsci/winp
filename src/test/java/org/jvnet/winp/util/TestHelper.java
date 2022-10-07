@@ -24,6 +24,7 @@
 
 package org.jvnet.winp.util;
 
+import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import org.hamcrest.core.StringContains;
 import org.junit.Assume;
@@ -49,7 +50,15 @@ public class TestHelper {
         Assume.assumeThat("This test can run ony on 64-bit platforms.", 
                 System.getProperty("sun.arch.data.model"), equalTo("64"));
     }
-    
+
+    /**
+     * Checks if current system may run ARM64 binaries and skips the test otherwise.
+     */
+    public static void assumeIsArm64Host() {
+        Assume.assumeThat("This test can run ony on ARM64-compatible platforms.",
+                System.getProperty("os.arch"), anyOf(equalTo("aarch64"), equalTo("arm64")));
+    }
+
     public static boolean is64BitJVM() {
         return "64".equals(System.getProperty("sun.arch.data.model"));
     }

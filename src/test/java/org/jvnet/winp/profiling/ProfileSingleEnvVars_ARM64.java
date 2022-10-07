@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2017 CloudBees, Inc.
+ * Copyright 2017 CloudBees, Inc.; 2022 JetBrains s.r.o.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,19 +32,18 @@ import org.jvnet.winp.util.ProcessSpawningTest;
 import org.jvnet.winp.util.TestHelper;
 
 /**
- * Runs profiling for a single 64bit application.
- * @author Oleg Nenashev
+ * Runs profiling for a single ARM64 application.
  */
-public class ProfileSingleEnvVars_64bit extends ProcessSpawningTest {
+public class ProfileSingleEnvVars_ARM64 extends ProcessSpawningTest {
 
     @Before
-    public void assumeIs64Bit() {
-        TestHelper.assumeIs64BitHost();
+    public void assumeArm64() {
+        TestHelper.assumeIsArm64Host();
     }
-    
+
     @Test
     public void doProfile() throws Exception {
-        File executable = getTestAppExecutable(ExecutablePlatform.X64);
+        File executable = getTestAppExecutable(ExecutablePlatform.ARM64);
         Process proc = spawnProcess(false, false, executable.getAbsolutePath());
         WinProcess wp = new WinProcess(proc);
         wp.getEnvironmentVariables();
