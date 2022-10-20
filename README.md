@@ -12,7 +12,7 @@ Features summary:
 * Process info acquisition
 * etc.
 
-See [the library's Javadoc][javadoc] for more details.
+See [the library's Javadoc](https://javadoc.jenkins.io/component/winp/) for more details.
 
 ## Maven repository
 
@@ -57,5 +57,4 @@ Other Windows product lines are not being actively tested though WinP may work t
 
 [MIT License][license]
 
-[javadoc]: http://winp.kohsuke.org/apidocs/index.html
 [license]: http://www.opensource.org/licenses/mit-license.php
