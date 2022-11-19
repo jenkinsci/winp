@@ -21,7 +21,7 @@
     <gitHubRepo>jenkinsci/${project.artifactId}</gitHubRepo>
     <!-- TODO fix violations -->
     <spotbugs.threshold>High</spotbugs.threshold>
-    <jmh.version>1.35</jmh.version>
+    <jmh.version>1.36</jmh.version>
   </properties>
 
   <scm>
