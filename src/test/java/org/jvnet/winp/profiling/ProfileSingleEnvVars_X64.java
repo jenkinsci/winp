@@ -21,15 +21,34 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.jvnet.winp.util;
+package org.jvnet.winp.profiling;
+
+import java.io.File;
+import org.junit.Before;
+import org.junit.Test;
+import org.jvnet.winp.WinProcess;
+import org.jvnet.winp.util.ExecutablePlatform;
+import org.jvnet.winp.util.ProcessSpawningTest;
+import org.jvnet.winp.util.TestHelper;
 
 /**
- *
+ * Runs profiling for a single 64bit application.
  * @author Oleg Nenashev
  */
-public enum ExecutablePlatform {
-    ARM64,
-    X64,
-    X86
-    //TODO: Add support of ARM?
+public class ProfileSingleEnvVars_X64 extends ProcessSpawningTest {
+
+    @Before
+    public void assumeIs64Bit() {
+        TestHelper.assumeIs64BitHost();
+    }
+    
+    @Test
+    public void doProfile() throws Exception {
+        File executable = getTestAppExecutable(ExecutablePlatform.X64);
+        Process proc = spawnProcess(false, false, executable.getAbsolutePath());
+        WinProcess wp = new WinProcess(proc);
+        wp.getEnvironmentVariables();
+        killSpawnedProcess();
+    }
+    
 }
