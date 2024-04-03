@@ -32,10 +32,9 @@ Ideally, tests should be executed on all target platforms.
 
 ## Continuous Integration
 
-Project has a continuous integration flow being hosted by AppVeyor ([project page](https://ci.appveyor.com/project/oleg-nenashev/winp)).
+Project has a continuous integration flow being hosted by official Jenkins CI ([project page](https://ci.jenkins.io/job/jenkinsci-libraries/job/winp)).
 This CI instance automates testing of Debug and Release configurations,
 but it does not provide full coverage of possible system configurations.
-See [the appveyor.yml file](./appveyor.yml) for more details.
 
 ## Debugging
 
