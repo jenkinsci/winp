@@ -1,7 +1,16 @@
-@echo off
 setlocal
-set PATH=%PATH%;%ProgramFiles(x86)%\Microsoft Visual Studio\2017\BuildTools\MSBuild\15.0\bin\amd64
-set VCTargetsPath=C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V140
+
+set VS2019=C:\Program Files (x86)\Microsoft Visual Studio\2019
+set VS=
+
+if exist "%VS2019%\Community\" set VS=%VS2019%\Community
+if exist "%VS2019%\Enterprise\" set VS=%VS2019%\Enterprise
+if "%VS%" == "" (
+    echo Can't find VS2019 install
+    exit /b 1
+)
+
+call "%VS%/VC/Auxiliary/Build/vcvarsall.bat" amd64 || exit /b 1
 set BUIDROOT=%cd%
 
 :getopts
