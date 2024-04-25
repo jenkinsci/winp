@@ -3,12 +3,16 @@ WinP Developer info
 
 ## Building
 
-In order to build and test the project, use the `build.cmd` script available in the repository. 
-In order to build the project, you need MSbuild 15.0 and Microsoft Visual Studio 2017 with Windows XP support and BuildTools v140.
+In order to build and test the project, use the `build.cmd` script available in the repository.
+In order to build the project, you need MSbuild 15.0 and Microsoft Visual Studio 2019 and BuildTools v142.
+Toolchains for x86 and x64 targets should be installed.
+In more, Windows SDK 10.0.16299 should be installed too.
+
+JAVA_HOME env var should point to your Java install (>= 11).
 
 * `build.cmd cleanbuild` - Build and test the release version of the JAR file.
 Code will not be signed automatically.
-* `build.cmd cleanbuild Debug` - Build and test the Debug configuration of the library. 
+* `build.cmd cleanbuild Debug` - Build and test the Debug configuration of the library.
 This version simplifies debugging of the native part of the library (see below).
 
 ## Testing
@@ -16,7 +20,7 @@ This version simplifies debugging of the native part of the library (see below).
 * Right now all tests are implemented in Java part of the library (JUnit Framework).
 There is no fully native tests.
 * All tests are being automatically invoked by `build.cmd`
-* Tests run from Maven, and the selected 32/64-bit mode depends on the Java version, 
+* Tests run from Maven, and the selected 32/64-bit mode depends on the Java version,
 which can be passed to maven using the `JAVA_HOME` environment variable.
 * Generally you need to run `build.cmd cleanbuild Debug` and `build.cmd cleanbuild Release` on 3 configurations
   * 32-bit Windows, 32-bit Java
@@ -29,7 +33,7 @@ Ideally, tests should be executed on all target platforms.
 ## Continuous Integration
 
 Project has a continuous integration flow being hosted by AppVeyor ([project page](https://ci.appveyor.com/project/oleg-nenashev/winp)).
-This CI instance automates testing of Debug and Release configurations, 
+This CI instance automates testing of Debug and Release configurations,
 but it does not provide full coverage of possible system configurations.
 See [the appveyor.yml file](./appveyor.yml) for more details.
 
@@ -38,7 +42,7 @@ See [the appveyor.yml file](./appveyor.yml) for more details.
 ### Debugging Java part
 
 Java part of the library can be debugged independently or within a project using standard tools available in the Java Development Kit.
- 
+
 ### Debugging Native part
 
 In order to debug native parts of the library attach your debugger (e.g. from Microsoft Visual Studio UI) to the `java.exe` process.
