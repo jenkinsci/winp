@@ -14,5 +14,7 @@ x64
 *.suo
 *.user
 *.pfx
+*.exe
+*.dll
 version.txt
 nb-configuration.xml
