@@ -84,13 +84,14 @@ public class ProcessSpawningTest extends NativeWinpTest {
     }
     
     protected static File getTestAppExecutable(ExecutablePlatform executablePlatform) {
+        final String configuration = System.getProperty("native.configuration", "Release");
         final String executable;
         switch (executablePlatform) {
             case X64:
-                executable = "native_test/testapp/x64/Release/testapp.x64.exe";
+                executable = "native_test/testapp/x64/" + configuration + "/testapp.x64.exe";
                 break;
             case X86:
-                executable = "native_test/testapp/Win32/Release/testapp.exe";
+                executable = "native_test/testapp/Win32/" + configuration + "/testapp.exe";
                 break;
             default:
                 throw new IllegalArgumentException("Unsupported platform: " + executablePlatform);

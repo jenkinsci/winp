@@ -47,7 +47,10 @@
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
-            <argLine>-XX:+CreateCoredumpOnCrash</argLine>
+          <argLine>-XX:+CreateCoredumpOnCrash</argLine>
+          <systemPropertyVariables>
+            <native.configuration>${native.configuration}</native.configuration>
+          </systemPropertyVariables>
         </configuration>
       </plugin>
     </plugins>
