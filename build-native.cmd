@@ -65,14 +65,14 @@ if %errorlevel% neq 0 exit /b %errorlevel%
 
 echo ### Updating WinP resource files for the %configuration% build
 cd %BUIDROOT%
-if not exist src\main\resources mkdir src\main\resources
-COPY native\Win32\%configuration%\winp.dll src\main\resources\
+if not exist target\classes mkdir target\classes
+COPY native\Win32\%configuration%\winp.dll target\classes\
 if %errorlevel% neq 0 exit /b %errorlevel%
-COPY native\x64\%configuration%\winp.x64.dll src\main\resources\
+COPY native\x64\%configuration%\winp.x64.dll target\classes\
 if %errorlevel% neq 0 exit /b %errorlevel%
-COPY native\sendctrlc\Win32\%configuration%\sendctrlc.exe src\main\resources\
+COPY native\sendctrlc\Win32\%configuration%\sendctrlc.exe target\classes\
 if %errorlevel% neq 0 exit /b %errorlevel%
-COPY native\sendctrlc\x64\%configuration%\sendctrlc.x64.exe src\main\resources\
+COPY native\sendctrlc\x64\%configuration%\sendctrlc.x64.exe target\classes\
 
 :exit
 endlocal
