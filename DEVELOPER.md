@@ -8,7 +8,7 @@ In order to build the project, you need MSbuild 15.0 and Microsoft Visual Studio
 Toolchains for x86 and x64 targets should be installed.
 Furthermore, Windows SDK 10.0.16299 should be installed too.
 
-JAVA_HOME env var should point to your Java install (>= 11).
+The `JAVA_HOME` environment variable should point to your Java installation (>= 11).
 
 * `build.cmd cleanbuild` - Build and test the release version of the JAR file.
 Code will not be signed automatically.
