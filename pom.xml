@@ -136,7 +136,7 @@
                 </goals>
                 <phase>process-resources</phase>
                 <configuration>
-                  <executable>build-native.cmd</executable>
+                  <executable>build.cmd</executable>
                 </configuration>
               </execution>
             </executions>

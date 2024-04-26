@@ -20,7 +20,6 @@ if "%2"=="" (
 	set configuration=%2%
 )
 
-
 if "%1"=="" (goto :default) else (goto :%1)
 goto :exit
 
