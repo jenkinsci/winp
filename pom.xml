@@ -22,7 +22,7 @@
     <!-- TODO fix violations -->
     <spotbugs.threshold>High</spotbugs.threshold>
     <jmh.version>1.37</jmh.version>
-    <native.configuration>Debug</native.configuration>
+    <native.configuration>Release</native.configuration>
   </properties>
 
   <scm>
