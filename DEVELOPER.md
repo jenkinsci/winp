@@ -14,7 +14,7 @@ To build and test the project, run `mvn clean verify`:
 
 * `mvn clean verify` - Build and test the release version of the JAR file.
 Code will not be signed automatically.
-* `build.cmd verify -Dnative.configuration=Debug` - Build and test the Debug configuration of the library.
+* `mvn clean verify -Dnative.configuration=Debug` - Build and test the Debug configuration of the library.
 This version simplifies debugging of the native part of the library (see below).
 
 ## Testing
