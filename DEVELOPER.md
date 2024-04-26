@@ -6,7 +6,7 @@ WinP Developer info
 In order to build and test the project, use the `build.cmd` script available in the repository.
 In order to build the project, you need MSbuild 15.0 and Microsoft Visual Studio 2019 and BuildTools v142.
 Toolchains for x86 and x64 targets should be installed.
-In more, Windows SDK 10.0.16299 should be installed too.
+Furthermore, Windows SDK 10.0.16299 should be installed too.
 
 JAVA_HOME env var should point to your Java install (>= 11).
 
