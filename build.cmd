@@ -62,7 +62,7 @@ if %errorlevel% neq 0 exit /b %errorlevel%
 msbuild ..\native_test\testapp\testapp.vcxproj /verbosity:minimal /p:Configuration=%configuration% /nologo /p:Platform="x64"
 if %errorlevel% neq 0 exit /b %errorlevel%
 
-echo ### Updating WinP resource files for the %configuration% build
+echo ### Copying WinP resource files for the %configuration% build
 cd %BUIDROOT%
 if not exist target\classes mkdir target\classes
 COPY native\Win32\%configuration%\winp.dll target\classes\

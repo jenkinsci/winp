@@ -22,6 +22,7 @@
     <!-- TODO fix violations -->
     <spotbugs.threshold>High</spotbugs.threshold>
     <jmh.version>1.37</jmh.version>
+    <native.configuration>Debug</native.configuration>
   </properties>
 
   <scm>
@@ -137,6 +138,10 @@
                 <phase>process-resources</phase>
                 <configuration>
                   <executable>build.cmd</executable>
+                    <arguments>
+                      <argument>build</argument>
+                      <argument>${native.configuration}</argument>
+                    </arguments>
                 </configuration>
               </execution>
             </executions>

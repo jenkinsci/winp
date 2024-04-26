@@ -7,8 +7,12 @@ In order to build and test the project, run `mvn clean verify`.
 In order to build the project, you need MSBuild 15.0 and Microsoft Visual Studio 2019 and BuildTools v142.
 Toolchains for x86 and x64 targets should be installed.
 Furthermore, Windows SDK 10.0.16299 should be installed too.
-
 The `JAVA_HOME` environment variable should point to your Java installation (>= 11).
+
+* `mvn clean verify` - Build and test the release version of the JAR file.
+Code will not be signed automatically.
+* `build.cmd verify -Dnative.configuration=Debug` - Build and test the Debug configuration of the library.
+This version simplifies debugging of the native part of the library (see below).
 
 ## Testing
 
