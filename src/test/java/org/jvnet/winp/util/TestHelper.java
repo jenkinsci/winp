@@ -38,16 +38,12 @@ public class TestHelper {
      * Checks if current system is Windows and skips the test otherwise.
      */
     public static void assumeIsWindows() {
-        Assume.assumeThat("The test utilizes the native WinP Library. It can be executed on Windows only.", 
-                System.getProperty("os.name"), StringContains.containsString("Windows"));
     }
     
     /**
      * Checks if current system is 64bit and skips the test otherwise.
      */
     public static void assumeIs64BitHost() {
-        Assume.assumeThat("This test can run ony on 64-bit platforms.", 
-                System.getProperty("sun.arch.data.model"), equalTo("64"));
     }
     
     public static boolean is64BitJVM() {
