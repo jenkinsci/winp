@@ -24,6 +24,10 @@ There is no fully native tests.
 * All tests are automatically invoked by `mvn clean verify`.
 * Tests run from Maven, and the selected 32/64-bit mode depends on the Java version,
 which can be passed to maven using the `JAVA_HOME` environment variable.
+* Generally you need to run `mvn clean verify` and `mvn clean verify -Dnative.configuration=Debug` on 3 configurations:
+  * 32-bit Windows, 32-bit Java
+  * 64-bit Windows, 64-bit Java
+  * 64-bit Windows, 32-bit Java (WoW64 mode)
 
 Note that WinP behavior may differ depending on the Windows version, permissions, run mode (desktop/service), etc.
 Ideally, tests should be executed on all target platforms.

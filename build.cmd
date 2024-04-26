@@ -72,6 +72,8 @@ if %errorlevel% neq 0 exit /b %errorlevel%
 COPY native\sendctrlc\Win32\%configuration%\sendctrlc.exe target\classes\
 if %errorlevel% neq 0 exit /b %errorlevel%
 COPY native\sendctrlc\x64\%configuration%\sendctrlc.x64.exe target\classes\
+if %errorlevel% neq 0 exit /b %errorlevel%
+goto :exit
 
 :exit
 endlocal
