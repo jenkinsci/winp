@@ -1,13 +1,16 @@
 WinP Developer info
 ---
 
+## Prerequisites
+
+In order to build the project, you need MSBuild 15.0, Microsoft Visual Studio 2019, and BuildTools v142.
+Toolchains for x86 and x64 targets should also be installed.
+Furthermore, Windows SDK 10.0.16299 should be installed.
+The `JAVA_HOME` environment variable should point to your Java installation (>= 11).
+
 ## Building
 
-In order to build and test the project, run `mvn clean verify`.
-In order to build the project, you need MSBuild 15.0 and Microsoft Visual Studio 2019 and BuildTools v142.
-Toolchains for x86 and x64 targets should be installed.
-Furthermore, Windows SDK 10.0.16299 should be installed too.
-The `JAVA_HOME` environment variable should point to your Java installation (>= 11).
+To build and test the project, run `mvn clean verify`:
 
 * `mvn clean verify` - Build and test the release version of the JAR file.
 Code will not be signed automatically.
@@ -18,7 +21,7 @@ This version simplifies debugging of the native part of the library (see below).
 
 * Right now all tests are implemented in Java part of the library (JUnit Framework).
 There is no fully native tests.
-* All tests are being automatically invoked by `mvn clean verify`.
+* All tests are automatically invoked by `mvn clean verify`.
 * Tests run from Maven, and the selected 32/64-bit mode depends on the Java version,
 which can be passed to maven using the `JAVA_HOME` environment variable.
 
@@ -27,8 +30,8 @@ Ideally, tests should be executed on all target platforms.
 
 ## Continuous Integration
 
-Project has a continuous integration flow being hosted by official Jenkins CI ([project page](https://ci.jenkins.io/job/jenkinsci-libraries/job/winp)).
-This CI instance automates testing of Debug and Release configurations,
+The project has a [CI pipeline](https://ci.jenkins.io/job/jenkinsci-libraries/job/winp)
+that automates testing of the release configuration,
 but it does not provide full coverage of possible system configurations.
 
 ## Debugging
