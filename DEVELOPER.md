@@ -4,7 +4,7 @@ WinP Developer info
 ## Prerequisites
 
 In order to build the project, you need MSBuild 15.0, Microsoft Visual Studio 2019, and BuildTools v142.
-Toolchains for x86 and x64 targets should also be installed.
+Toolchains for x86, x64 and arm64 targets should also be installed.
 Furthermore, Windows SDK 10.0.16299 should be installed.
 The `JAVA_HOME` environment variable should point to your Java installation (>= 11).
 
@@ -24,10 +24,11 @@ There is no fully native tests.
 * All tests are automatically invoked by `mvn clean verify`.
 * Tests run from Maven, and the selected 32/64-bit mode depends on the Java version,
 which can be passed to maven using the `JAVA_HOME` environment variable.
-* Generally you need to run `mvn clean verify` and `mvn clean verify -Dnative.configuration=Debug` on 3 configurations:
+* Generally you need to run `mvn clean verify` and `mvn clean verify -Dnative.configuration=Debug` on 4 configurations:
   * 32-bit Windows, 32-bit Java
   * 64-bit Windows, 64-bit Java
   * 64-bit Windows, 32-bit Java (WoW64 mode)
+  * Arm64 Windows, Arm64 Java
 
 Note that WinP behavior may differ depending on the Windows version, permissions, run mode (desktop/service), etc.
 Ideally, tests should be executed on all target platforms.
