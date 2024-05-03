@@ -50,7 +50,7 @@ public class TestHelper {
         Assume.assumeThat("This test can run ony on 64-bit platforms.", 
                 System.getProperty("sun.arch.data.model"), equalTo("64"));
     }
-
+    
     /**
      * Checks if current system may run ARM64 binaries and skips the test otherwise.
      */

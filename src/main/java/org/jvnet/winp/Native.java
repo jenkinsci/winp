@@ -18,7 +18,7 @@ import java.util.logging.Logger;
 
 /**
  * Functions defined in the DLL.
- *
+ * 
  * @author Kohsuke Kawaguchi
  */
 class Native {
@@ -27,9 +27,13 @@ class Native {
 
     private static String getSuffix() {
         String arch = System.getProperty("os.arch");
-        if ("i386".equals(arch) || "x86".equals(arch)) return "";
-        if ("x86_64".equals(arch) || "amd64".equals(arch)) return ".x64";
-        if ("aarch64".equals(arch) || "arm64".equals(arch)) return ".arm64";
+        if ("i386".equals(arch) || "x86".equals(arch)) {
+            return "";
+        } else if ("x86_64".equals(arch) || "amd64".equals(arch)) {
+           return ".x64";
+        } else if ("aarch64".equals(arch) || "arm64".equals(arch)) {
+            return ".arm64";
+        }
         return "_" + arch;
     }
 

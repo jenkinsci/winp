@@ -49,5 +49,4 @@ public class ProfileSingleEnvVars_ARM64 extends ProcessSpawningTest {
         wp.getEnvironmentVariables();
         killSpawnedProcess();
     }
-    
 }

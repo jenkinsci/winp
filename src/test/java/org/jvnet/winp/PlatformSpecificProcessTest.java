@@ -85,7 +85,7 @@ public class PlatformSpecificProcessTest extends ProcessSpawningTest {
         if (executablePlatform == ExecutablePlatform.ARM64) {
             TestHelper.assumeIsArm64Host();
         }
-
+        
         File exec = getTestAppExecutable(executablePlatform);
         System.out.println("Target executable: " + exec.getAbsolutePath());
         Assert.assertTrue("Cannot locate the required executable: " + exec.getAbsolutePath(), exec.exists());
