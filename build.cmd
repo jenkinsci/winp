@@ -33,13 +33,19 @@ msbuild winp.vcxproj /t:Clean /p:Configuration=%configuration% /verbosity:minima
 if %errorlevel% neq 0 exit /b %errorlevel%
 msbuild winp.vcxproj /t:Clean /p:Configuration=%configuration% /verbosity:minimal /nologo /p:Platform="x64"
 if %errorlevel% neq 0 exit /b %errorlevel%
+msbuild winp.vcxproj /t:Clean /p:Configuration=%configuration% /verbosity:minimal /nologo /p:Platform="Arm64"
+if %errorlevel% neq 0 exit /b %errorlevel%
 msbuild sendctrlc\sendctrlc.vcxproj /t:Clean /p:Configuration=%configuration% /verbosity:minimal /nologo /p:Platform="Win32"
 if %errorlevel% neq 0 exit /b %errorlevel%
 msbuild sendctrlc\sendctrlc.vcxproj /t:Clean /p:Configuration=%configuration% /verbosity:minimal /nologo /p:Platform="x64"
 if %errorlevel% neq 0 exit /b %errorlevel%
+msbuild sendctrlc\sendctrlc.vcxproj /t:Clean /p:Configuration=%configuration% /verbosity:minimal /nologo /p:Platform="Arm64"
+if %errorlevel% neq 0 exit /b %errorlevel%
 msbuild ..\native_test\testapp\testapp.vcxproj /t:Clean /p:Configuration=%configuration% /verbosity:minimal /nologo /p:Platform="Win32"
 if %errorlevel% neq 0 exit /b %errorlevel%
 msbuild ..\native_test\testapp\testapp.vcxproj /t:Clean /p:Configuration=%configuration% /verbosity:minimal /nologo /p:Platform="x64"
+if %errorlevel% neq 0 exit /b %errorlevel%
+msbuild ..\native_test\testapp\testapp.vcxproj /t:Clean /p:Configuration=%configuration% /verbosity:minimal /nologo /p:Platform="Arm64"
 if %errorlevel% neq 0 exit /b %errorlevel%
 goto :exit
 
@@ -51,15 +57,21 @@ msbuild winp.vcxproj /p:Configuration=%configuration% /nologo /p:Platform="Win32
 if %errorlevel% neq 0 exit /b %errorlevel%
 msbuild winp.vcxproj /p:Configuration=%configuration% /nologo /p:Platform="x64"
 if %errorlevel% neq 0 exit /b %errorlevel%
+msbuild winp.vcxproj /p:Configuration=%configuration% /nologo /p:Platform="Arm64"
+if %errorlevel% neq 0 exit /b %errorlevel%
 msbuild sendctrlc\sendctrlc.vcxproj /p:Configuration=%configuration% /nologo /p:Platform="Win32"
 if %errorlevel% neq 0 exit /b %errorlevel%
 msbuild sendctrlc\sendctrlc.vcxproj /p:Configuration=%configuration% /nologo /p:Platform="x64"
+if %errorlevel% neq 0 exit /b %errorlevel%
+msbuild sendctrlc\sendctrlc.vcxproj /p:Configuration=%configuration% /nologo /p:Platform="Arm64"
 if %errorlevel% neq 0 exit /b %errorlevel%
 
 echo ### Building test applications
 msbuild ..\native_test\testapp\testapp.vcxproj /verbosity:minimal /p:Configuration=%configuration% /nologo /p:Platform="Win32"
 if %errorlevel% neq 0 exit /b %errorlevel%
 msbuild ..\native_test\testapp\testapp.vcxproj /verbosity:minimal /p:Configuration=%configuration% /nologo /p:Platform="x64"
+if %errorlevel% neq 0 exit /b %errorlevel%
+msbuild ..\native_test\testapp\testapp.vcxproj /verbosity:minimal /p:Configuration=%configuration% /nologo /p:Platform="Arm64"
 if %errorlevel% neq 0 exit /b %errorlevel%
 
 echo ### Copying WinP resource files for the %configuration% build
@@ -69,9 +81,13 @@ COPY native\Win32\%configuration%\winp.dll target\classes\
 if %errorlevel% neq 0 exit /b %errorlevel%
 COPY native\x64\%configuration%\winp.x64.dll target\classes\
 if %errorlevel% neq 0 exit /b %errorlevel%
+COPY native\Arm64\%configuration%\winp.arm64.dll target\classes\
+if %errorlevel% neq 0 exit /b %errorlevel%
 COPY native\sendctrlc\Win32\%configuration%\sendctrlc.exe target\classes\
 if %errorlevel% neq 0 exit /b %errorlevel%
 COPY native\sendctrlc\x64\%configuration%\sendctrlc.x64.exe target\classes\
+if %errorlevel% neq 0 exit /b %errorlevel%
+COPY native\sendctrlc\Arm64\%configuration%\sendctrlc.arm64.exe target\classes\
 if %errorlevel% neq 0 exit /b %errorlevel%
 goto :exit
 
