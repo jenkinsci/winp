@@ -87,6 +87,9 @@ public class ProcessSpawningTest extends NativeWinpTest {
         final String configuration = System.getProperty("native.configuration", "Release");
         final String executable;
         switch (executablePlatform) {
+            case ARM64:
+                executable = "native_test/testapp/Arm64/" + configuration + "/testapp.arm64.exe";
+                break;
             case X64:
                 executable = "native_test/testapp/x64/" + configuration + "/testapp.x64.exe";
                 break;

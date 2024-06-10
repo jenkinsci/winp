@@ -85,6 +85,19 @@ public class NativeAPITest extends ProcessSpawningTest {
                     continue;
                 }
                 
+                // https://learn.microsoft.com/en-us/windows/win32/debug/system-error-codes--500-999-
+                // This special error code was found for a privileged process on
+                // windows-arm64, coming from Qualcomm driver. Ignore this.
+                if (errorCode == 998) { //ERROR_NOACCESS
+                    continue;
+                }
+
+                // https://learn.microsoft.com/en-us/windows/win32/debug/system-error-codes--0-499-
+                // This happens for some privileged process, skip error.
+                if (errorCode == 299) { //ERROR_PARTIAL_COPY
+                    continue;
+                }
+
                 if (UserErrorType.QUERY_64BIT_PROC_FROM_32BIT.matches(errorCode) && TestHelper.is32BitJVM()) {
                     // Skipping warnings for 64 bit processes when running in 32bit Java
                     continue;

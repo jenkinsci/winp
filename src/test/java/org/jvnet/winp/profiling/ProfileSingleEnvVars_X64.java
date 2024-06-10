@@ -35,7 +35,7 @@ import org.jvnet.winp.util.TestHelper;
  * Runs profiling for a single 64bit application.
  * @author Oleg Nenashev
  */
-public class ProfileSingleEnvVars_64bit extends ProcessSpawningTest {
+public class ProfileSingleEnvVars_X64 extends ProcessSpawningTest {
 
     @Before
     public void assumeIs64Bit() {
