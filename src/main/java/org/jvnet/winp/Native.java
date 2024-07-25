@@ -152,7 +152,7 @@ class Native {
         if (dllUrl.startsWith("file:")) {
             // during debug the files are on disk and not in a jar
             if (!exeRes.toExternalForm().startsWith("file:")) {
-                LOGGER.log(Level.WARNING, "DLL and EXE are inconsistenly present on disk");
+                LOGGER.log(Level.WARNING, "DLL and EXE are inconsistently present on disk");
             }
 
             File f;
@@ -173,7 +173,7 @@ class Native {
             loadDll(dllFile);
             return exeFile;
         } catch (Throwable e) {
-            LOGGER.log(Level.WARNING, "Failed to load DLL from static location", e);
+            LOGGER.log(Level.INFO, "Failed to load DLL from static location, falling back to temp file", e);
         }
 
         File dllFile = extractToTmpLocation(dllRes);
