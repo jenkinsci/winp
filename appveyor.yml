@@ -1,0 +1,55 @@
+# Do not build tags and feature branches
+skip_tags: true
+skip_branch_with_pr: true
+
+version: 1.25.0.{build}-SNAPSHOT
+
+# MVS Project configuration
+image: Visual Studio 2017
+platform: Any CPU
+configuration: Release
+
+# Environment
+environment:
+  matrix:
+      - JAVA_HOME: C:\Program Files\Java\jdk1.8.0
+
+# Environment installation
+install:
+  - cmd: choco install maven -y -f
+  - cmd: refreshenv
+
+# Build and test  
+build_script:
+  - .\build.cmd cleanbuild Release %APPVEYOR_BUILD_VERSION%
+  - ps: Get-ChildItem target\winp-$env:APPVEYOR_BUILD_VERSION.jar | % { Push-AppveyorArtifact $_.FullName -FileName $_.Name } 
+  - .\build.cmd cleanbuild Debug %APPVEYOR_BUILD_VERSION%-Debug
+  - ps: Get-ChildItem target\winp-$env:APPVEYOR_BUILD_VERSION-Debug.jar | % { Push-AppveyorArtifact $_.FullName -FileName $_.Name } 
+
+on_finish:
+# TODO: enable once there are tests, implement aggregator somehow 
+# - ps: (new-object net.webclient).UploadFile("https://ci.appveyor.com/api/testresults/junit/$($env:APPVEYOR_JOB_ID)", (Resolve-Path .\tests.xml))
+
+artifacts:
+#x64
+  - path: 'native/x64/Release/winp.dll'
+    name: winp.x64.dll
+  - path: 'native/x64/Release/winp.pdb'
+    name: winp.x64.pdb
+  - path: 'native/x64/Debug/winp.dll'
+    name: winp.x64-debug.dll
+  - path: 'native/x64/Debug/winp.pdb'
+    name: winp.x64-debug.pdb
+#x86
+  - path: 'native/Release/winp.dll'
+    name: winp.x86.dll
+  - path: 'native/Release/winp.pdb'
+    name: winp.x86.pdb
+  - path: 'native/Debug/winp.dll'
+    name: winp.x86-debug.dll
+  - path: 'native/Debug/winp.pdb'
+    name: winp.x86-debug.pdb
+#JARs are pushed above
+#FindBugs
+  - path: 'target/findbugs.xml'
+    name: findbugs.xml 
