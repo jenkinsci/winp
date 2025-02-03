@@ -33,17 +33,17 @@ goto :build
 :clean
 echo ### Cleaning the %configuration% build directory
 cd %BUIDROOT%\native
-%MSBUILD% winp.vcxproj /t:Clean /p:Configuration=%configuration% /verbosity:minimal /nologo /p:Platform="Win32"
+"%MSBUILD%" winp.vcxproj /t:Clean /p:Configuration=%configuration% /verbosity:minimal /nologo /p:Platform="Win32"
 if %errorlevel% neq 0 exit /b %errorlevel%
-%MSBUILD% winp.vcxproj /t:Clean /p:Configuration=%configuration% /verbosity:minimal /nologo /p:Platform="x64"
+"%MSBUILD%" winp.vcxproj /t:Clean /p:Configuration=%configuration% /verbosity:minimal /nologo /p:Platform="x64"
 if %errorlevel% neq 0 exit /b %errorlevel%
-%MSBUILD% sendctrlc\sendctrlc.vcxproj /t:Clean /p:Configuration=Release /verbosity:minimal /nologo /p:Platform="Win32"
+"%MSBUILD%" sendctrlc\sendctrlc.vcxproj /t:Clean /p:Configuration=Release /verbosity:minimal /nologo /p:Platform="Win32"
 if %errorlevel% neq 0 exit /b %errorlevel%
-%MSBUILD% sendctrlc\sendctrlc.vcxproj /t:Clean /p:Configuration=Release /verbosity:minimal /nologo /p:Platform="x64"
+"%MSBUILD%" sendctrlc\sendctrlc.vcxproj /t:Clean /p:Configuration=Release /verbosity:minimal /nologo /p:Platform="x64"
 if %errorlevel% neq 0 exit /b %errorlevel%
-%MSBUILD% ..\native_test\testapp\testapp.vcxproj /t:Clean /p:Configuration=Release /verbosity:minimal /nologo /p:Platform="Win32"
+"%MSBUILD%" ..\native_test\testapp\testapp.vcxproj /t:Clean /p:Configuration=Release /verbosity:minimal /nologo /p:Platform="Win32"
 if %errorlevel% neq 0 exit /b %errorlevel%
-%MSBUILD% ..\native_test\testapp\testapp.vcxproj /t:Clean /p:Configuration=Release /verbosity:minimal /nologo /p:Platform="x64"
+"%MSBUILD%" ..\native_test\testapp\testapp.vcxproj /t:Clean /p:Configuration=Release /verbosity:minimal /nologo /p:Platform="x64"
 if %errorlevel% neq 0 exit /b %errorlevel%
 goto :exit
 
@@ -51,19 +51,19 @@ goto :exit
 echo ### Building the %configuration% configuration
 cd %BUIDROOT%\native
 REM /verbosity:minimal
-%MSBUILD% winp.vcxproj /p:Configuration=%configuration% /nologo /p:Platform="Win32"
+"%MSBUILD%" winp.vcxproj /p:Configuration=%configuration% /nologo /p:Platform="Win32"
 if %errorlevel% neq 0 exit /b %errorlevel%
-%MSBUILD% winp.vcxproj /p:Configuration=%configuration% /nologo /p:Platform="x64"
+"%MSBUILD%" winp.vcxproj /p:Configuration=%configuration% /nologo /p:Platform="x64"
 if %errorlevel% neq 0 exit /b %errorlevel%
-%MSBUILD% sendctrlc\sendctrlc.vcxproj /p:Configuration=%configuration% /nologo /p:Platform="Win32"
+"%MSBUILD%" sendctrlc\sendctrlc.vcxproj /p:Configuration=%configuration% /nologo /p:Platform="Win32"
 if %errorlevel% neq 0 exit /b %errorlevel%
-%MSBUILD% sendctrlc\sendctrlc.vcxproj /p:Configuration=%configuration% /nologo /p:Platform="x64"
+"%MSBUILD%" sendctrlc\sendctrlc.vcxproj /p:Configuration=%configuration% /nologo /p:Platform="x64"
 if %errorlevel% neq 0 exit /b %errorlevel%
 
 echo ### Building test applications
-%MSBUILD% ..\native_test\testapp\testapp.vcxproj /verbosity:minimal /p:Configuration=Release /nologo /p:Platform="Win32"
+"%MSBUILD%" ..\native_test\testapp\testapp.vcxproj /verbosity:minimal /p:Configuration=Release /nologo /p:Platform="Win32"
 if %errorlevel% neq 0 exit /b %errorlevel%
-%MSBUILD% ..\native_test\testapp\testapp.vcxproj /verbosity:minimal /p:Configuration=Release /nologo /p:Platform="x64"
+"%MSBUILD%" ..\native_test\testapp\testapp.vcxproj /verbosity:minimal /p:Configuration=Release /nologo /p:Platform="x64"
 if %errorlevel% neq 0 exit /b %errorlevel%
 
 echo ### Updating WinP resource files for the %configuration% build
