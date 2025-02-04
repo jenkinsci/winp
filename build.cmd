@@ -2,6 +2,11 @@
 setlocal enabledelayedexpansion
 set BUIDROOT=%cd%
 
+dir /w "%ProgramFiles(x86)%"
+dir /w "%ProgramFiles(x86)%\Microsoft Visual Studio"
+dir /w "%ProgramFiles(x86)%\Microsoft Visual Studio\Installer"
+
+
 for /f "usebackq tokens=*" %%i in (`"%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" -latest -requires Microsoft.Component.MSBuild -find MSBuild\**\Bin\MSBuild.exe`) do (
   set MSBUILD="%%i"
 )
