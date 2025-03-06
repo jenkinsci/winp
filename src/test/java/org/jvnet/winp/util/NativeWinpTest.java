@@ -34,9 +34,13 @@ import org.jvnet.winp.WinProcess;
 public class NativeWinpTest {
     
     @BeforeClass
-    public static void enableDebug() {
+    public static void enableDebug() throws Exception {
         TestHelper.assumeIsWindows();
-        WinProcess.enableDebugPrivilege();
+        try {
+            WinProcess.enableDebugPrivilege();
+        } catch(UnsatisfiedLinkError e) {
+            throw new Exception("Could not enable debug privilege: " + e.getMessage());
+        }
     }
     
     @Before
