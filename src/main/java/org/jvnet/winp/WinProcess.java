@@ -46,7 +46,11 @@ public class WinProcess {
 
     @Override
     public String toString() {
-        return "WinProcess pid#" + pid + ", command line: " +  (commandline != null ? commandline : "not ready");
+        return String.format("WinProcess pid# %d", pid);
+    }
+    
+    public String toStringDetailed() {
+        return String.format("%s - command line: %s", toString(), getCommandLine());
     }
     
     /**
