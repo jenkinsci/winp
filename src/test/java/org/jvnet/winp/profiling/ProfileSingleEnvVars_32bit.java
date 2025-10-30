@@ -24,7 +24,7 @@
 package org.jvnet.winp.profiling;
 
 import java.io.File;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.jvnet.winp.WinProcess;
 import org.jvnet.winp.util.ExecutablePlatform;
 import org.jvnet.winp.util.ProcessSpawningTest;
@@ -33,10 +33,10 @@ import org.jvnet.winp.util.ProcessSpawningTest;
  * Runs profiling for a single 32bit application.
  * @author Oleg Nenashev
  */
-public class ProfileSingleEnvVars_32bit extends ProcessSpawningTest {
-    
+class ProfileSingleEnvVars_32bit extends ProcessSpawningTest {
+
     @Test
-    public void doProfile() throws Exception {
+    void doProfile() throws Exception {
         File executable = getTestAppExecutable(ExecutablePlatform.X86);
         Process proc = spawnProcess(true, false, executable.getAbsolutePath());
         WinProcess wp = new WinProcess(proc);

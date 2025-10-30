@@ -1,17 +1,15 @@
 package org.jvnet.winp;
 
 import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.assumeThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
-import java.io.IOException;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.jvnet.winp.util.ProcessSpawningTest;
 import org.jvnet.winp.util.TestHelper;
 
@@ -19,10 +17,10 @@ import org.jvnet.winp.util.TestHelper;
  * Basic tests of the native library.
  * @author Kohsuke Kawaguchi
  */
-public class NativeAPITest extends ProcessSpawningTest {
+class NativeAPITest extends ProcessSpawningTest {
 
     @Test
-    public void testEnumProcesses() {
+    void testEnumProcesses() {
         for (WinProcess p : WinProcess.all()) {
             System.out.print(p.getPid());
             System.out.print(' ');
@@ -31,7 +29,7 @@ public class NativeAPITest extends ProcessSpawningTest {
     }
 
     @Test
-    public void testCriticalProcess() {
+    void testCriticalProcess() {
         boolean found=false;
         for (WinProcess p : WinProcess.all()) {
             final String commandLine;
@@ -54,12 +52,11 @@ public class NativeAPITest extends ProcessSpawningTest {
             }
         }
 
-        assumeThat("The test was unable to find the csrss process. Likely there is no permission allowing to read the command line", 
-                found, equalTo(true));
+        assumeTrue(found, "The test was unable to find the csrss process. Likely there is no permission allowing to read the command line");
     }
 
     @Test
-    public void testGetCommandLine() {
+    void testGetCommandLine() {
         int failed = 0;
         int total = 0;
         
@@ -98,7 +95,7 @@ public class NativeAPITest extends ProcessSpawningTest {
                 // On Vista and higher, the most common error here is 299, ERROR_PARTIAL_COPY. A bit of
                 // research online seems to suggest that's related to how those versions of Windows use
                 // randomized memory locations for process's
-                Assert.fail("Unexpected failure getting command line for process " + p.getPid() +
+                fail("Unexpected failure getting command line for process " + p.getPid() +
                             ": (" + e.getWin32ErrorCode() + ") " + e.getMessage());
             }
         }
@@ -107,13 +104,13 @@ public class NativeAPITest extends ProcessSpawningTest {
         }
     }
 
-    @Test(expected = WinpException.class)
-    public void testErrorHandling() {
-        new WinProcess(0).getEnvironmentVariables();
+    @Test
+    void testErrorHandling() {
+        assertThrows(WinpException.class, () -> new WinProcess(0).getEnvironmentVariables());
     }
 
     @Test
-    public void testKill() throws Exception {
+    void testKill() throws Exception {
         Process p = spawnNotepad();
         
         WinProcess wp = new WinProcess(p);
@@ -125,7 +122,7 @@ public class NativeAPITest extends ProcessSpawningTest {
     }
 
     @Test
-    public void testPingAsDelay() throws Exception {
+    void testPingAsDelay() throws Exception {
         Process p = spawnProcess("PING", "-n", "10", "127.0.0.1"); // run for 10 secs
         
         WinProcess wp = new WinProcess(p);
@@ -138,15 +135,15 @@ public class NativeAPITest extends ProcessSpawningTest {
     }
 
     @Test
-    public void testSendCtrlC() throws Exception {
+    void testSendCtrlC() throws Exception {
         Process p = spawnProcess("PING", "-n", "20", "127.0.0.1"); // run for 20 secs
         
         WinProcess wp = new WinProcess(p);
-        assertTrue("Process is not running: " + p, wp.isRunning());
+        assertTrue(wp.isRunning(), "Process is not running: " + p);
         
         // send Ctrl+C, then wait for a max of 4 secs
         boolean sent = wp.sendCtrlC();
-        assertTrue("Failed to send the Ctrl+C signal to the process: " + p, sent);
+        assertTrue(sent, "Failed to send the Ctrl+C signal to the process: " + p);
         for (int i = 0; i < 40; ++i) {
             if (!wp.isRunning()) {
                 break;
@@ -154,26 +151,26 @@ public class NativeAPITest extends ProcessSpawningTest {
             Thread.sleep(100);
         }
 
-        assertFalse("Process has not been terminated after Ctrl+C", wp.isRunning());
+        assertFalse(wp.isRunning(), "Process has not been terminated after Ctrl+C");
         wp.killRecursively();
     }
 
     @Test
-    public void testSendCtrlC_nonExistentPID() throws Exception {
+    void testSendCtrlC_nonExistentPID() {
         WinProcess wp = new WinProcess(Integer.MAX_VALUE);
-        assertFalse("Process is running when it should not: " + wp, wp.isRunning());
+        assertFalse(wp.isRunning(), "Process is running when it should not: " + wp);
 
         // send Ctrl+C, then wait for a max of 4 secs
         assertThrows(WinpException.class, wp::sendCtrlC);
     }
 
     @Test
-    public void shouldFailForNonExistentProcess() {
+    void shouldFailForNonExistentProcess() {
         int nonExistentPid = Integer.MAX_VALUE;
         WinpException e = assertThrows(
-                "Expected WinpException due to the non-existent process",
                 WinpException.class,
-                () -> new WinProcess(nonExistentPid).getCommandLine());
+                () -> new WinProcess(nonExistentPid).getCommandLine(),
+                "Expected WinpException due to the non-existent process");
         assertThat(e.getMessage(), containsString("Failed to open process"));
     }
     
@@ -182,7 +179,7 @@ public class NativeAPITest extends ProcessSpawningTest {
      * Notepad process may be either 64bit or 32bit depending on the OS Platform.
      * 
      */
-    private Process spawnNotepad() throws AssertionError, InterruptedException, IOException {
+    private Process spawnNotepad() throws Exception {
         return spawnProcess("notepad");
     }
 
