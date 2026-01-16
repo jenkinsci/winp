@@ -4,7 +4,6 @@ import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.infra.Blackhole;
 
 import java.util.Map;
-import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 
 public class ProcessEnvironmentVariableBenchmark {
@@ -13,7 +12,7 @@ public class ProcessEnvironmentVariableBenchmark {
     @OutputTimeUnit(TimeUnit.MILLISECONDS)
     @BenchmarkMode(Mode.AverageTime)
     @Fork(1)
-    public void testEnvRetreival(ProcessState state, Blackhole blackhole) {
+    public void testEnvRetrieval(ProcessState state, Blackhole blackhole) {
         WinProcess wp = new WinProcess(state.p);
         Map<String, String> env = wp.getEnvironmentVariables();
         //System.out.println(env.get("USERNAME"));

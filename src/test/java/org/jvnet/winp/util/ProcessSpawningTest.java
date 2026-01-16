@@ -25,13 +25,13 @@ package org.jvnet.winp.util;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import java.io.File;
-import java.io.IOException;
-import org.junit.After;
+
+import org.junit.jupiter.api.AfterEach;
 import org.jvnet.winp.WinProcess;
 
 /**
@@ -39,13 +39,13 @@ import org.jvnet.winp.WinProcess;
  * This class automatically kills runaway ones.
  * @author Oleg Nenashev
  */
-public class ProcessSpawningTest extends NativeWinpTest {
+public abstract class ProcessSpawningTest extends NativeWinpTest {
     
     @CheckForNull
     private Process spawnedProcess = null;
-    
-    @After
-    public void killSpawnedProcess() {
+
+    @AfterEach
+    void afterEach() {
         if (spawnedProcess != null && spawnedProcess.isAlive()) {
             System.err.println("Killing process " + spawnedProcess.toString());
             spawnedProcess.destroyForcibly();
@@ -54,13 +54,13 @@ public class ProcessSpawningTest extends NativeWinpTest {
         spawnedProcess = null;
     }
     
-    protected Process spawnProcess(String ... command) throws AssertionError, InterruptedException, IOException {
+    protected Process spawnProcess(String ... command) throws Exception {
         return spawnProcess(true, true, command);
     }
     
-    public Process spawnProcess(boolean delayAfterCreate, boolean spotcheckProcess, String ... command) throws AssertionError, InterruptedException, IOException {
-        assertTrue("Command is undefined", command.length >= 1);
-        assertNull("Test implementation error: The process has been already spawned", spawnedProcess);
+    protected Process spawnProcess(boolean delayAfterCreate, boolean spotcheckProcess, String ... command) throws Exception {
+        assertTrue(command.length >= 1, "Command is undefined");
+        assertNull(spawnedProcess, "Test implementation error: The process has been already spawned");
         
         ProcessBuilder pb = new ProcessBuilder(command);
         pb.environment().put("TEST", "foobar");
@@ -76,25 +76,18 @@ public class ProcessSpawningTest extends NativeWinpTest {
             System.out.println("pid=" + wp.getPid());
             assertThat("Failed to determine the command line of the running process", 
                     wp.getCommandLine(), containsString(command[0]));
-            assertTrue("Failed to read Environment Variables, no PATH discovered",
-                    wp.getEnvironmentVariables().containsKey("PATH"));
+            assertTrue(wp.getEnvironmentVariables().containsKey("PATH"),
+                    "Failed to read Environment Variables, no PATH discovered");
         }
         
         return spawnedProcess;
     }
     
     protected static File getTestAppExecutable(ExecutablePlatform executablePlatform) {
-        final String executable;
-        switch (executablePlatform) {
-            case X64:
-                executable = "native_test/testapp/x64/Release/testapp.exe";
-                break;
-            case X86:
-                executable = "native_test/testapp/Win32/Release/testapp.exe";
-                break;
-            default:
-                throw new IllegalArgumentException("Unsupported platform: " + executablePlatform);
-        }
+        final String executable = switch (executablePlatform) {
+            case X64 -> "native_test/testapp/x64/Release/testapp.exe";
+            case X86 -> "native_test/testapp/Win32/Release/testapp.exe";
+        };
         return new File(executable);
     }
 

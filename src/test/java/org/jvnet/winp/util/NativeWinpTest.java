@@ -23,18 +23,18 @@
  */
 package org.jvnet.winp.util;
 
-import org.junit.Before;
-import org.junit.BeforeClass;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.jvnet.winp.WinProcess;
 
 /**
  * WinP Test class, which invokes the native part.
  * @author Oleg Nenashev
  */
-public class NativeWinpTest {
-    
-    @BeforeClass
-    public static void enableDebug() throws Exception {
+public abstract class NativeWinpTest {
+
+    @BeforeAll
+    static void beforeAll() {
         TestHelper.assumeIsWindows();
         try {
             WinProcess.enableDebugPrivilege();
@@ -42,9 +42,9 @@ public class NativeWinpTest {
             throw new Exception("Could not enable debug privilege: " + e.getMessage());
         }
     }
-    
-    @Before
-    public void runOnWindowsOnly() {
+
+    @BeforeEach
+    void beforeEach() {
         TestHelper.assumeIsWindows();
     }
 }
