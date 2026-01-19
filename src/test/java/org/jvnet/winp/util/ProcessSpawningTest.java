@@ -64,7 +64,7 @@ public abstract class ProcessSpawningTest extends NativeWinpTest {
         
         ProcessBuilder pb = new ProcessBuilder(command);
         pb.environment().put("TEST", "foobar");
-        spawnedProcess = pb.start();     
+        spawnedProcess = pb.start();
         
         if (delayAfterCreate) {
             Thread.sleep(100); // Try to give the process a little time to start or getting the command line fails randomly
@@ -84,9 +84,13 @@ public abstract class ProcessSpawningTest extends NativeWinpTest {
     }
     
     protected static File getTestAppExecutable(ExecutablePlatform executablePlatform) {
+        String buildConfiguration = System.getProperty("native.configuration");
+        if(buildConfiguration == null || buildConfiguration.trim().isEmpty()) {
+            buildConfiguration = "Release";
+        }
         final String executable = switch (executablePlatform) {
-            case X64 -> "native_test/testapp/x64/Release/testapp.exe";
-            case X86 -> "native_test/testapp/Win32/Release/testapp.exe";
+            case X64 -> String.format("native_test/testapp/x64/%s/testapp.exe", buildConfiguration);
+            case X86 -> String.format("native_test/testapp/Win32/%s/testapp.exe", buildConfiguration);
         };
         return new File(executable);
     }

@@ -34,7 +34,7 @@ import org.jvnet.winp.WinProcess;
 public abstract class NativeWinpTest {
 
     @BeforeAll
-    static void beforeAll() {
+    static void beforeAll() throws Exception {
         TestHelper.assumeIsWindows();
         try {
             WinProcess.enableDebugPrivilege();

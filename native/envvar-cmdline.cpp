@@ -222,7 +222,7 @@ jstring getCmdLineAndEnvVars(
 	size_t pszCmdLineSize = ProcBlock.CommandLine.Length + 2;
 	pszCmdLine.allocate(pszCmdLineSize);
 	if(!pszCmdLine) {
-		sprintf_s<ERRMSG_SIZE>(errorBuffer, "Failed to allocate memory for reading command line (size=%d)", pszCmdLineSize);
+		sprintf_s<ERRMSG_SIZE>(errorBuffer, "Failed to allocate memory for reading command line (size=%zu)", pszCmdLineSize);
 		reportError(pEnv, errorBuffer);
 		return NULL;
 	}
@@ -261,14 +261,14 @@ jstring getCmdLineAndEnvVars(
 	
 	//TODO: set error codes for all the checks below?
 	if (info.State != MBI_REGION_STATE::Allocated) {
-		sprintf_s<ERRMSG_SIZE>(errorBuffer, "Process memory region has not been allocated yet (base=%p, size=%d, state=0x%X)", pEnvStr, info.RegionSize, info.State);
+		sprintf_s<ERRMSG_SIZE>(errorBuffer, "Process memory region has not been allocated yet (base=%p, size=%Id, state=0x%X)", pEnvStr, info.RegionSize, info.State);
 		reportError(pEnv, errorBuffer);
 		//TODO: Technically it is not a fatal failure, the caller should retry the method after the delay
 		return NULL;
 	}
 	
 	if (info.Protect == MBI_REGION_PROTECT::NoAccessToCheck || info.Protect & MBI_REGION_PROTECT::NoAccess || info.Protect & MBI_REGION_PROTECT::ExecuteOnly) {
-		sprintf_s<ERRMSG_SIZE>(errorBuffer, "No READ access to the process memory region (base=%p, size=%d, protect mode=0x%X, mode=%s)", pEnvStr, info.RegionSize, info.Protect, isWoW64 ? "WoW64" : "Normal");
+		sprintf_s<ERRMSG_SIZE>(errorBuffer, "No READ access to the process memory region (base=%p, size=%Id, protect mode=0x%X, mode=%s)", pEnvStr, info.RegionSize, info.Protect, isWoW64 ? "WoW64" : "Normal");
 		reportError(pEnv, errorBuffer);
 		return NULL;
 	}
@@ -281,7 +281,7 @@ jstring getCmdLineAndEnvVars(
 
 	size_t bytesBeforeEnv = (char*)pEnvStr - (char*)info.BaseAddress;
 	if (bytesBeforeEnv > info.RegionSize) {
-		sprintf_s<ERRMSG_SIZE>(errorBuffer, "Process memory header has been read incorrectly. Environment Table points to the address beyond the max address of the region (base=%p, size=%d, envPointer=%p)", pEnvStr, info.RegionSize, pEnvStr);
+		sprintf_s<ERRMSG_SIZE>(errorBuffer, "Process memory header has been read incorrectly. Environment Table points to the address beyond the max address of the region (base=%p, size=%Id, envPointer=%p)", pEnvStr, info.RegionSize, pEnvStr);
 		reportError(pEnv, errorBuffer);
 		return NULL;
 	}
@@ -290,7 +290,7 @@ jstring getCmdLineAndEnvVars(
 	size_t bufferSize = ((size_t)cmdLineLen + 1/*for \0*/) * 2 + envSize;
 	auto_localmem<LPWSTR> buf(bufferSize);
 	if(!buf) {
-		sprintf_s<ERRMSG_SIZE>(errorBuffer, "Environment Variable Table buffer allocation failed (size=%d)", bufferSize);
+		sprintf_s<ERRMSG_SIZE>(errorBuffer, "Environment Variable Table buffer allocation failed (size=%zd)", bufferSize);
 		reportError(pEnv, errorBuffer);
 		return NULL;
 	}
@@ -302,7 +302,7 @@ jstring getCmdLineAndEnvVars(
 	// it will succeed for partial reads that read _some_ data, where the other approach fails.
 	ReadProcessMemory(hProcess, pEnvStr, buf+cmdLineLen+1, envSize, &sRead);
 	if(!sRead) {
-		sprintf_s<ERRMSG_SIZE>(errorBuffer, "Failed to read the process memory region with the Environment Variable Table (base=%p, size=%d, mode=%s)", pEnvStr, envSize, isWoW64 ? "WoW64" : "Normal");
+		sprintf_s<ERRMSG_SIZE>(errorBuffer, "Failed to read the process memory region with the Environment Variable Table (base=%p, size=%zd, mode=%s)", pEnvStr, envSize, isWoW64 ? "WoW64" : "Normal");
 		reportError(pEnv, errorBuffer);
 		return NULL;
 	}
@@ -317,7 +317,7 @@ JNIEXPORT jint JNICALL Java_org_jvnet_winp_Native_getProcessId(JNIEnv* pEnv, jcl
 	HANDLE hProcess = (HANDLE)handle;
 	DWORD pid = GetProcessId(hProcess);
 	if (!pid) {
-		sprintf_s<ERRMSG_SIZE>(errorBuffer, "Failed to get process id from handle=%ld.", handle);
+		sprintf_s<ERRMSG_SIZE>(errorBuffer, "Failed to get process id from handle=%lld.", handle);
 		reportError(pEnv, errorBuffer);
 		return -1;
 	}

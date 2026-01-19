@@ -139,13 +139,13 @@ class Native {
                 return null;
             }
         } catch (Throwable cause) {
-
             UnsatisfiedLinkError error = new UnsatisfiedLinkError("Unable to load " + DLL_NAME + ".dll");
             error.initCause(cause);
             throw error;
         }
     }
 
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "dllRes and exeRes are internal resource paths, not user input")
     private static File loadByUrl(URL dllRes, URL exeRes) throws IOException {
 
         String dllUrl = dllRes.toExternalForm();
@@ -182,6 +182,7 @@ class Native {
         return exeFile;
     }
 
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "url an internal resource path, not user input")
     private static File extractToStaticLocation(URL url) throws IOException {
 
         File jarFile = getJarFile(url);
@@ -197,6 +198,7 @@ class Native {
         return destFile;
     }
 
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "res an internal resource path, not user input")
     private static File extractToTmpLocation(URL res) throws IOException {
 
         File tmpFile = File.createTempFile(DLL_NAME, ".dll");
@@ -205,6 +207,7 @@ class Native {
         return tmpFile;
     }
 
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "CTRLCEXE_NAME is an internal resource path, not user input")
     private static File extractExe(URL res, File dir) throws IOException {
         File destFile = new File(dir, CTRLCEXE_NAME + '.' + md5(res) + ".exe");
         if (!destFile.exists()) {

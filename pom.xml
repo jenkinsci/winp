@@ -19,10 +19,9 @@
     <revision>1.32</revision>
     <changelist>-SNAPSHOT</changelist>
     <gitHubRepo>jenkinsci/${project.artifactId}</gitHubRepo>
-    <!-- TODO fix violations -->
-    <spotbugs.threshold>High</spotbugs.threshold>
     <ban-junit4-imports.skip>false</ban-junit4-imports.skip>
     <jmh.version>1.37</jmh.version>
+    <native.configuration>Debug</native.configuration>
   </properties>
 
   <scm>
@@ -33,6 +32,16 @@
   </scm>
 
   <build>
+    <resources>
+      <resource>
+        <directory>src/main/resources</directory>
+        <filtering>false</filtering>
+        <includes>
+          <include>**/*.dll</include>
+          <include>**/*.exe</include>
+        </includes>
+      </resource>
+    </resources>
     <plugins>
       <plugin>
         <artifactId>maven-jar-plugin</artifactId>
@@ -45,9 +54,24 @@
         </configuration>
       </plugin>
       <plugin>
+        <artifactId>maven-resources-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>copy-native-resources</id>
+            <phase>process-resources</phase>
+            <goals>
+              <goal>resources</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
-            <argLine>-XX:+CreateCoredumpOnCrash</argLine>
+            <argLine>-XX:+CreateCoredumpOnCrash --enable-native-access=ALL-UNNAMED</argLine>
+            <systemPropertyVariables>
+              <native.configuration>${native.configuration}</native.configuration>
+            </systemPropertyVariables>
         </configuration>
       </plugin>
     </plugins>
@@ -131,9 +155,10 @@
                 <goals>
                   <goal>exec</goal>
                 </goals>
-                <phase>process-resources</phase>
+                <phase>generate-resources</phase>
                 <configuration>
-                  <executable>build.cmd</executable>
+                  <executable>powershell.exe</executable>
+                  <commandlineArgs>-ExecutionPolicy Bypass -File build.ps1 -Configuration ${native.configuration}</commandlineArgs>
                 </configuration>
               </execution>
               <execution>
@@ -143,14 +168,11 @@
                 </goals>
                 <phase>clean</phase>
                 <configuration>
-                  <executable>build.cmd</executable>
-                  <arguments>
-                    <argument>clean</argument>
-                  </arguments>
+                  <executable>powershell.exe</executable>
+                  <commandlineArgs>-ExecutionPolicy Bypass -File build.ps1 -Command clean -Configuration ${native.configuration}</commandlineArgs>
                 </configuration>
               </execution>
             </executions>
-
           </plugin>
         </plugins>
       </build>
