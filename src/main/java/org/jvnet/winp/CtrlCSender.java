@@ -6,11 +6,13 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.Charset;
 import java.util.Locale;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 class CtrlCSender {
 
   private static final int TIMEOUT_MILLIS = 5000;
 
+  @SuppressFBWarnings(value = {"COMMAND_INJECTION", "PATH_TRAVERSAL_IN"}, justification = "ctrlCExePath is an internal resource path, not user input")
   static boolean sendCtrlC(int pid, String ctrlCExePath) {
     ProcessBuilder builder = new ProcessBuilder(ctrlCExePath, String.valueOf(pid));
     builder.redirectErrorStream(true);

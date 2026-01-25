@@ -3,8 +3,8 @@
  * easy Linux/Windows testing and produces incrementals. The only feature that relates to plugins is
  * allowing one to test against multiple Jenkins versions.
  */
-buildPlugin(useContainerAgent: true, configurations: [
-  [platform: 'linux', jdk: 25],
-  [platform: 'linux', jdk: 21]
+buildPlugin(useContainerAgent: false, configurations: [
+  [platform: 'windows', jdk: 25],
+  [platform: 'windows', jdk: 21]
 ])
 

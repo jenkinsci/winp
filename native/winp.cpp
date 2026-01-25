@@ -114,43 +114,6 @@ typedef struct _SYSTEM_PROCESSES {
     SYSTEM_THREADS  Threads[1];
 } SYSTEM_PROCESSES, * PSYSTEM_PROCESSES;
 
-//---------------------------------------------------------------------------
-// KillProcessTreeNtHelper
-//
-//  This is a recursive helper function that terminates all the processes
-//  started by the specified process and them terminates the process itself
-//
-//  Parameters:
-//	  pInfo       - processes information
-//	  dwProcessId - identifier of the process to terminate
-//
-//  Returns:
-//	  Win32 error code.
-//
-DWORD WINAPI KillProcessTreeNtHelper(PSYSTEM_PROCESSES pInfo, DWORD dwProcessId) {
-	_ASSERTE(pInfo != NULL);
-
-    PSYSTEM_PROCESSES p = pInfo;
-
-    // kill all children first
-    for (;;)
-    {
-		if (p->InheritedFromProcessId == dwProcessId)
-			KillProcessTreeNtHelper(pInfo, p->ProcessId);
-
-		if (p->NextEntryDelta == 0)
-			break;
-
-		// find the address of the next process structure
-		p = (PSYSTEM_PROCESSES)(((LPBYTE)p) + p->NextEntryDelta);
-    }
-
-	// kill the process itself
-    if (!KillProcess(dwProcessId))
-		return GetLastError();
-
-	return ERROR_SUCCESS;
-}
 
 struct _TREE_PROCESS;
 typedef _TREE_PROCESS TREE_PROCESS;
@@ -360,62 +323,8 @@ BOOL WINAPI KillProcessEx(DWORD dwProcessId, BOOL bTree) {
 		return KillProcess(dwProcessId);
 	}
 
-	OSVERSIONINFO osvi;
-	DWORD dwError;
-
-	// determine operating system version
-	osvi.dwOSVersionInfoSize = sizeof(osvi);
-	GetVersionEx(&osvi);
-
-	if (osvi.dwPlatformId == VER_PLATFORM_WIN32_NT &&
-		osvi.dwMajorVersion < 5)
-	{
-		// obtain a handle to the default process heap
-		HANDLE hHeap = GetProcessHeap();
-
-		NTSTATUS Status;
-		ULONG cbBuffer = 0x8000;
-		PVOID pBuffer = NULL;
-
-		// it is difficult to say a priory which size of the buffer
-		// will be enough to retrieve all information, so we start
-		// with 32K buffer and increase its size until we get the
-		// information successfully
-		do
-		{
-			pBuffer = HeapAlloc(hHeap, 0, cbBuffer);
-			if (pBuffer == NULL) {
-				return SetLastError(ERROR_NOT_ENOUGH_MEMORY), FALSE;
-			}
-
-			Status = ZwQuerySystemInformation(
-							SystemProcessesAndThreadsInformation,
-							pBuffer, cbBuffer, NULL);
-
-			if (Status == STATUS_INFO_LENGTH_MISMATCH)
-			{
-				HeapFree(hHeap, 0, pBuffer);
-				cbBuffer *= 2;
-			}
-			else if (!NT_SUCCESS(Status))
-			{
-				HeapFree(hHeap, 0, pBuffer);
-				return SetLastError(Status), NULL;
-			}
-		}
-		while (Status == STATUS_INFO_LENGTH_MISMATCH);
-
-		// call the helper function
-		dwError = KillProcessTreeNtHelper((PSYSTEM_PROCESSES)pBuffer,
-										  dwProcessId);
-
-		HeapFree(hHeap, 0, pBuffer);
-	}
-	else
-	{
-		// call the helper function
-		dwError = KillProcessTreeWinHelper(dwProcessId);
-	}
+	// call the helper function
+	DWORD dwError = KillProcessTreeWinHelper(dwProcessId);
 
 	SetLastError(dwError);
 	return dwError == ERROR_SUCCESS;

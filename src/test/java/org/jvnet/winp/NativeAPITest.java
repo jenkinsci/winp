@@ -10,6 +10,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 import org.jvnet.winp.util.ProcessSpawningTest;
 import org.jvnet.winp.util.TestHelper;
 
@@ -135,6 +136,7 @@ class NativeAPITest extends ProcessSpawningTest {
     }
 
     @Test
+    @DisabledIfEnvironmentVariable(named = "CI", matches = "true", disabledReason = "Docker containers may not support sending Ctrl+C easily")
     void testSendCtrlC() throws Exception {
         Process p = spawnProcess("PING", "-n", "20", "127.0.0.1"); // run for 20 secs
         
