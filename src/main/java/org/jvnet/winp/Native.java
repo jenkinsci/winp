@@ -23,8 +23,8 @@ import java.util.logging.Logger;
  */
 class Native {
 
-    public static final String DLL_NAME = "64".equals(System.getProperty("sun.arch.data.model")) ? "winp.x64" : "winp";
-    public static final String CTRLCEXE_NAME = "64".equals(System.getProperty("sun.arch.data.model")) ? "sendctrlc.x64" : "sendctrlc";
+    public static final String DLL_NAME = "aarch64".equals(System.getProperty("os.arch")) ? "winp.arm64" : ("64".equals(System.getProperty("sun.arch.data.model")) ? "winp.x64" : "winp");
+    public static final String CTRLCEXE_NAME = "aarch64".equals(System.getProperty("os.arch")) ? "sendctrlc.arm64" : ("64".equals(System.getProperty("sun.arch.data.model")) ? "sendctrlc.x64" : "sendctrlc");
 
     native static boolean kill(int pid, boolean recursive);
     native static boolean isCriticalProcess(int pid);

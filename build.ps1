@@ -69,6 +69,11 @@ function Invoke-MSBuild {
     if ($Target) {
         $args = @("/t:$Target") + $args
     }
+
+    if ($Platform -eq "arm64") {
+        # newer versions have some issues with ARM64 builds unless the target platform version is specified
+        $args = @("/p:WindowsTargetPlatformVersion=10.0.22621.0") + $args
+    }
     
     Write-Host "Running: & '$MSBUILD' $($args -join ' ')"
     & $MSBUILD @args
@@ -85,11 +90,14 @@ function Invoke-Clean {
     
     Invoke-MSBuild "winp.vcxproj" "Win32" "Clean"
     Invoke-MSBuild "winp.vcxproj" "x64" "Clean"
+    Invoke-MSBuild "winp.vcxproj" "arm64" "Clean"
     Invoke-MSBuild "sendctrlc\sendctrlc.vcxproj" "Win32" "Clean"
     Invoke-MSBuild "sendctrlc\sendctrlc.vcxproj" "x64" "Clean"
+    Invoke-MSBuild "sendctrlc\sendctrlc.vcxproj" "arm64" "Clean"
     Invoke-MSBuild "..\native_test\testapp\testapp.vcxproj" "Win32" "Clean"
     Invoke-MSBuild "..\native_test\testapp\testapp.vcxproj" "x64" "Clean"
-    
+    Invoke-MSBuild "..\native_test\testapp\testapp.vcxproj" "arm64" "Clean"
+
     Pop-Location
 }
 
@@ -100,12 +108,15 @@ function Invoke-Build {
     
     Invoke-MSBuild "winp.vcxproj" "Win32"
     Invoke-MSBuild "winp.vcxproj" "x64"
+    Invoke-MSBuild "winp.vcxproj" "arm64"
     Invoke-MSBuild "sendctrlc\sendctrlc.vcxproj" "Win32"
     Invoke-MSBuild "sendctrlc\sendctrlc.vcxproj" "x64"
-    
+    Invoke-MSBuild "sendctrlc\sendctrlc.vcxproj" "arm64"
+
     Write-Host "### Building test applications"
     Invoke-MSBuild "..\native_test\testapp\testapp.vcxproj" "Win32" $null "minimal"
     Invoke-MSBuild "..\native_test\testapp\testapp.vcxproj" "x64" $null "minimal"
+    Invoke-MSBuild "..\native_test\testapp\testapp.vcxproj" "arm64" $null "minimal"
     
     Pop-Location
     
@@ -120,8 +131,10 @@ function Invoke-Build {
     $filesToCopy = @(
         @{ Source = "native\$Configuration\winp.dll"; Dest = "$resourceDir\winp.dll" },
         @{ Source = "native\x64\$Configuration\winp.dll"; Dest = "$resourceDir\winp.x64.dll" },
+        @{ Source = "native\arm64\$Configuration\winp.dll"; Dest = "$resourceDir\winp.arm64.dll" },
         @{ Source = "native\sendctrlc\Win32\$Configuration\sendctrlc.exe"; Dest = "$resourceDir\sendctrlc.exe" },
         @{ Source = "native\sendctrlc\x64\$Configuration\sendctrlc.exe"; Dest = "$resourceDir\sendctrlc.x64.exe" }
+        @{ Source = "native\sendctrlc\arm64\$Configuration\sendctrlc.exe"; Dest = "$resourceDir\sendctrlc.arm64.exe" }
     )
     
     foreach ($file in $filesToCopy) {
