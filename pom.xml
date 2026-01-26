@@ -21,7 +21,7 @@
     <gitHubRepo>jenkinsci/${project.artifactId}</gitHubRepo>
     <ban-junit4-imports.skip>false</ban-junit4-imports.skip>
     <jmh.version>1.37</jmh.version>
-    <native.configuration>Debug</native.configuration>
+    <native.configuration>Release</native.configuration>
   </properties>
 
   <scm>

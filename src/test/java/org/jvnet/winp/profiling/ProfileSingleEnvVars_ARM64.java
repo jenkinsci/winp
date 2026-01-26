@@ -35,16 +35,16 @@ import org.jvnet.winp.util.TestHelper;
  * Runs profiling for a single 64bit application.
  * @author Oleg Nenashev
  */
-class ProfileSingleEnvVars_64bit extends ProcessSpawningTest {
+class ProfileSingleEnvVars_ARM64 extends ProcessSpawningTest {
 
     @BeforeEach
     void beforeEach() {
-        TestHelper.assumeIs64BitHost();
+        TestHelper.assumeIsArm64Host();
     }
 
     @Test
     void doProfile() throws Exception {
-        File executable = getTestAppExecutable(ExecutablePlatform.X64);
+        File executable = getTestAppExecutable(ExecutablePlatform.ARM64);
         Process proc = spawnProcess(false, false, executable.getAbsolutePath());
         WinProcess wp = new WinProcess(proc);
         wp.getEnvironmentVariables();
