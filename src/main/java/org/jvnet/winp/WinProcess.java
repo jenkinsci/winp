@@ -1,11 +1,9 @@
 package org.jvnet.winp;
 
-import javax.annotation.CheckReturnValue;
-import java.lang.reflect.Field;
-import java.util.Comparator;
-import java.util.TreeMap;
+import edu.umd.cs.findbugs.annotations.CheckReturnValue;
 import java.util.Iterator;
-import java.util.logging.Level;
+import java.util.StringTokenizer;
+import java.util.TreeMap;
 import java.util.logging.Logger;
 
 import static java.util.logging.Level.FINE;
@@ -39,15 +37,10 @@ public class WinProcess {
      * Wraps {@link Process} into {@link WinProcess}.
      */
     public WinProcess(Process proc) {
-        try {
-            Field f = proc.getClass().getDeclaredField("handle");
-            f.setAccessible(true);
-            int handle = ((Number)f.get(proc)).intValue();
-            pid = Native.getProcessId(handle);
-        } catch (NoSuchFieldException e) {
-            throw new NotWindowsException(e);
-        } catch (IllegalAccessException e) {
-            throw new NotWindowsException(e);
+        long pidLong = proc.pid();
+        this.pid = (int) pidLong;
+        if (this.pid != pidLong) {
+            throw new IllegalArgumentException("Out of range: " + pidLong);
         }
     }
 
@@ -98,12 +91,7 @@ public class WinProcess {
     }
 
     public boolean isRunning() {
-        try {
-            Native.getCmdLine(pid);
-            return true;
-        } catch (WinpException e) {
-            return false;
-        }
+        return Native.isProcessRunning(pid);
     }
 
     public boolean isCriticalProcess() {
@@ -151,8 +139,9 @@ public class WinProcess {
      *      The process may be dead or there is not enough security privileges.
      */
     public synchronized TreeMap<String,String> getEnvironmentVariables() {
-        if(envVars==null)
+        if(envVars==null) {
             parseCmdLineAndEnvVars();
+        }
         return envVars;
     }
 
@@ -168,35 +157,22 @@ public class WinProcess {
         String s = Native.getCmdLineAndEnvVars(pid);
         if(s==null)
             throw new WinpException("Failed to obtain for PID="+pid);
-        int sep = s.indexOf('\0');
-        commandline = s.substring(0,sep);
-        envVars = new TreeMap<String,String>(CASE_INSENSITIVE_COMPARATOR);
-        s = s.substring(sep+1);
-
-        while(s.length()>0) {
-            sep = s.indexOf('\0');
-            if(sep==0)  return;
-            
-            String t;
-            if(sep==-1) {
-                t = s;
-                s = "";
-            } else {
-                t = s.substring(0,sep);
-                s = s.substring(sep+1);
+        // a double null indicates the end of the envvars (but the string can be longer!) so truncate here.
+        int end = s.indexOf("\0\0");
+        if (end != -1) {
+            s = s.substring(0, end);
+        }
+        StringTokenizer st = new StringTokenizer(s, "\0", false);
+        commandline = st.nextToken();
+        envVars = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        while (st.hasMoreElements()) {
+            final String kv = st.nextToken();
+            int sep = kv.indexOf('=');
+            if  (sep!=-1) { // be defensive. not exactly sure when this happens, but see HUDSON-4034
+                envVars.put(kv.substring(0, sep), kv.substring(sep + 1));
             }
-
-            sep = t.indexOf('=');
-            if  (sep!=-1) // be defensive. not exactly sure when this happens, but see HUDSON-4034
-                envVars.put(t.substring(0,sep),t.substring(sep+1));
         }
     }
-
-    private static final Comparator<String> CASE_INSENSITIVE_COMPARATOR = new Comparator<String>() {
-        public int compare(String o1, String o2) {
-            return o1.toUpperCase().compareTo(o2.toUpperCase());
-        }
-    };
 
     /**
      * Enumerates all the processes in the system.
@@ -207,9 +183,10 @@ public class WinProcess {
      *      Never null.
      */
     public static Iterable<WinProcess> all() {
-        return new Iterable<WinProcess>() {
+        return new Iterable<>() {
+            @Override
             public Iterator<WinProcess> iterator() {
-                return new Iterator<WinProcess>() {
+                return new Iterator<>() {
                     private int pos=0;
                     private int[] pids = new int[256];
                     private int total;
@@ -225,14 +202,17 @@ public class WinProcess {
                         }
                     }
 
+                    @Override
                     public boolean hasNext() {
                         return pos<total;
                     }
 
+                    @Override
                     public WinProcess next() {
                         return new WinProcess(pids[pos++]);
                     }
 
+                    @Override
                     public void remove() {
                         throw new UnsupportedOperationException();
                     }

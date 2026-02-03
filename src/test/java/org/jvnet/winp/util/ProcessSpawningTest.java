@@ -23,16 +23,15 @@
  */
 package org.jvnet.winp.util;
 
-import java.io.File;
-import java.io.IOException;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
 import static org.hamcrest.CoreMatchers.containsString;
-import org.junit.After;
-import org.junit.Assert;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import java.io.File;
+
+import org.junit.jupiter.api.AfterEach;
 import org.jvnet.winp.WinProcess;
 
 /**
@@ -40,33 +39,32 @@ import org.jvnet.winp.WinProcess;
  * This class automatically kills runaway ones.
  * @author Oleg Nenashev
  */
-public class ProcessSpawningTest extends NativeWinpTest {
+public abstract class ProcessSpawningTest extends NativeWinpTest {
     
     @CheckForNull
     private Process spawnedProcess = null;
-    
-    @After
-    public void killSpawnedProcess() {
-        if (spawnedProcess != null && isAlive(spawnedProcess)) {
+
+    @AfterEach
+    void afterEach() {
+        if (spawnedProcess != null && spawnedProcess.isAlive()) {
             System.err.println("Killing process " + spawnedProcess.toString());
-            //TODO: destroyForcibly() in Java8
-            spawnedProcess.destroy();
+            spawnedProcess.destroyForcibly();
         }
         
         spawnedProcess = null;
     }
     
-    protected Process spawnProcess(String ... command) throws AssertionError, InterruptedException, IOException {
+    protected Process spawnProcess(String ... command) throws Exception {
         return spawnProcess(true, true, command);
     }
     
-    public Process spawnProcess(boolean delayAfterCreate, boolean spotcheckProcess, String ... command) throws AssertionError, InterruptedException, IOException {
-        assertTrue("Command is undefined", command.length >= 1);
-        assertNull("Test implementation error: The process has been already spawned", spawnedProcess);
+    protected Process spawnProcess(boolean delayAfterCreate, boolean spotcheckProcess, String ... command) throws Exception {
+        assertTrue(command.length >= 1, "Command is undefined");
+        assertNull(spawnedProcess, "Test implementation error: The process has been already spawned");
         
         ProcessBuilder pb = new ProcessBuilder(command);
         pb.environment().put("TEST", "foobar");
-        spawnedProcess = pb.start();     
+        spawnedProcess = pb.start();
         
         if (delayAfterCreate) {
             Thread.sleep(100); // Try to give the process a little time to start or getting the command line fails randomly
@@ -78,36 +76,22 @@ public class ProcessSpawningTest extends NativeWinpTest {
             System.out.println("pid=" + wp.getPid());
             assertThat("Failed to determine the command line of the running process", 
                     wp.getCommandLine(), containsString(command[0]));
-            assertTrue("Failed to read Environment Variables, no PATH discovered",
-                    wp.getEnvironmentVariables().containsKey("PATH"));
+            assertTrue(wp.getEnvironmentVariables().containsKey("PATH"),
+                    "Failed to read Environment Variables, no PATH discovered");
         }
         
         return spawnedProcess;
     }
     
-    //TODO: replace by Process#isAlive() in Java8
-    public static boolean isAlive(@Nonnull Process proc) {
-        try {
-            int exitCode = proc.exitValue();
-            return false;
-        } catch (IllegalThreadStateException ex) {
-           return true;
-        }
-    }
-    
     protected static File getTestAppExecutable(ExecutablePlatform executablePlatform) {
-        final String executable;
-        switch (executablePlatform) {
-            case X64:
-                executable = "native_test/testapp/x64/Release/testapp.exe";
-                break;
-            case X86:
-                executable = "native_test/testapp/Win32/Release/testapp.exe";
-                break;
-            default:
-                Assert.fail("Unsupported platform: " + executablePlatform);
-                throw new IllegalStateException();
+        String buildConfiguration = System.getProperty("native.configuration");
+        if(buildConfiguration == null || buildConfiguration.trim().isEmpty()) {
+            buildConfiguration = "Release";
         }
+        final String executable = switch (executablePlatform) {
+            case X64 -> String.format("native_test/testapp/x64/%s/testapp.exe", buildConfiguration);
+            case X86 -> String.format("native_test/testapp/Win32/%s/testapp.exe", buildConfiguration);
+        };
         return new File(executable);
     }
 

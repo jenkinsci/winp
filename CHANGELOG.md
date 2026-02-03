@@ -1,6 +1,43 @@
 Changelog
 ====
 
+* All notable changes prior to 1.29 are documented in this changelog.
+* Release notes for versions 1.29 and newer can be found on the [GitHub releases page](https://github.com/jenkinsci/winp/releases).
+
+##### 1.28
+
+Release date: Feb 28, 2019
+
+* [#58](https://github.com/kohsuke/winp/issues/58) -
+WinP was failing to send Ctrl+C on some platforms due to the missing DLL
+* [#60](https://github.com/kohsuke/winp/pull/61) -
+Prevent flickering console window from showing up during the process termination
+* [#56](https://github.com/kohsuke/winp/issues/56) -
+Cache and rethrow initialization errors in the native logic when Ctrl+C signal is invoked  
+
+Internal:
+
+* [PR #61](https://github.com/kohsuke/winp/pull/61) -
+Ctrl+C sending logic is now implemented in Java instead of the native code
+
+##### 1.27
+
+Release date: Jul 18, 2018
+
+Changes:
+
+* [PR #49](https://github.com/kohsuke/winp/pull/49) -
+Add `WinProcess#sendCtrlC()` method for sending graceful abort signals to processes.
+* [PR #49](https://github.com/kohsuke/winp/pull/49) -
+Add `WinProcess#isRunning()` method
+* [PR #53](https://github.com/kohsuke/winp/pull/53/) - 
+Fix handling of process IDs on 64-bit systems.
+Before the change there was a risk of incorrect process ID retrieval due to the long => int conversion
+
+Compatibility notes:
+
+* Minimal required Windows version is now Windows XMP instead of Windows 2000 (`_WIN32_WINNT=0x0501`)
+
 ##### 1.26
 
 Release date: Apr 18, 2018

@@ -23,23 +23,28 @@
  */
 package org.jvnet.winp;
 
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.anEmptyMap;
+import static org.hamcrest.Matchers.hasEntry;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.io.File;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collection;
-import static org.hamcrest.CoreMatchers.*;
-import org.junit.Assert;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.Parameter;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.jvnet.winp.util.ExecutablePlatform;
 import org.jvnet.winp.util.ProcessSpawningTest;
-import static org.jvnet.winp.util.ProcessSpawningTest.isAlive;
 import org.jvnet.winp.util.TestHelper;
 
 /**
@@ -48,18 +53,25 @@ import org.jvnet.winp.util.TestHelper;
  * Only one of winp.dll and winp-64.dll will be tested.
  * @author Oleg Nenashev
  */
-@RunWith(Parameterized.class)
-public class PlatformSpecificProcessTest extends ProcessSpawningTest {
-    
-    private final ExecutablePlatform executablePlatform; 
-    
-    public PlatformSpecificProcessTest(ExecutablePlatform p) {
-        executablePlatform = p;
+@ParameterizedClass
+@EnumSource(ExecutablePlatform.class)
+class PlatformSpecificProcessTest extends ProcessSpawningTest {
+
+    private static final Set<String> ARCHITECTURE_DEPENDANT_ENVIRONMENT_VARS;
+
+    static {
+        ARCHITECTURE_DEPENDANT_ENVIRONMENT_VARS = new HashSet<>();
+        ARCHITECTURE_DEPENDANT_ENVIRONMENT_VARS.add("PROCESSOR_ARCHITEW6432");
+        ARCHITECTURE_DEPENDANT_ENVIRONMENT_VARS.add("PROCESSOR_ARCHITECTURE");
+        ARCHITECTURE_DEPENDANT_ENVIRONMENT_VARS.add("PROGRAMFILES");
+        ARCHITECTURE_DEPENDANT_ENVIRONMENT_VARS.add("COMMONPROGRAMFILES");
     }
-    
-    @Before
-    public void verifyTargetPlatform() {
-        
+
+    @Parameter(0)
+    private ExecutablePlatform executablePlatform;
+
+    @BeforeEach
+    void beforeEach() {
         // Run 64bit tests only if the platform supports it
         if (executablePlatform == ExecutablePlatform.X64) {
             TestHelper.assumeIs64BitHost();
@@ -67,11 +79,11 @@ public class PlatformSpecificProcessTest extends ProcessSpawningTest {
         
         File exec = getTestAppExecutable(executablePlatform);
         System.out.println("Target executable: " + exec.getAbsolutePath());
-        Assert.assertTrue("Cannot locate the required executable: " + exec.getAbsolutePath(), exec.exists());
+        assertTrue(exec.exists(), "Cannot locate the required executable: " + exec.getAbsolutePath());
     }
-    
+
     @Test
-    public void shouldKillProcessCorrectly() throws Exception {
+    void shouldKillProcessCorrectly() throws Exception {
         Process p = spawnTestApp();
         WinProcess wp = new WinProcess(p);
         assertEquals("foobar", wp.getEnvironmentVariables().get("TEST"));
@@ -79,65 +91,96 @@ public class PlatformSpecificProcessTest extends ProcessSpawningTest {
         Thread.sleep(100);
         wp.killRecursively();
     }
-    
-    @Test
-    public void shouldNotBeCritical() throws Exception {
-        Process p = spawnTestApp();
-        WinProcess wp = new WinProcess(p);
-        assertFalse("The spawned process should not be critical to the system", wp.isCriticalProcess());
-    }
-    
-    @Test
-    public void getCommandLine_shouldNotFailIfTheProcessIsDead() throws Exception {
-        Process p = spawnTestApp();
-        WinProcess wp = new WinProcess(p);
-        int pid = wp.getPid();
-        wp.killRecursively();
-        Thread.sleep(1000);
-        assertFalse("The process has not been stopped yet", isAlive(p));
 
-        try {
-            new WinProcess(p).getCommandLine();
-        } catch (WinpException ex) {
-            assertThat(ex.getMessage(), containsString("Process with pid=" + pid + " has already stopped. Exit code is -1"));
-            assertThat(ex.getWin32ErrorCode(), equalTo(UserErrorType.PROCESS_IS_NOT_RUNNING.getSystemErrorCode()));
-            return;
-        }
-        
-        Assert.fail("Expected WinpException since the process is killed");
-    }
-    
     @Test
-    public void getEnvironmentVariables_shouldFailIfTheProcessIsDead() throws Exception {
+    void shouldNotBeCritical() throws Exception {
+        Process p = spawnTestApp();
+        WinProcess wp = new WinProcess(p);
+        assertFalse(wp.isCriticalProcess(), "The spawned process should not be critical to the system");
+    }
+
+    @Test
+    void getCommandLine_shouldNotFailIfTheProcessIsDead() throws Exception {
         Process p = spawnTestApp();
         WinProcess wp = new WinProcess(p);
         int pid = wp.getPid();
         wp.killRecursively();
         Thread.sleep(1000);
-        assertFalse("The process has not been stopped yet", isAlive(p));
-        
-        try {
-            new WinProcess(p).getEnvironmentVariables();
-        } catch (WinpException ex) {
-            assertThat(ex.getMessage(), containsString("Process with pid=" + pid + " has already stopped. Exit code is -1"));
-            assertThat(ex.getWin32ErrorCode(), equalTo(UserErrorType.PROCESS_IS_NOT_RUNNING.getSystemErrorCode()));
-            return;
+        assertFalse(p.isAlive(), "The process has not been stopped yet");
+
+        WinpException e = assertThrows(
+                WinpException.class,
+                () -> new WinProcess(p).getCommandLine(),
+                "Expected WinpException since the process is killed");
+        assertThat(
+                e.getMessage(),
+                containsString("Process with pid=" + pid + " has already stopped. Exit code is -1"));
+        assertThat(
+                e.getWin32ErrorCode(),
+                equalTo(UserErrorType.PROCESS_IS_NOT_RUNNING.getSystemErrorCode()));
+    }
+
+    @Test
+    void getEnvironmentVariables_shouldReturnCorrectValues() throws Exception {
+        Process p = spawnTestApp();
+        WinProcess wp = new WinProcess(p);
+        // spawned processes should inherit our environment variables
+        Map<String, String> inheritedEnv = System.getenv();
+        Map<String, String> processEnv = wp.getEnvironmentVariables();
+
+        // environment variable that start with = is just some funky stuff!
+        // and there are some that start with "=" that won't show up in set e.g. =ExitCode =CLINK.SCRIPTS
+        for (Map.Entry<String, String> entry : inheritedEnv.entrySet()) {
+            if (!(entry.getKey().isEmpty() || entry.getKey().startsWith("=") || // :-o  special
+                    ARCHITECTURE_DEPENDANT_ENVIRONMENT_VARS.contains(entry.getKey())))  {
+                assertThat(processEnv, hasEntry(entry.getKey(), entry.getValue()));
+            }
         }
-        
-        Assert.fail("Expected WinpException since the process is killed");
+        // the extra env added by spawnTestApp
+        assertThat(processEnv, hasEntry("TEST", "foobar"));
+
+        // what remains?
+        Map<String, String> remaining = new HashMap<>();
+        for (Map.Entry<String, String>  kv : processEnv.entrySet()) {
+            if (! (inheritedEnv.containsKey(kv.getKey()) || kv.getKey().equals("TEST") || kv.getKey().isEmpty()
+                    || kv.getKey().startsWith("="))) {
+                // some vars are changed by windows depending on if you are a 32bit process running in a 64 bit os or 64 on 64.
+                // just filter those out
+                if (!ARCHITECTURE_DEPENDANT_ENVIRONMENT_VARS.contains(kv.getKey())) {
+                    remaining.put(kv.getKey(), kv.getValue());
+                }
+            }
+        }
+        assertThat(remaining, anEmptyMap());
+    }
+
+    @Test
+    void getEnvironmentVariables_shouldFailIfTheProcessIsDead() throws Exception {
+        Process p = spawnTestApp();
+        WinProcess wp = new WinProcess(p);
+        int pid = wp.getPid();
+        wp.killRecursively();
+        Thread.sleep(1000);
+        assertFalse(p.isAlive(), "The process has not been stopped yet");
+
+        WinpException e = assertThrows(
+                WinpException.class,
+                () -> new WinProcess(p).getEnvironmentVariables(),
+                "Expected WinpException since the process is killed");
+        assertThat(
+                e.getMessage(),
+                containsString("Process with pid=" + pid + " has already stopped. Exit code is -1"));
+        assertThat(
+                e.getWin32ErrorCode(),
+                equalTo(UserErrorType.PROCESS_IS_NOT_RUNNING.getSystemErrorCode()));
     }
     
-    private Process spawnTestApp() throws IOException, InterruptedException {
+    private Process spawnTestApp() throws Exception {
         return spawnProcess(getTestAppExecutable(executablePlatform).getAbsolutePath());
     }
     
     private String getExpectedPEBName(boolean processIsRunning) {
         // We cannot read Wow64 Process info from the terminated process, hence PEB32 structure won't be discovered
-        return (executablePlatform == ExecutablePlatform.X86 && processIsRunning) ? "PEB32" : "PEB";
-    }
-    
-    @Parameters
-    public static Collection<Object[]> data() {
-        return Arrays.asList(new Object[][] { {ExecutablePlatform.X64}, {ExecutablePlatform.X86}});  
+        return executablePlatform == ExecutablePlatform.X86 && processIsRunning ? "PEB32" : "PEB";
     }
 }

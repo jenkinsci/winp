@@ -14,63 +14,6 @@
 #define ERRMSG_SIZE 512
 
 //---------------------------------------------------------------------------
-// SendCtrlC
-//
-//  Sends CTRL+C to the specified process.
-//
-//  Parameters:
-//	  dwProcessId - identifier of the process to terminate
-//
-//  Returns:
-//	  TRUE, if successful, FALSE - otherwise.
-//    When used from JNI, exceptions may be thrown instead
-//
-BOOL WINAPI SendCtrlC(JNIEnv* pEnv, jclass clazz, IN DWORD dwProcessId, const wchar_t* pExePath) {
-  char errorBuffer[ERRMSG_SIZE];
-  STARTUPINFO         si;
-  PROCESS_INFORMATION pi;
-  ZeroMemory(&si, sizeof(si));
-  si.cb = sizeof(si);
-  ZeroMemory(&pi, sizeof(pi));
-
-  std::wstring exepath(pExePath);
-  std::wstring cmd = L'"' + exepath + L"\" " + std::to_wstring(dwProcessId);
-  std::vector<wchar_t> cmd_buffer(cmd.begin(), cmd.end()); // with C++17, could just use cmd.data()
-
-  BOOL started = CreateProcessW(NULL, &cmd_buffer[0], NULL, NULL,
-                                FALSE, 0, NULL, NULL, &si, &pi);
-
-  BOOL success = FALSE;
-  if (started) {
-    // wait for termination if the process started, max. 5 secs
-    DWORD ret = WaitForSingleObject(pi.hProcess, 5000);
-    if (ret != WAIT_OBJECT_0) {
-        sprintf_s<ERRMSG_SIZE>(errorBuffer, "Failed to send Ctrl+C to process with pid=%d. WaitForSingleObject exit code: %d (last error: d).", dwProcessId, ret, GetLastError());
-        reportError(pEnv, errorBuffer);
-    }
-
-    // then set success flag if the exit code was 0
-    DWORD exit_code;
-    if (GetExitCodeProcess(pi.hProcess, &exit_code) != FALSE) {
-      success = (exit_code == 0);
-      if (exit_code != 0) {
-        sprintf_s<ERRMSG_SIZE>(errorBuffer, "External Ctrl+C execution failed for process pid=%d. Ctrl+C process exited with code %d: %s.", dwProcessId, exit_code,
-            (exit_code == -1) ? "Wrong arguments" : "Failed to attach to the console (see the AttachConsole WinAPI call)");
-        reportError(pEnv, errorBuffer);
-      }
-    }
-  } else {
-    sprintf_s<ERRMSG_SIZE>(errorBuffer, "Failed to send Ctrl+C to process with pid=%d. Signal process did not start: %s.", dwProcessId, cmd);
-    reportError(pEnv, errorBuffer);
-  }
-
-  CloseHandle(pi.hProcess);
-  CloseHandle(pi.hThread);
-
-  return success;
-}
-
-//---------------------------------------------------------------------------
 // KillProcess
 //
 //  Terminates the specified process.
@@ -171,43 +114,6 @@ typedef struct _SYSTEM_PROCESSES {
     SYSTEM_THREADS  Threads[1];
 } SYSTEM_PROCESSES, * PSYSTEM_PROCESSES;
 
-//---------------------------------------------------------------------------
-// KillProcessTreeNtHelper
-//
-//  This is a recursive helper function that terminates all the processes
-//  started by the specified process and them terminates the process itself
-//
-//  Parameters:
-//	  pInfo       - processes information
-//	  dwProcessId - identifier of the process to terminate
-//
-//  Returns:
-//	  Win32 error code.
-//
-DWORD WINAPI KillProcessTreeNtHelper(PSYSTEM_PROCESSES pInfo, DWORD dwProcessId) {
-	_ASSERTE(pInfo != NULL);
-
-    PSYSTEM_PROCESSES p = pInfo;
-
-    // kill all children first
-    for (;;)
-    {
-		if (p->InheritedFromProcessId == dwProcessId)
-			KillProcessTreeNtHelper(pInfo, p->ProcessId);
-
-		if (p->NextEntryDelta == 0)
-			break;
-
-		// find the address of the next process structure
-		p = (PSYSTEM_PROCESSES)(((LPBYTE)p) + p->NextEntryDelta);
-    }
-
-	// kill the process itself
-    if (!KillProcess(dwProcessId))
-		return GetLastError();
-
-	return ERROR_SUCCESS;
-}
 
 struct _TREE_PROCESS;
 typedef _TREE_PROCESS TREE_PROCESS;
@@ -417,62 +323,8 @@ BOOL WINAPI KillProcessEx(DWORD dwProcessId, BOOL bTree) {
 		return KillProcess(dwProcessId);
 	}
 
-	OSVERSIONINFO osvi;
-	DWORD dwError;
-
-	// determine operating system version
-	osvi.dwOSVersionInfoSize = sizeof(osvi);
-	GetVersionEx(&osvi);
-
-	if (osvi.dwPlatformId == VER_PLATFORM_WIN32_NT &&
-		osvi.dwMajorVersion < 5)
-	{
-		// obtain a handle to the default process heap
-		HANDLE hHeap = GetProcessHeap();
-
-		NTSTATUS Status;
-		ULONG cbBuffer = 0x8000;
-		PVOID pBuffer = NULL;
-
-		// it is difficult to say a priory which size of the buffer
-		// will be enough to retrieve all information, so we start
-		// with 32K buffer and increase its size until we get the
-		// information successfully
-		do
-		{
-			pBuffer = HeapAlloc(hHeap, 0, cbBuffer);
-			if (pBuffer == NULL) {
-				return SetLastError(ERROR_NOT_ENOUGH_MEMORY), FALSE;
-			}
-
-			Status = ZwQuerySystemInformation(
-							SystemProcessesAndThreadsInformation,
-							pBuffer, cbBuffer, NULL);
-
-			if (Status == STATUS_INFO_LENGTH_MISMATCH)
-			{
-				HeapFree(hHeap, 0, pBuffer);
-				cbBuffer *= 2;
-			}
-			else if (!NT_SUCCESS(Status))
-			{
-				HeapFree(hHeap, 0, pBuffer);
-				return SetLastError(Status), NULL;
-			}
-		}
-		while (Status == STATUS_INFO_LENGTH_MISMATCH);
-
-		// call the helper function
-		dwError = KillProcessTreeNtHelper((PSYSTEM_PROCESSES)pBuffer,
-										  dwProcessId);
-
-		HeapFree(hHeap, 0, pBuffer);
-	}
-	else
-	{
-		// call the helper function
-		dwError = KillProcessTreeWinHelper(dwProcessId);
-	}
+	// call the helper function
+	DWORD dwError = KillProcessTreeWinHelper(dwProcessId);
 
 	SetLastError(dwError);
 	return dwError == ERROR_SUCCESS;
@@ -490,4 +342,18 @@ JNIEXPORT jboolean JNICALL Java_org_jvnet_winp_Native_isCriticalProcess(JNIEnv* 
 	ZwQueryInformationProcess(hProcess, ProcessBreakOnTermination, &isCritical, sizeof(isCritical), NULL);
 
 	return isCritical!=0;
+}
+
+JNIEXPORT jboolean JNICALL Java_org_jvnet_winp_Native_isProcessRunning(JNIEnv* pEnv, jclass clazz, jint dwProcessId) {
+	auto_handle hProcess = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, dwProcessId);
+	if (!hProcess) {
+		return false;
+	}
+
+	DWORD exitCode;
+	if (!GetExitCodeProcess(hProcess, &exitCode)) {
+		return false;
+	}
+
+	return (exitCode == STILL_ACTIVE);
 }

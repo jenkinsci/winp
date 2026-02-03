@@ -53,7 +53,7 @@ public class ExitWindows {
 
         private final int value;
 
-        private Flag(int value) {
+        Flag(int value) {
             this.value = value;
         }
     }

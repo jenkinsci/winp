@@ -1,13 +1,16 @@
 package org.jvnet.winp;
 
+import edu.umd.cs.findbugs.annotations.CheckReturnValue;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
-import javax.annotation.CheckReturnValue;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.math.BigInteger;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
-import java.net.URISyntaxException;
-import java.io.*;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.logging.Level;
@@ -24,10 +27,10 @@ class Native {
     public static final String CTRLCEXE_NAME = "64".equals(System.getProperty("sun.arch.data.model")) ? "sendctrlc.x64" : "sendctrlc";
 
     native static boolean kill(int pid, boolean recursive);
-    native static boolean sendCtrlC(int pid, String sendctrlcExePath);
     native static boolean isCriticalProcess(int pid);
+    native static boolean isProcessRunning(int pid);
     native static int setPriority(int pid, int value);
-    native static int getProcessId(int handle);
+    native static int getProcessId(long handle);
     native static boolean exitWindowsEx(int flags,int reasonCode);
 
     /**
@@ -70,11 +73,11 @@ class Native {
     private static final String DLL_TARGET = "winp.folder.preferred";
     private static final String UNPACK_DLL_TO_PARENT_DIR = "winp.unpack.dll.to.parent.dir";
 
-    private static String ctrlCExePath;
+    private static volatile String ctrlCExePath;
 
     /**
      * Sends Ctrl+C to the process.
-     * Due to the Windows platform specifics, this execution will spawn a separate thread to deliver the signal.
+     * Due to the Windows platform specifics, this execution will spawn a separate process to deliver the signal.
      * This process is expected to be executed within a 5-second timeout.
      * @param pid PID to receive the signal
      * @return {@code true} if the signal was delivered successfully
@@ -82,30 +85,38 @@ class Native {
      */
     @CheckReturnValue
     public static boolean sendCtrlC(int pid) throws WinpException {
+        if (loadFailure != null) {
+            throw new WinpException("Cannot send the CtrlC signal to the process: winp init failed", loadFailure);
+        }
         if (ctrlCExePath == null) {
             LOGGER.log(Level.WARNING, "Cannot send the CtrlC signal to the process. Cannot find the executable {0}.dll", CTRLCEXE_NAME);
             return false;
         }
-        return sendCtrlC(pid, ctrlCExePath);
+        return CtrlCSender.sendCtrlC(pid, ctrlCExePath);
     }
+
+    private static volatile Throwable loadFailure;
 
     static {
-        File exeFile = load();
-        ctrlCExePath = (exeFile == null) ? null : exeFile.getPath();
+        try {
+            File exeFile = load();
+            ctrlCExePath = exeFile == null ? null : exeFile.getPath();
+        } catch (Throwable t) {
+            loadFailure = t;
+            LOGGER.log(Level.SEVERE, "Cannot init winp native", t);
+        }
     }
 
+    @SuppressFBWarnings(value = "WEAK_MESSAGE_DIGEST_MD5", justification = "TODO needs triage")
     private static String md5(URL res) {
         try {
             MessageDigest md5 = MessageDigest.getInstance("MD5");
-            InputStream in = res.openStream();
-            try {
+            try (InputStream in = res.openStream()) {
                 byte[] buf = new byte[8192];
                 int len;
                 while((len=in.read(buf))>=0)
                     md5.update(buf, 0, len);
                 return toHex32(md5.digest());
-            } finally {
-                in.close();
             }
         } catch (NoSuchAlgorithmException e) {
             throw new AssertionError(e);
@@ -128,20 +139,20 @@ class Native {
                 return null;
             }
         } catch (Throwable cause) {
-
             UnsatisfiedLinkError error = new UnsatisfiedLinkError("Unable to load " + DLL_NAME + ".dll");
             error.initCause(cause);
             throw error;
         }
     }
 
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "dllRes and exeRes are internal resource paths, not user input")
     private static File loadByUrl(URL dllRes, URL exeRes) throws IOException {
 
         String dllUrl = dllRes.toExternalForm();
         if (dllUrl.startsWith("file:")) {
             // during debug the files are on disk and not in a jar
             if (!exeRes.toExternalForm().startsWith("file:")) {
-                LOGGER.log(Level.WARNING, "DLL and EXE are inconsistenly present on disk");
+                LOGGER.log(Level.WARNING, "DLL and EXE are inconsistently present on disk");
             }
 
             File f;
@@ -162,7 +173,7 @@ class Native {
             loadDll(dllFile);
             return exeFile;
         } catch (Throwable e) {
-            LOGGER.log(Level.WARNING, "Failed to load DLL from static location", e);
+            LOGGER.log(Level.INFO, "Failed to load DLL from static location, falling back to temp file", e);
         }
 
         File dllFile = extractToTmpLocation(dllRes);
@@ -171,6 +182,7 @@ class Native {
         return exeFile;
     }
 
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "url an internal resource path, not user input")
     private static File extractToStaticLocation(URL url) throws IOException {
 
         File jarFile = getJarFile(url);
@@ -186,6 +198,7 @@ class Native {
         return destFile;
     }
 
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "res an internal resource path, not user input")
     private static File extractToTmpLocation(URL res) throws IOException {
 
         File tmpFile = File.createTempFile(DLL_NAME, ".dll");
@@ -194,6 +207,7 @@ class Native {
         return tmpFile;
     }
 
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "CTRLCEXE_NAME is an internal resource path, not user input")
     private static File extractExe(URL res, File dir) throws IOException {
         File destFile = new File(dir, CTRLCEXE_NAME + '.' + md5(res) + ".exe");
         if (!destFile.exists()) {

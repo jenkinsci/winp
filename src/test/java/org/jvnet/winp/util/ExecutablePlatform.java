@@ -29,6 +29,6 @@ package org.jvnet.winp.util;
  */
 public enum ExecutablePlatform {
     X64,
-    X86;
+    X86
     //TODO: Add support of ARM?
 }

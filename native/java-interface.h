@@ -17,18 +17,18 @@ JNIEXPORT jboolean JNICALL Java_org_jvnet_winp_Native_kill
 
 /*
  * Class:     org_jvnet_winp_Native
- * Method:    sendCtrlC
- * Signature: (ILjava/lang/String)Z
- */
-JNIEXPORT jboolean JNICALL Java_org_jvnet_winp_Native_sendCtrlC
-  (JNIEnv *, jclass, jint, jstring);
-
-/*
- * Class:     org_jvnet_winp_Native
  * Method:    isCriticalProcess
  * Signature: (I)Z
  */
 JNIEXPORT jboolean JNICALL Java_org_jvnet_winp_Native_isCriticalProcess
+  (JNIEnv *, jclass, jint);
+
+/*
+ * Class:     org_jvnet_winp_Native
+ * Method:    isProcessRunning
+ * Signature: (I)Z
+ */
+JNIEXPORT jboolean JNICALL Java_org_jvnet_winp_Native_isProcessRunning
   (JNIEnv *, jclass, jint);
 
 /*
@@ -42,10 +42,10 @@ JNIEXPORT jint JNICALL Java_org_jvnet_winp_Native_setPriority
 /*
  * Class:     org_jvnet_winp_Native
  * Method:    getProcessId
- * Signature: (I)I
+ * Signature: (J)I
  */
 JNIEXPORT jint JNICALL Java_org_jvnet_winp_Native_getProcessId
-  (JNIEnv *, jclass, jint);
+  (JNIEnv *, jclass, jlong);
 
 /*
  * Class:     org_jvnet_winp_Native
