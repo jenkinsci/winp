@@ -4,7 +4,9 @@
  * allowing one to test against multiple Jenkins versions.
  */
 buildPlugin(useContainerAgent: false, configurations: [
-  [platform: 'windows', jdk: 25],
-  [platform: 'windows', jdk: 21]
+  // TODO: switch to 2022 or 2025
+  // 2019 agents won't be available for long cf https://github.com/jenkins-infra/helpdesk/issues/4954
+  [platform: 'windows-2019', jdk: 25],
+  [platform: 'windows-2019', jdk: 21]
 ])
 
