@@ -11,7 +11,7 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
-$global:BUILDROOT = Get-Location
+$BUILDROOT = Get-Location
 
 # Find MSBuild
 Write-Host "Locating MSBuild..."
@@ -21,34 +21,14 @@ if (-not (Test-Path $vswhere)) {
     exit 1
 }
 
-$global:MSBUILD = & $vswhere -latest -products * `
-    -requires Microsoft.Component.MSBuild `
-    -find "MSBuild\**\Bin\MSBuild.exe" | Select-Object -First 1
+$MSBUILD = & $vswhere -products * -latest -requires Microsoft.Component.MSBuild -find "MSBuild\**\Bin\MSBuild.exe" | Select-Object -First 1
 
-if (-not $global:MSBUILD) {
+if (-not $MSBUILD) {
     Write-Error "MSBuild not found"
     exit 1
 }
 
-$vsPath = & $vswhere -latest -products * `
-    -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 `
-    -property installationPath | Select-Object -First 1
-
-$global:VSINSTALLDIR = $vsPath
-if (-not $global:VSINSTALLDIR) {
-    Write-Error "Visual Studio with VC tools not found"
-    exit 1
-}
-
-$global:VSDEVCMD = Join-Path $global:VSINSTALLDIR 'Common7\Tools\VsDevCmd.bat'
-
-if (-not (Test-Path $global:VSDEVCMD)) {
-    Write-Error "VsDevCmd.bat not found at $global:VSDEVCMD"
-    exit 1
-}
-
-Write-Host "MSBUILD=${global:MSBUILD}"
-Write-Host "VSDEVCMD=${global:VSDEVCMD}"
+Write-Host "MSBUILD=$MSBUILD"
 
 # Determine version
 if ([string]::IsNullOrEmpty($Version)) {
@@ -72,39 +52,26 @@ Write-Host "Target version is $Version"
 # Helper function to run MSBuild with error checking
 function Invoke-MSBuild {
     param(
-        [string[]]$ProjectPaths,
-        [string]$Arch,
+        [string]$Project,
         [string]$Platform,
-        [string]$Configuration,
         [string]$Target = $null,
         [string]$Verbosity = "minimal"
     )
-
-    if (-not $Arch) {
-        switch ($Platform) {
-            "Win32" { $Arch = "x86" }
-            "x64" { $Arch = "x64" }
-            default {
-                Write-Error "Unable to infer dev shell architecture for platform '$Platform'"
-                exit 1
-            }
-        }
+    
+    $args = @(
+        $Project,
+        "/p:Configuration=$Configuration",
+        "/p:Platform=$Platform",
+        "/verbosity:$Verbosity",
+        "/nologo"
+    )
+    
+    if ($Target) {
+        $args = @("/t:$Target") + $args
     }
-
-    $devCmdArgs = "-no_logo -arch=$Arch"
-    $parts = @()
-    $parts += "call `"$global:VSDEVCMD`" $devCmdArgs"
-
-    foreach ($projectPath in $ProjectPaths) {
-        $parts += "&& `"$global:MSBUILD`" `"$projectPath`" /m /nologo /verbosity:$Verbosity /p:Configuration=$Configuration /p:Platform=$Platform"
-        if ($Target) {
-            $parts += " /t:$Target"
-        }
-    }
-    $cmdLine = $parts -join ' '
-
-    Write-Host "Running MSBuild for platform=$Platform arch=$Arch target=$Target"
-    & $env:ComSpec /d /s /c $cmdLine
+    
+    Write-Host "Running: & '$MSBUILD' $($args -join ' ')"
+    & $MSBUILD @args
     if ($LASTEXITCODE -ne 0) {
         Write-Error "MSBuild failed with exit code $LASTEXITCODE"
         exit $LASTEXITCODE
@@ -114,41 +81,49 @@ function Invoke-MSBuild {
 # Clean function
 function Invoke-Clean {
     Write-Host "### Cleaning the $Configuration build directory"
-    Push-Location "$global:BUILDROOT\native"
-    try {
-        Invoke-MSBuild -ProjectPaths @("winp.vcxproj", "sendctrlc\sendctrlc.vcxproj", "..\native_test\testapp\testapp.vcxproj") -Platform "Win32" -Arch "x86" -Configuration $Configuration -Target "Clean"
-        Invoke-MSBuild -ProjectPaths @("winp.vcxproj", "sendctrlc\sendctrlc.vcxproj", "..\native_test\testapp\testapp.vcxproj") -Platform "x64" -Arch "x64" -Configuration $Configuration -Target "Clean"
-    } finally {
-        Pop-Location
-    }
+    Push-Location "$BUILDROOT\native"
+    
+    Invoke-MSBuild "winp.vcxproj" "Win32" "Clean"
+    Invoke-MSBuild "winp.vcxproj" "x64" "Clean"
+    Invoke-MSBuild "sendctrlc\sendctrlc.vcxproj" "Win32" "Clean"
+    Invoke-MSBuild "sendctrlc\sendctrlc.vcxproj" "x64" "Clean"
+    Invoke-MSBuild "..\native_test\testapp\testapp.vcxproj" "Win32" "Clean"
+    Invoke-MSBuild "..\native_test\testapp\testapp.vcxproj" "x64" "Clean"
+    
+    Pop-Location
 }
 
 # Build function
 function Invoke-Build {
     Write-Host "### Building the $Configuration configuration"
-    Push-Location "$global:BUILDROOT\native"
-    try {
-        Invoke-MSBuild -ProjectPaths @("winp.vcxproj", "sendctrlc\sendctrlc.vcxproj", "..\native_test\testapp\testapp.vcxproj") -Platform "Win32" -Arch "x86" -Configuration $Configuration
-        Invoke-MSBuild -ProjectPaths @("winp.vcxproj", "sendctrlc\sendctrlc.vcxproj", "..\native_test\testapp\testapp.vcxproj") -Platform "x64" -Arch "x64" -Configuration $Configuration
-    } finally {
-        Pop-Location
-    }
-
+    Push-Location "$BUILDROOT\native"
+    
+    Invoke-MSBuild "winp.vcxproj" "Win32"
+    Invoke-MSBuild "winp.vcxproj" "x64"
+    Invoke-MSBuild "sendctrlc\sendctrlc.vcxproj" "Win32"
+    Invoke-MSBuild "sendctrlc\sendctrlc.vcxproj" "x64"
+    
+    Write-Host "### Building test applications"
+    Invoke-MSBuild "..\native_test\testapp\testapp.vcxproj" "Win32" $null "minimal"
+    Invoke-MSBuild "..\native_test\testapp\testapp.vcxproj" "x64" $null "minimal"
+    
+    Pop-Location
+    
     Write-Host "### Updating WinP resource files for the $Configuration build"
-    Set-Location $global:BUILDROOT
-
+    Set-Location $BUILDROOT
+    
     $resourceDir = "src\main\resources"
     if (-not (Test-Path $resourceDir)) {
         New-Item -ItemType Directory -Path $resourceDir -Force | Out-Null
     }
-
+    
     $filesToCopy = @(
         @{ Source = "native\$Configuration\winp.dll"; Dest = "$resourceDir\winp.dll" },
         @{ Source = "native\x64\$Configuration\winp.dll"; Dest = "$resourceDir\winp.x64.dll" },
         @{ Source = "native\sendctrlc\Win32\$Configuration\sendctrlc.exe"; Dest = "$resourceDir\sendctrlc.exe" },
         @{ Source = "native\sendctrlc\x64\$Configuration\sendctrlc.exe"; Dest = "$resourceDir\sendctrlc.x64.exe" }
     )
-
+    
     foreach ($file in $filesToCopy) {
         if (-not (Test-Path $file.Source)) {
             Write-Error "Source file not found: $($file.Source)"
