@@ -91,6 +91,7 @@ public abstract class ProcessSpawningTest extends NativeWinpTest {
         final String executable = switch (executablePlatform) {
             case X64 -> String.format("native_test/testapp/x64/%s/testapp.exe", buildConfiguration);
             case X86 -> String.format("native_test/testapp/Win32/%s/testapp.exe", buildConfiguration);
+            case ARM64 -> String.format("native_test/testapp/arm64/%s/testapp.exe", buildConfiguration);
         };
         return new File(executable);
     }

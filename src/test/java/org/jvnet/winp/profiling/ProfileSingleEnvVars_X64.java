@@ -24,21 +24,29 @@
 package org.jvnet.winp.profiling;
 
 import java.io.File;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.jvnet.winp.WinProcess;
 import org.jvnet.winp.util.ExecutablePlatform;
 import org.jvnet.winp.util.ProcessSpawningTest;
+import org.jvnet.winp.util.TestHelper;
 
 /**
- * Runs profiling for a single 32bit application.
+ * Runs profiling for a single 64bit application.
  * @author Oleg Nenashev
  */
-class ProfileSingleEnvVars_32bit extends ProcessSpawningTest {
+class ProfileSingleEnvVars_X64 extends ProcessSpawningTest {
+
+    @BeforeEach
+    void beforeEach() {
+        TestHelper.assumeIs64BitHost();
+        TestHelper.assumeIsNotArm64Host();
+    }
 
     @Test
     void doProfile() throws Exception {
-        File executable = getTestAppExecutable(ExecutablePlatform.X86);
-        Process proc = spawnProcess(true, false, executable.getAbsolutePath());
+        File executable = getTestAppExecutable(ExecutablePlatform.X64);
+        Process proc = spawnProcess(false, false, executable.getAbsolutePath());
         WinProcess wp = new WinProcess(proc);
         wp.getEnvironmentVariables();
     }

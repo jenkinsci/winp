@@ -75,6 +75,10 @@ class PlatformSpecificProcessTest extends ProcessSpawningTest {
         // Run 64bit tests only if the platform supports it
         if (executablePlatform == ExecutablePlatform.X64) {
             TestHelper.assumeIs64BitHost();
+        } else if (executablePlatform == ExecutablePlatform.ARM64) {
+            TestHelper.assumeIsArm64Host();
+        } else {
+            TestHelper.assumeIsNotArm64Host();
         }
         
         File exec = getTestAppExecutable(executablePlatform);

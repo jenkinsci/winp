@@ -53,4 +53,15 @@ public class TestHelper {
     public static boolean is32BitJVM() {
         return "32".equals(System.getProperty("sun.arch.data.model"));
     }
+
+    /**
+     * Checks if current system is ARM64 and skips the test otherwise.
+     */
+    public static void assumeIsArm64Host() {
+        assumeTrue(System.getProperty("os.arch").equals("aarch64"), "This test can run ony on ARM64 platforms.");
+    }
+
+    public static void assumeIsNotArm64Host() {
+        assumeTrue(!System.getProperty("os.arch").equals("aarch64"), "This test cannot run on ARM64 platforms.");
+    }
 }

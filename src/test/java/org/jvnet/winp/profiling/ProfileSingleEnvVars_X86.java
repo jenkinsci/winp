@@ -21,14 +21,34 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.jvnet.winp.util;
+package org.jvnet.winp.profiling;
+
+import java.io.File;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.jvnet.winp.WinProcess;
+import org.jvnet.winp.util.ExecutablePlatform;
+import org.jvnet.winp.util.ProcessSpawningTest;
+import org.jvnet.winp.util.TestHelper;
 
 /**
- *
+ * Runs profiling for a single 32bit application.
  * @author Oleg Nenashev
  */
-public enum ExecutablePlatform {
-    X64,
-    X86,
-    ARM64
+class ProfileSingleEnvVars_X86 extends ProcessSpawningTest {
+
+    @BeforeEach
+    void beforeEach() {
+        TestHelper.assumeIsNotArm64Host();
+    }
+
+    @Test
+    void doProfile() throws Exception {
+        File executable = getTestAppExecutable(ExecutablePlatform.X86);
+        Process proc = spawnProcess(true, false, executable.getAbsolutePath());
+        WinProcess wp = new WinProcess(proc);
+        wp.getEnvironmentVariables();
+    }
+    
 }
