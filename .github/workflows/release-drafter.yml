@@ -10,9 +10,11 @@ on:
 
 jobs:
   update_release_draft:
+    if: ${{ github.repository_owner == 'jenkinsci' }}
     runs-on: ubuntu-latest
     steps:
       # Drafts your next Release notes as Pull Requests are merged into the default branch
-      - uses: release-drafter/release-drafter@v7
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Release Drafter
+        uses: release-drafter/release-drafter@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
