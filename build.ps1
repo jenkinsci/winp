@@ -79,6 +79,96 @@ if ([string]::IsNullOrEmpty($Version)) {
 
 Write-Host "Target version is $Version"
 
+# Ensure the Windows SDK headers and import libs are present at the standard
+# Windows Kits path.  On VS 2025 Build Tools the vsconfig may install only the
+# UCRT redistribution component (Windows10SDK.22621) rather than the full SDK
+# (Windows11SDK.22621), leaving no headers or import libs.  When that is the
+# case this function downloads the NuGet SDK packages and wires them up via
+# directory junctions so MSBuild finds everything at the expected paths.
+function Ensure-WindowsSDK {
+    $sdkVer   = '10.0.22621.0'
+    $pkgVer   = '10.0.22621.3233'
+    $kitsRoot = "${env:ProgramFiles(x86)}\Windows Kits\10"
+    $marker   = "$kitsRoot\Include\$sdkVer\um\windows.h"
+
+    if (Test-Path $marker) {
+        Write-Host "Windows SDK $sdkVer already present"
+        return
+    }
+
+    Write-Host "Windows SDK headers missing — installing via NuGet packages..."
+
+    # Locate or download nuget.exe
+    $nugetCmd = Get-Command nuget.exe -ErrorAction SilentlyContinue
+    $nuget = if ($nugetCmd) { $nugetCmd.Source } else { $null }
+    if (-not $nuget) {
+        $nuget = "$env:TEMP\nuget.exe"
+        if (-not (Test-Path $nuget)) {
+            Write-Host "Downloading nuget.exe..."
+            Invoke-WebRequest -Uri 'https://dist.nuget.org/win-x86-commandline/latest/nuget.exe' `
+                              -OutFile $nuget -UseBasicParsing
+        }
+    }
+
+    $nugetDir = 'C:\winsdk'
+    New-Item -ItemType Directory -Path $nugetDir -Force | Out-Null
+
+    foreach ($pkg in @('Microsoft.Windows.SDK.CPP',
+                        'Microsoft.Windows.SDK.CPP.x86',
+                        'Microsoft.Windows.SDK.CPP.x64')) {
+        if (-not (Test-Path "$nugetDir\$pkg.$pkgVer")) {
+            Write-Host "Installing $pkg $pkgVer..."
+            & $nuget install $pkg -Version $pkgVer -OutputDirectory $nugetDir -NonInteractive
+            if ($LASTEXITCODE -ne 0) {
+                Write-Error "NuGet install failed for $pkg"
+                exit $LASTEXITCODE
+            }
+        }
+    }
+
+    $mainPkg = "$nugetDir\Microsoft.Windows.SDK.CPP.$pkgVer\c"
+    $x86Pkg  = "$nugetDir\Microsoft.Windows.SDK.CPP.x86.$pkgVer\c"
+    $x64Pkg  = "$nugetDir\Microsoft.Windows.SDK.CPP.x64.$pkgVer\c"
+
+    New-Item -ItemType Directory -Path "$kitsRoot\Include"              -Force | Out-Null
+    New-Item -ItemType Directory -Path "$kitsRoot\Lib\$sdkVer\um"      -Force | Out-Null
+    New-Item -ItemType Directory -Path "$kitsRoot\Lib\$sdkVer\ucrt"    -Force | Out-Null
+
+    $junctions = @(
+        @{ Link = "$kitsRoot\Include\$sdkVer"; Target = "$mainPkg\Include\$sdkVer" },
+        @{ Link = "$kitsRoot\DesignTime";       Target = "$mainPkg\DesignTime"       },
+        @{ Link = "$kitsRoot\bin";              Target = "$mainPkg\bin"              },
+        @{ Link = "$kitsRoot\Lib\$sdkVer\um\x86";   Target = "$x86Pkg\um\x86"   },
+        @{ Link = "$kitsRoot\Lib\$sdkVer\um\x64";   Target = "$x64Pkg\um\x64"   },
+        @{ Link = "$kitsRoot\Lib\$sdkVer\ucrt\x86"; Target = "$x86Pkg\ucrt\x86" },
+        @{ Link = "$kitsRoot\Lib\$sdkVer\ucrt\x64"; Target = "$x64Pkg\ucrt\x64" }
+    )
+
+    foreach ($j in $junctions) {
+        if (-not (Test-Path $j.Link)) {
+            New-Item -ItemType Junction -Path $j.Link -Target $j.Target | Out-Null
+            Write-Host "Junction: $($j.Link) -> $($j.Target)"
+        }
+    }
+
+    # Registry key used by vcvarsall.bat to locate the SDK root
+    $regKey = 'HKLM:\SOFTWARE\WOW6432Node\Microsoft\Microsoft SDKs\Windows\v10.0'
+    if (-not (Test-Path $regKey)) {
+        New-Item -Path $regKey -Force | Out-Null
+    }
+    Set-ItemProperty -Path $regKey -Name 'InstallationFolder' -Value "$kitsRoot\"
+
+    # Deploy debug Universal CRT so Debug-configuration DLLs can be loaded at test time
+    $ucrtDbgSrc = "$mainPkg\bin\$sdkVer\x64\ucrt\ucrtbased.dll"
+    $ucrtDbgSrcX86 = "$mainPkg\bin\$sdkVer\x86\ucrt\ucrtbased.dll"
+    if ((Test-Path $ucrtDbgSrc) -and -not (Test-Path "$env:SystemRoot\System32\ucrtbased.dll")) {
+        Copy-Item $ucrtDbgSrc  "$env:SystemRoot\System32\ucrtbased.dll"  -Force
+        Copy-Item $ucrtDbgSrcX86 "$env:SystemRoot\SysWOW64\ucrtbased.dll" -Force -ErrorAction SilentlyContinue
+    }
+
+    Write-Host "Windows SDK $sdkVer set up from NuGet packages"
+}
+
 # Set up the VC build environment for the given target architecture by running
 # vcvarsall.bat in a cmd subprocess, capturing the resulting environment via
 # "set", then applying the variables to the current PowerShell process.
@@ -239,6 +329,9 @@ function Invoke-Build {
         Write-Host "Copied $($file.Source) to $($file.Dest)"
     }
 }
+
+# Ensure the Windows SDK is available before any MSBuild invocation
+Ensure-WindowsSDK
 
 # Main dispatch
 switch ($Command) {
