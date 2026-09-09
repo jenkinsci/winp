@@ -40,24 +40,25 @@ if (-not $global:VSINSTALLDIR) {
     exit 1
 }
 
-# Microsoft.VisualStudio.DevShell.dll provides Enter-VsDevShell, which initialises
-# the developer environment (PATH, INCLUDE, LIB, WindowsSdkDir, …) directly in
-# the current PowerShell process. This is the VS 2017+ supported PowerShell API
-# and avoids the subprocess quoting issues and VsDevCmd.bat SDK-detection failures
-# that occur on some VS 2025 Build Tools installations.
-$global:VSDEVSHELL_DLL = Join-Path $global:VSINSTALLDIR 'Common7\Tools\Microsoft.VisualStudio.DevShell.dll'
-if (-not (Test-Path $global:VSDEVSHELL_DLL)) {
-    Write-Error "Microsoft.VisualStudio.DevShell.dll not found at $global:VSDEVSHELL_DLL"
+# vcvarsall.bat is the core VC toolset script that sets PATH, INCLUDE, LIB and
+# WindowsSDKDir for a given target architecture.  Unlike VsDevCmd.bat or
+# Enter-VsDevShell (which rely on VS developer-shell infrastructure that can be
+# absent in Build-Tools-only installations), vcvarsall.bat is always present
+# when the VC.Tools.x86.x64 component is installed and returns a real non-zero
+# exit code on failure.
+$global:VCVARSALL = Join-Path $global:VSINSTALLDIR 'VC\Auxiliary\Build\vcvarsall.bat'
+if (-not (Test-Path $global:VCVARSALL)) {
+    Write-Error "vcvarsall.bat not found: $global:VCVARSALL"
     exit 1
 }
 
-# Track which arch the dev environment is currently initialised for so we only
-# call Enter-VsDevShell when the architecture actually changes.
+# Track which arch the VC environment is currently set up for so we only
+# call vcvarsall.bat when the architecture actually changes.
 $global:VSDEVENV_ARCH = $null
 
 Write-Host "MSBUILD=${global:MSBUILD}"
 Write-Host "VSINSTALLDIR=${global:VSINSTALLDIR}"
-Write-Host "VSDEVSHELL_DLL=${global:VSDEVSHELL_DLL}"
+Write-Host "VCVARSALL=${global:VCVARSALL}"
 
 # Determine version
 if ([string]::IsNullOrEmpty($Version)) {
@@ -78,21 +79,40 @@ if ([string]::IsNullOrEmpty($Version)) {
 
 Write-Host "Target version is $Version"
 
-# Initialise the VS developer environment for the given arch in the current process.
-# Enter-VsDevShell sets PATH, INCLUDE, LIB, WindowsSdkDir, and all other variables
-# that MSBuild needs, without spawning a cmd subprocess or running VsDevCmd.bat.
+# Set up the VC build environment for the given target architecture by running
+# vcvarsall.bat in a cmd subprocess, capturing the resulting environment via
+# "set", then applying the variables to the current PowerShell process.
+# This is more reliable than VsDevCmd.bat or Enter-VsDevShell on VS 2025 Build
+# Tools, which silently fail to discover the Windows SDK on some configurations.
 function Initialize-VsDevEnvironment {
     param([string]$Arch)
 
     if ($global:VSDEVENV_ARCH -eq $Arch) { return }
 
-    if (-not (Get-Module Microsoft.VisualStudio.DevShell -ErrorAction SilentlyContinue)) {
-        Import-Module $global:VSDEVSHELL_DLL
+    Write-Host "Setting up VC build environment via vcvarsall.bat: arch=$Arch"
+
+    $tmpBat = [System.IO.Path]::ChangeExtension([System.IO.Path]::GetTempFileName(), '.bat')
+    try {
+        # Dump env after calling vcvarsall.bat; propagate its exit code.
+        $batContent = "@echo off`r`ncall `"$($global:VCVARSALL)`" $Arch > nul 2>&1`r`nif errorlevel 1 exit /b %errorlevel%`r`nset"
+        [System.IO.File]::WriteAllText($tmpBat, $batContent)
+
+        $output = & $env:ComSpec /d /c "`"$tmpBat`"" 2>&1
+        if ($LASTEXITCODE -ne 0) {
+            Write-Error "vcvarsall.bat ($Arch) failed with exit code $LASTEXITCODE"
+            exit $LASTEXITCODE
+        }
+
+        foreach ($line in $output) {
+            if ($line -match '^([^=]+)=(.*)$') {
+                [System.Environment]::SetEnvironmentVariable($Matches[1], $Matches[2], 'Process')
+            }
+        }
+        Write-Host "VC environment ready. WindowsSDKDir=$env:WindowsSDKDir"
+    } finally {
+        Remove-Item $tmpBat -Force -ErrorAction SilentlyContinue
     }
 
-    Write-Host "Entering VS dev shell: arch=$Arch"
-    Enter-VsDevShell -VsInstallPath $global:VSINSTALLDIR -SkipAutomaticLocation `
-        -DevCmdArguments "-arch=$Arch -no_logo"
     $global:VSDEVENV_ARCH = $Arch
 }
 
@@ -133,6 +153,34 @@ function Invoke-MSBuild {
             "/p:Configuration=$Configuration",
             "/p:Platform=$Platform"
         )
+
+        # When the environment has WindowsSDKDir set (from vcvarsall.bat) but
+        # MSBuild may not auto-detect the SDK version from the registry — e.g.
+        # on VS 2025 Build Tools where only the UCRT redist component is
+        # installed — pass the SDK location and version explicitly so MSBuild
+        # can construct the correct include/lib paths without registry lookups.
+        if ($env:WindowsSDKDir -and $env:WindowsSDKVersion) {
+            $sdkVer = $env:WindowsSDKVersion.TrimEnd('\')
+            # Paths ending in a backslash break Windows command-line quoting
+            # inside double-quoted MSBuild /p: arguments (the backslash escapes
+            # the closing quote, corrupting all subsequent args).  Avoid this by
+            # writing the properties to an MSBuild response file and passing it
+            # with @file.  RSP files use CommandLineToArgvW quoting, so paths
+            # with spaces must be double-quoted and the trailing backslash must
+            # be doubled ("\\") so the parser sees one literal backslash and the
+            # following double-quote closes the token.
+            $sdkDirNoSlash = $env:WindowsSDKDir.TrimEnd('\')
+            $rspLines = "/p:WindowsSdkDir=`"$sdkDirNoSlash\\`"`n" +
+                        "/p:WindowsTargetPlatformVersion=$sdkVer"
+            if ($env:UniversalCRTSdkDir) {
+                $ucrtDirNoSlash = $env:UniversalCRTSdkDir.TrimEnd('\')
+                $rspLines += "`n/p:UniversalCRTSdkDir=`"$ucrtDirNoSlash\\`""
+            }
+            $rspFile = [System.IO.Path]::ChangeExtension([System.IO.Path]::GetTempFileName(), '.rsp')
+            [System.IO.File]::WriteAllText($rspFile, $rspLines)
+            $msbuildArgs += "@$rspFile"
+        }
+
         if ($Target) { $msbuildArgs += "/t:$Target" }
 
         Write-Host "Running MSBuild: $(Split-Path $absPath -Leaf) platform=$Platform target=$Target"
