@@ -261,10 +261,20 @@ function Invoke-MSBuild {
         # closing quote and corrupts all subsequent arguments.  RSP files use
         # CommandLineToArgvW quoting so we double the trailing backslash ("\\")
         # so the parser sees one literal backslash and the quote closes normally.
-        $rspSdkDir = if ($env:WindowsSDKDir) { $env:WindowsSDKDir }
-                     else { $global:WINSDK_FALLBACK_DIR }
-        $rspSdkVer = if ($env:WindowsSDKVersion) { $env:WindowsSDKVersion.TrimEnd('\') }
-                     else { $global:WINSDK_FALLBACK_VER }
+        # Determine the SDK dir and version to pass via RSP.
+        # Prefer the values vcvarsall.bat populated, but only if the headers are
+        # actually present there; on agents missing the full SDK component,
+        # WindowsSDKVersion may be set to a bare backslash or a path with no
+        # headers, in which case we fall back to the NuGet layout built by
+        # Ensure-WindowsSDK.
+        $rspSdkDir = $env:WindowsSDKDir
+        $rspSdkVer = if ($env:WindowsSDKVersion) { $env:WindowsSDKVersion.TrimEnd('\') } else { $null }
+        $headersPresent = $rspSdkDir -and $rspSdkVer -and `
+            (Test-Path (Join-Path $rspSdkDir.TrimEnd('\') "Include\$rspSdkVer\um\windows.h"))
+        if (-not $headersPresent) {
+            $rspSdkDir = $global:WINSDK_FALLBACK_DIR
+            $rspSdkVer = $global:WINSDK_FALLBACK_VER
+        }
 
         if ($rspSdkDir -and $rspSdkVer) {
             $sdkDirNoSlash = $rspSdkDir.TrimEnd('\')
