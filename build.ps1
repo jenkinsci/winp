@@ -40,15 +40,24 @@ if (-not $global:VSINSTALLDIR) {
     exit 1
 }
 
-$global:VSDEVCMD = Join-Path $global:VSINSTALLDIR 'Common7\Tools\VsDevCmd.bat'
-
-if (-not (Test-Path $global:VSDEVCMD)) {
-    Write-Error "VsDevCmd.bat not found at $global:VSDEVCMD"
+# Microsoft.VisualStudio.DevShell.dll provides Enter-VsDevShell, which initialises
+# the developer environment (PATH, INCLUDE, LIB, WindowsSdkDir, …) directly in
+# the current PowerShell process. This is the VS 2017+ supported PowerShell API
+# and avoids the subprocess quoting issues and VsDevCmd.bat SDK-detection failures
+# that occur on some VS 2025 Build Tools installations.
+$global:VSDEVSHELL_DLL = Join-Path $global:VSINSTALLDIR 'Common7\Tools\Microsoft.VisualStudio.DevShell.dll'
+if (-not (Test-Path $global:VSDEVSHELL_DLL)) {
+    Write-Error "Microsoft.VisualStudio.DevShell.dll not found at $global:VSDEVSHELL_DLL"
     exit 1
 }
 
+# Track which arch the dev environment is currently initialised for so we only
+# call Enter-VsDevShell when the architecture actually changes.
+$global:VSDEVENV_ARCH = $null
+
 Write-Host "MSBUILD=${global:MSBUILD}"
-Write-Host "VSDEVCMD=${global:VSDEVCMD}"
+Write-Host "VSINSTALLDIR=${global:VSINSTALLDIR}"
+Write-Host "VSDEVSHELL_DLL=${global:VSDEVSHELL_DLL}"
 
 # Determine version
 if ([string]::IsNullOrEmpty($Version)) {
@@ -69,7 +78,25 @@ if ([string]::IsNullOrEmpty($Version)) {
 
 Write-Host "Target version is $Version"
 
-# Helper function to run MSBuild with error checking
+# Initialise the VS developer environment for the given arch in the current process.
+# Enter-VsDevShell sets PATH, INCLUDE, LIB, WindowsSdkDir, and all other variables
+# that MSBuild needs, without spawning a cmd subprocess or running VsDevCmd.bat.
+function Initialize-VsDevEnvironment {
+    param([string]$Arch)
+
+    if ($global:VSDEVENV_ARCH -eq $Arch) { return }
+
+    if (-not (Get-Module Microsoft.VisualStudio.DevShell -ErrorAction SilentlyContinue)) {
+        Import-Module $global:VSDEVSHELL_DLL
+    }
+
+    Write-Host "Entering VS dev shell: arch=$Arch"
+    Enter-VsDevShell -VsInstallPath $global:VSINSTALLDIR -SkipAutomaticLocation `
+        -DevCmdArguments "-arch=$Arch -no_logo"
+    $global:VSDEVENV_ARCH = $Arch
+}
+
+# Run MSBuild for a set of project files after setting up the dev environment.
 function Invoke-MSBuild {
     param(
         [string[]]$ProjectPaths,
@@ -83,7 +110,7 @@ function Invoke-MSBuild {
     if (-not $Arch) {
         switch ($Platform) {
             "Win32" { $Arch = "x86" }
-            "x64" { $Arch = "x64" }
+            "x64"   { $Arch = "x64" }
             default {
                 Write-Error "Unable to infer dev shell architecture for platform '$Platform'"
                 exit 1
@@ -91,17 +118,7 @@ function Invoke-MSBuild {
         }
     }
 
-    # Write commands to a temp batch file to avoid PowerShell→cmd quoting issues.
-    # When PowerShell passes a compound string (inner quotes + &&) to cmd via &,
-    # it escapes inner quotes as \" which cmd /s then mis-parses, causing the
-    # VsDevCmd.bat call to fail with "The system cannot find the file specified."
-    $tmpBat = [System.IO.Path]::ChangeExtension(
-        [System.IO.Path]::GetTempFileName(), '.bat')
-
-    $lines = [System.Collections.Generic.List[string]]::new()
-    $lines.Add('@echo off')
-    $lines.Add("call `"$global:VSDEVCMD`" -no_logo -arch=$Arch")
-    $lines.Add('if %errorlevel% neq 0 ( echo VsDevCmd.bat failed & exit /b %errorlevel% )')
+    Initialize-VsDevEnvironment -Arch $Arch
 
     foreach ($projectPath in $ProjectPaths) {
         $absPath = if ([System.IO.Path]::IsPathRooted($projectPath)) {
@@ -109,23 +126,21 @@ function Invoke-MSBuild {
         } else {
             Join-Path (Get-Location) $projectPath
         }
-        $line = "`"$global:MSBUILD`" `"$absPath`" /m /nologo /verbosity:$Verbosity /p:Configuration=$Configuration /p:Platform=$Platform"
-        if ($Target) { $line += " /t:$Target" }
-        $lines.Add($line)
-        $lines.Add('if %errorlevel% neq 0 exit /b %errorlevel%')
-    }
 
-    [System.IO.File]::WriteAllText($tmpBat, ($lines -join "`r`n"), [System.Text.Encoding]::ASCII)
+        $msbuildArgs = @(
+            $absPath,
+            '/m', '/nologo', "/verbosity:$Verbosity",
+            "/p:Configuration=$Configuration",
+            "/p:Platform=$Platform"
+        )
+        if ($Target) { $msbuildArgs += "/t:$Target" }
 
-    Write-Host "Running MSBuild for platform=$Platform arch=$Arch target=$Target"
-    try {
-        & $env:ComSpec /d /c $tmpBat
+        Write-Host "Running MSBuild: $(Split-Path $absPath -Leaf) platform=$Platform target=$Target"
+        & $global:MSBUILD @msbuildArgs
         if ($LASTEXITCODE -ne 0) {
             Write-Error "MSBuild failed with exit code $LASTEXITCODE"
             exit $LASTEXITCODE
         }
-    } finally {
-        Remove-Item $tmpBat -Force -ErrorAction SilentlyContinue
     }
 }
 
@@ -181,7 +196,7 @@ function Invoke-Build {
 switch ($Command) {
     "clean" { Invoke-Clean }
     "build" { Invoke-Build }
-    "" { Invoke-Build }  # Default to build
+    ""      { Invoke-Build }  # Default to build
     default {
         Write-Host "Unknown command: $Command"
         Write-Host "Valid commands: clean, build"
