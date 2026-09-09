@@ -279,18 +279,23 @@ function Invoke-MSBuild {
         if ($rspSdkDir -and $rspSdkVer) {
             $sdkDirNoSlash = $rspSdkDir.TrimEnd('\')
             $sdkInc = "$sdkDirNoSlash\Include\$rspSdkVer"
-            # Set WindowsSdkDir and related properties so the linker and any
-            # toolset props that read them use the right SDK root.
-            # Also override WindowsSDK_IncludePath directly: this is the exact
-            # property the vcxproj uses in <IncludePath>, so it always wins
-            # regardless of how the active toolset version computes it from
-            # WindowsSdkDir or UCRTContentRoot.
+            $sdkLib = "$sdkDirNoSlash\Lib\$rspSdkVer"
+            # Set standard SDK properties so the toolset and linker use the
+            # right root.  Also inject WinPFallbackSDKInclude / WinPFallbackSDKLib
+            # as custom properties: the vcxproj files reference these in
+            # <AdditionalIncludeDirectories> and <AdditionalLibraryDirectories>
+            # which map directly to /I and /LIBPATH: flags.  This bypasses the
+            # v145 toolset's $(WindowsSDK_IncludePath) computation (which reads
+            # the Windows Kit registry key and cannot be overridden via /p: when
+            # the toolset props set it unconditionally).
             $rspLines = "/p:WindowsSdkDir=`"$sdkDirNoSlash\\`"`n" +
                         "/p:WindowsTargetPlatformVersion=$rspSdkVer`n" +
                         "/p:UniversalCRTSdkDir=`"$sdkDirNoSlash\\`"`n" +
                         "/p:UCRTContentRoot=`"$sdkDirNoSlash\\`"`n" +
                         "/p:UCRTVersion=$rspSdkVer`n" +
-                        "/p:WindowsSDK_IncludePath=`"$sdkInc\um;$sdkInc\shared;$sdkInc\ucrt;$sdkInc\winrt;$sdkInc\cppwinrt`""
+                        "/p:WindowsSDK_IncludePath=`"$sdkInc\um;$sdkInc\shared;$sdkInc\ucrt;$sdkInc\winrt;$sdkInc\cppwinrt`"`n" +
+                        "/p:WinPFallbackSDKInclude=`"$sdkInc\um;$sdkInc\shared;$sdkInc\ucrt`"`n" +
+                        "/p:WinPFallbackSDKLib=`"$sdkLib\um\$Arch;$sdkLib\ucrt\$Arch`""
             Write-Host "SDK RSP: $($rspLines -replace "`n", ' | ')"
             $rspFile = [System.IO.Path]::ChangeExtension([System.IO.Path]::GetTempFileName(), '.rsp')
             [System.IO.File]::WriteAllText($rspFile, $rspLines)
