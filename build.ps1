@@ -278,20 +278,19 @@ function Invoke-MSBuild {
 
         if ($rspSdkDir -and $rspSdkVer) {
             $sdkDirNoSlash = $rspSdkDir.TrimEnd('\')
-            # Override all four SDK location properties in one RSP so MSBuild
-            # uses our layout for every include/lib lookup:
-            #  WindowsSdkDir        - um, shared, winrt include; um/ucrt lib
-            #  UniversalCRTSdkDir   - read by some toolset property sheets
-            #  UCRTContentRoot      - the property that directly gates the
-            #                         ucrt include path in v143 props
-            #                         ($(UCRTContentRoot)Include\$(UCRTVersion)\ucrt)
-            #  UCRTVersion          - prevent the toolset defaulting to a
-            #                         registry-detected version that differs
+            $sdkInc = "$sdkDirNoSlash\Include\$rspSdkVer"
+            # Set WindowsSdkDir and related properties so the linker and any
+            # toolset props that read them use the right SDK root.
+            # Also override WindowsSDK_IncludePath directly: this is the exact
+            # property the vcxproj uses in <IncludePath>, so it always wins
+            # regardless of how the active toolset version computes it from
+            # WindowsSdkDir or UCRTContentRoot.
             $rspLines = "/p:WindowsSdkDir=`"$sdkDirNoSlash\\`"`n" +
                         "/p:WindowsTargetPlatformVersion=$rspSdkVer`n" +
                         "/p:UniversalCRTSdkDir=`"$sdkDirNoSlash\\`"`n" +
                         "/p:UCRTContentRoot=`"$sdkDirNoSlash\\`"`n" +
-                        "/p:UCRTVersion=$rspSdkVer"
+                        "/p:UCRTVersion=$rspSdkVer`n" +
+                        "/p:WindowsSDK_IncludePath=`"$sdkInc\um;$sdkInc\shared;$sdkInc\ucrt;$sdkInc\winrt;$sdkInc\cppwinrt`""
             Write-Host "SDK RSP: $($rspLines -replace "`n", ' | ')"
             $rspFile = [System.IO.Path]::ChangeExtension([System.IO.Path]::GetTempFileName(), '.rsp')
             [System.IO.File]::WriteAllText($rspFile, $rspLines)
