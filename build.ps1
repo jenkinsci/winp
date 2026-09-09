@@ -96,7 +96,7 @@ function Ensure-WindowsSDK {
         return
     }
 
-    Write-Host "Windows SDK headers missing — installing via NuGet packages..."
+    Write-Host "Windows SDK headers missing - installing via NuGet packages..."
 
     # Locate or download nuget.exe
     $nugetCmd = Get-Command nuget.exe -ErrorAction SilentlyContinue
@@ -245,9 +245,9 @@ function Invoke-MSBuild {
         )
 
         # When the environment has WindowsSDKDir set (from vcvarsall.bat) but
-        # MSBuild may not auto-detect the SDK version from the registry — e.g.
+        # MSBuild may not auto-detect the SDK version from the registry (e.g.
         # on VS 2025 Build Tools where only the UCRT redist component is
-        # installed — pass the SDK location and version explicitly so MSBuild
+        # installed); pass the SDK location and version explicitly so MSBuild
         # can construct the correct include/lib paths without registry lookups.
         if ($env:WindowsSDKDir -and $env:WindowsSDKVersion) {
             $sdkVer = $env:WindowsSDKVersion.TrimEnd('\')
