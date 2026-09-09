@@ -91,23 +91,41 @@ function Invoke-MSBuild {
         }
     }
 
-    $devCmdArgs = "-no_logo -arch=$Arch"
-    $parts = @()
-    $parts += "call `"$global:VSDEVCMD`" $devCmdArgs"
+    # Write commands to a temp batch file to avoid PowerShell→cmd quoting issues.
+    # When PowerShell passes a compound string (inner quotes + &&) to cmd via &,
+    # it escapes inner quotes as \" which cmd /s then mis-parses, causing the
+    # VsDevCmd.bat call to fail with "The system cannot find the file specified."
+    $tmpBat = [System.IO.Path]::ChangeExtension(
+        [System.IO.Path]::GetTempFileName(), '.bat')
+
+    $lines = [System.Collections.Generic.List[string]]::new()
+    $lines.Add('@echo off')
+    $lines.Add("call `"$global:VSDEVCMD`" -no_logo -arch=$Arch")
+    $lines.Add('if %errorlevel% neq 0 ( echo VsDevCmd.bat failed & exit /b %errorlevel% )')
 
     foreach ($projectPath in $ProjectPaths) {
-        $parts += "&& `"$global:MSBUILD`" `"$projectPath`" /m /nologo /verbosity:$Verbosity /p:Configuration=$Configuration /p:Platform=$Platform"
-        if ($Target) {
-            $parts += " /t:$Target"
+        $absPath = if ([System.IO.Path]::IsPathRooted($projectPath)) {
+            $projectPath
+        } else {
+            Join-Path (Get-Location) $projectPath
         }
+        $line = "`"$global:MSBUILD`" `"$absPath`" /m /nologo /verbosity:$Verbosity /p:Configuration=$Configuration /p:Platform=$Platform"
+        if ($Target) { $line += " /t:$Target" }
+        $lines.Add($line)
+        $lines.Add('if %errorlevel% neq 0 exit /b %errorlevel%')
     }
-    $cmdLine = $parts -join ' '
+
+    [System.IO.File]::WriteAllText($tmpBat, ($lines -join "`r`n"), [System.Text.Encoding]::ASCII)
 
     Write-Host "Running MSBuild for platform=$Platform arch=$Arch target=$Target"
-    & $env:ComSpec /d /s /c $cmdLine
-    if ($LASTEXITCODE -ne 0) {
-        Write-Error "MSBuild failed with exit code $LASTEXITCODE"
-        exit $LASTEXITCODE
+    try {
+        & $env:ComSpec /d /c $tmpBat
+        if ($LASTEXITCODE -ne 0) {
+            Write-Error "MSBuild failed with exit code $LASTEXITCODE"
+            exit $LASTEXITCODE
+        }
+    } finally {
+        Remove-Item $tmpBat -Force -ErrorAction SilentlyContinue
     }
 }
 
