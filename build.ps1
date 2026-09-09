@@ -278,12 +278,13 @@ function Invoke-MSBuild {
 
         if ($rspSdkDir -and $rspSdkVer) {
             $sdkDirNoSlash = $rspSdkDir.TrimEnd('\')
+            # Always set UniversalCRTSdkDir to the same layout as WindowsSdkDir.
+            # vcvarsall.bat sets it to the system SDK path which (when only the
+            # Windows10SDK.22621 UCRT redist component is installed) has no
+            # Include\<ver>\ucrt\ctype.h; the fallback NuGet layout does.
             $rspLines = "/p:WindowsSdkDir=`"$sdkDirNoSlash\\`"`n" +
-                        "/p:WindowsTargetPlatformVersion=$rspSdkVer"
-            if ($env:UniversalCRTSdkDir) {
-                $ucrtDirNoSlash = $env:UniversalCRTSdkDir.TrimEnd('\')
-                $rspLines += "`n/p:UniversalCRTSdkDir=`"$ucrtDirNoSlash\\`""
-            }
+                        "/p:WindowsTargetPlatformVersion=$rspSdkVer`n" +
+                        "/p:UniversalCRTSdkDir=`"$sdkDirNoSlash\\`""
             $rspFile = [System.IO.Path]::ChangeExtension([System.IO.Path]::GetTempFileName(), '.rsp')
             [System.IO.File]::WriteAllText($rspFile, $rspLines)
             $msbuildArgs += "@$rspFile"
