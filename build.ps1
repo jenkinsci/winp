@@ -278,13 +278,21 @@ function Invoke-MSBuild {
 
         if ($rspSdkDir -and $rspSdkVer) {
             $sdkDirNoSlash = $rspSdkDir.TrimEnd('\')
-            # Always set UniversalCRTSdkDir to the same layout as WindowsSdkDir.
-            # vcvarsall.bat sets it to the system SDK path which (when only the
-            # Windows10SDK.22621 UCRT redist component is installed) has no
-            # Include\<ver>\ucrt\ctype.h; the fallback NuGet layout does.
+            # Override all four SDK location properties in one RSP so MSBuild
+            # uses our layout for every include/lib lookup:
+            #  WindowsSdkDir        - um, shared, winrt include; um/ucrt lib
+            #  UniversalCRTSdkDir   - read by some toolset property sheets
+            #  UCRTContentRoot      - the property that directly gates the
+            #                         ucrt include path in v143 props
+            #                         ($(UCRTContentRoot)Include\$(UCRTVersion)\ucrt)
+            #  UCRTVersion          - prevent the toolset defaulting to a
+            #                         registry-detected version that differs
             $rspLines = "/p:WindowsSdkDir=`"$sdkDirNoSlash\\`"`n" +
                         "/p:WindowsTargetPlatformVersion=$rspSdkVer`n" +
-                        "/p:UniversalCRTSdkDir=`"$sdkDirNoSlash\\`""
+                        "/p:UniversalCRTSdkDir=`"$sdkDirNoSlash\\`"`n" +
+                        "/p:UCRTContentRoot=`"$sdkDirNoSlash\\`"`n" +
+                        "/p:UCRTVersion=$rspSdkVer"
+            Write-Host "SDK RSP: $($rspLines -replace "`n", ' | ')"
             $rspFile = [System.IO.Path]::ChangeExtension([System.IO.Path]::GetTempFileName(), '.rsp')
             [System.IO.File]::WriteAllText($rspFile, $rspLines)
             $msbuildArgs += "@$rspFile"
