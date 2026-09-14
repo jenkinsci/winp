@@ -19,3 +19,4 @@ nb-configuration.xml
 .vscode/
 src/main/resources/*.dll
 src/main/resources/*.exe
+.claude/
